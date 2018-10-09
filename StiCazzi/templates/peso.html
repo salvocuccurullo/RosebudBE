@@ -1,0 +1,235 @@
+{% load static %}
+
+<html>
+	<head>
+		<title>Panzinella Dashboard - Rel 1.0</title>
+		
+		<link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/start/jquery-ui-1.10.4.custom.css' %}" />
+		<link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/ui.jqgrid.css' %}" />
+				
+		<script type="text/javascript" src="{% static 'js/jquery-3.2.1.min.js' %}"></script> 
+		<script type="text/javascript" src="{% static 'js/jquery.gridster.min.js' %}"></script>		
+		<!-- <script type="text/javascript" src="{% static 'js/jquery-1.11.3.min.js' %}"></script> -->
+		<script type="text/javascript" src="{% static 'js/highcharts.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/moment.js' %}"></script>
+
+		<script type="text/javascript" src="{% static 'js/i18n/grid.locale-it.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/jquery-ui.js' %}"></script>
+		
+		<link type="text/css" rel="stylesheet" href="{% static 'css/jquery.gridster.css' %}" />				
+
+		<script type="text/javascript">
+		$( document ).ready(function() {
+			
+			$.ajax({
+			  url: "/get_all_pesate/",
+			  context: document.body
+			}).done(function(data) {
+				//console.log(data);
+				 
+				d_p = data['message'];
+				hc_series = [];
+				
+				$.each(d_p, function(index1) {
+				  	l_p = d_p[index1]['pesate'];
+				  	hc_serie = [];
+					$.each(l_p, function(index) {
+						d = $.parseJSON(l_p[index]);
+						var m = moment(d['data'],'YYYY-MM-DD');
+						hc_serie.push([Date.UTC(m.get("year"), m.get("month"), m.get("date")), Number.parseFloat(d['peso'])]);
+						console.log(d['peso']);
+					});
+					hc_series.push({'nome':d_p[index1]['nome'], 'pesate':hc_serie});
+				});
+				
+//				console.log("---------------------------------");
+//				console.log(hc_series);
+
+				  $(function () { 
+				    $('#container').highcharts({
+				        chart: {
+				            type: 'line'
+				        },
+				        title: {
+				            text: 'Andamento peso'
+				        },
+						xAxis: {        
+						    type: 'datetime',
+						    labels: {
+								
+						        formatter: function() {
+						            return Highcharts.dateFormat('%d/%m/%y', this.value);
+						        }
+						        
+						    }
+						},				        
+				        yAxis: {
+				            title: {
+				                text: 'Kg.'
+				            }
+				        },
+				        series: [{
+				            name: hc_series[0]['nome'],
+				            data: hc_series[0]['pesate'],
+				            color: 'red',
+				        }, {
+				            name: hc_series[1]['nome'],
+				            data: hc_series[1]['pesate'],
+				            color: 'blue',
+				        }]
+				    });
+	
+				});
+
+
+			$.ajax({
+			  url: "/getByMonth/",
+			  context: document.body
+			}).done(function(data) {
+//			  console.log(data);
+				  
+				d_p = data['message'];
+				hc_series_1 = [];
+				
+				$.each(d_p, function(index1) {
+				  	l_p = d_p[index1]['pesate'];
+				  	hc_serie_1 = [];
+					$.each(l_p, function(index) {
+						d = $.parseJSON(l_p[index]);
+						var m = moment(d['data'],'YYYY-MM-DD');
+						hc_serie_1.push([Date.UTC(m.get("year"), m.get("month"), m.get("date")), parseFloat(d['peso'])]);
+						//console.log(d['data']);
+					});
+					hc_series_1.push({'nome':d_p[index1]['nome'], 'pesate':hc_serie_1});
+				});
+
+				console.log("---------------------------------");
+				console.log(hc_series_1);
+
+				  $(function () { 
+				    $('#container2').highcharts({
+				        chart: {
+				            type: 'column'
+				        },
+				        title: {
+				            text: 'Kg. persi (+) /acquisiti (-) per mese'
+				        },
+
+						xAxis: {        
+
+						    type: 'datetime',
+						    labels: {
+						        formatter: function() {
+						            return Highcharts.dateFormat('%m/%y', this.value);
+						        }
+						    }
+						},
+		        
+				        yAxis: {
+				            title: {
+				                text: 'Kg.'
+				            }
+				        },
+				        series: [{
+				            name: hc_series_1[0]['nome'],
+				            data: hc_series_1[0]['pesate'],
+				            color: 'red',
+				        }, {
+				            name: hc_series_1[1]['nome'],
+				            data: hc_series_1[1]['pesate'],
+				            color: 'blue',
+				        }]
+				    });
+				});
+			});
+
+			
+			//$( document ).ready(function() {
+  				// Handler for .ready() called.
+				$(".gridster ul").gridster({
+					widget_margins: [10, 10],
+        			widget_base_dimensions: [500, 500],
+        			resize: {enabled:true,}
+				});
+				
+		        $('.js-resize-random').on('click', function() {
+		            gridster.resize_widget(gridster.$widgets.eq(getRandomInt(0, 9)),
+		                getRandomInt(1, 4), getRandomInt(1, 4))
+		        });				
+				
+			});
+
+
+/*		
+			$(function() {
+			    $( "#progressbar" ).progressbar({
+			      value: 0
+				});
+			});
+*/
+			});
+	
+		</script>
+	</head>
+	
+	<body>
+
+	<!-- HEADER -->
+	{% include "header.html" %}
+	
+	<!-- CHART -->
+	<div class="gridster">
+	    <ul style="list-style-type: none;">
+	        <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+	        	<div id="container" style="height:400px; width:500px; border:1px ridge"></div>
+	        </li>
+	        <li data-row="1" data-col="2" data-sizex="1" data-sizey="1">
+	    		<div id="container2" style="height:400px; width:500px; border:1px ridge"></div>    
+	        </li>
+	        <!--
+	        <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+				<div class="ui-widget" style="text-align:center; border:1px ridge">
+					<div id="progressbar"></div>
+					{% if message %}
+						{% if status == 0 %}
+							<span style="color:red">
+								{{ message }}
+							</span>
+						{% else %}
+							<span style="color:blue">
+								{{ message }}
+							</span>
+						{% endif %}
+					{% endif %}
+					<form action="/panzinella/upload/" method="post" enctype="multipart/form-data">{% csrf_token %}
+						{{ my_form.as_p }}
+						<input type="submit" value="Submit" />
+					</form>
+				</div>
+			</li>
+			-->
+		</ul>
+	</div>
+
+	<!-- TABLE -->
+	
+	<!--
+	{% if pesata_diz %}
+		{% for k,v in pesata_diz.items %}
+		    <table border="1" style="border-collapse:collapse">
+		    <tr><td colspan="2" style="text-align:center">{{v.nome}}</td></tr>
+		    {% for peso in v.lista_peso %}
+		    	<tr>
+		        	<td>{{peso.data|date:"d/m/Y"}}</td>
+		        	<td>{{peso.peso}}</td>
+		        </tr>
+		    {% endfor %}
+		    </table>
+		    <br/><br/>
+		{% endfor %}		    
+	{% else %}
+	    <p>No data are available.</p>
+	{% endif %}
+	-->
+	</body>
+</html>

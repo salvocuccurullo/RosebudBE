@@ -1,0 +1,5 @@
+django>=1.11,<2.0
+mysqlclient
+mod_wsgi
+django-cors-headers
+pycrypto>=2.6.1

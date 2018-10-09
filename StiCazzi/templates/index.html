@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>Responsive CSS Tabs</title>
+      <link rel="stylesheet" href="{% static "css/style.css" %}"/>
+      <script src="{% static "js/jquery-3.2.1.min.js" %}" type="text/javascript"></script>
+      
+      <script type="text/javascript">
+      
+      $( document ).ready(function() {
+		 
+		 	$.ajax(
+			{
+			  url: "/showsongs",
+			  method: "GET",
+			  dataType: "html"
+			})
+			  .done(function(data) {
+				html = '';
+				$('#content1').html(data);
+			  })
+			  .fail(function() {
+				console.log( "error" );
+			  })
+			  .always(function() {
+				//console.log("ajax call completed");
+			  });
+
+			$.ajax(
+			{
+			  url: "/showmovies",
+			  method: "GET",
+			  dataType: "html"
+			})
+			  .done(function(data) {
+				html = '';
+				$('#content2').html(data);
+			  })
+			  .fail(function() {
+				console.log( "error" );
+			  })
+			  .always(function() {
+				//console.log("ajax call completed");
+			  });			
+  
+		});
+      </script>
+</head>
+
+<body>
+  <h1>Responsive CSS Tabs</h1>
+
+<main>
+  
+  <input id="tab1" type="radio" name="tabs" checked>
+  <label for="tab1">Songs</label>
+    
+  <input id="tab2" type="radio" name="tabs">
+  <label for="tab2">Movies</label>
+    
+  <input id="tab3" type="radio" name="tabs">
+  <label for="tab3">Weights</label>
+    
+  <input id="tab4" type="radio" name="tabs">
+  <label for="tab4">None</label>
+    
+  <section id="content1">
+   
+  </section>
+    
+  <section id="content2">
+  </section>
+    
+  <section id="content3">
+  </section>
+    
+  <section id="content4">
+  </section>
+    
+</main>
+  
+  
+</body>
+</html>
