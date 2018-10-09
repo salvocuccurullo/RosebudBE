@@ -1,2 +1,2 @@
-static_files/* linguist-vendored
+static_files/js/*.js linguist-vendored
 StiCazzi/*.py linguist-language=Python
