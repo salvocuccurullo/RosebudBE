@@ -53,6 +53,7 @@ def get_tvshows_new(request):
 
 	lower_bound = limit * (current_page - 1) 
 	upper_bound = current_page * limit
+	bounded = l[lower_bound:upper_bound]
 
 	for tvs in l[lower_bound:upper_bound]:
 		#dt = tvs.datetime.strftime("%A, %d. %B %Y %I:%M%p")
@@ -83,8 +84,12 @@ def get_tvshows_new(request):
 		d.update( {'type': tvs.type, 'director':tvs.director, 'year':tvs.year, 'id':tvs.id_tv_show, 'link':tvs.link, 'datetime':dt, 'avg_vote':avgVote_str} )
 		out_list.append(d)
 
-	response['payload'] = {'tvshows': out_list, 'query': query}
-	
+	has_more = True
+	if len(l) <= upper_bound:
+		has_more = False
+
+	response['payload'] = {'tvshows': out_list, 'query': query, 'has_more':has_more}
+
 	return HttpResponse(json.dumps(response), content_type="application/json")
 
 def get_movies_ct(request):
