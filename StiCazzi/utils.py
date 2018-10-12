@@ -1,34 +1,47 @@
-import json, decimal, hashlib
+"""
+    iCarusi BE utilities
+"""
 
-def decimal_dumps(d):
-	def fix_dict(d):
-		fixed = {}
-		for k,v in d.items():
-			if isinstance(v, decimal.Decimal):
-				# convert decimal to string
-				fixed.update({k: str(v)})
-			elif isinstance(v, dict):
-				# recurse
-				fixed.update({k: fix_dict(v)})
-			else:
-				# no conversion needed, replace
-				fixed.update({k: v})
-		return fixed
-	return json.dumps(fix_dict(d))
+import json
+import decimal
+import hashlib
 
 
-def safe_file_name(name, type):
-	
-	name = str(name).encode('utf-8')
-	type = str(type)
-	ext = "xxx"
-	
-	try:
-		ext = type.split("/")[1]
-	except:
-		ext = "xxx"
-		
-	final_fname = hashlib.sha1(name).hexdigest()
-	final_fname += "." + ext
+def decimal_dumps(dec):
 
-	return final_fname
+    """ Convert decimal to string """
+
+    def fix_dict(dec):
+        """ Fix Dict """
+        fixed = {}
+        for k, value in dec.items():
+            if isinstance(value, decimal.Decimal):
+                # convert decimal to string
+                fixed.update({k: str(value)})
+            elif isinstance(value, dict):
+                # recurse
+                fixed.update({k: fix_dict(value)})
+            else:
+                # no conversion needed, replace
+                fixed.update({k: value})
+        return fixed
+    return json.dumps(fix_dict(dec))
+
+
+def safe_file_name(name, file_type):
+
+    """ Convert file name to sha1 """
+
+    name = str(name).encode('utf-8')
+    file_type = str(file_type)
+    ext = "xxx"
+
+    try:
+        ext = file_type.split("/")[1]
+    except IndexError:
+        ext = "xxx"
+
+    final_fname = hashlib.sha1(name).hexdigest()
+    final_fname += "." + ext
+
+    return final_fname
