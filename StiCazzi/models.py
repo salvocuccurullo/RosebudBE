@@ -68,6 +68,7 @@ class TvShow(models.Model):
 	title = models.CharField(max_length=300)
 	media = models.CharField(max_length=150)
 	type = models.CharField(max_length=150, default='brand_new')
+	tvshow_type = models.CharField(max_length=150, default='movie')
 	director = models.CharField(max_length=150, default='')
 	year = models.IntegerField(default=0)
 	link = models.CharField(max_length=400, default='')
