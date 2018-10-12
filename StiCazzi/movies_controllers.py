@@ -271,7 +271,8 @@ def savemovienew(request):
 	media = request.POST.get('media','')
 	link = request.POST.get('link','')
 	vote = request.POST.get('vote','')
-	type = request.POST.get('type','')
+	type = request.POST.get('type','brand_new')
+	tvshow_type = request.POST.get('tvshow_type','movie')
 	director = request.POST.get('director','')
 	year = request.POST.get('year','')
 	username = request.POST.get('username','')
@@ -387,7 +388,7 @@ def savemovienew(request):
 				
 				print("Adding tvshow... Title: " + title)
 			
-				tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=u, type=type, director=director, year=year, poster=poster_name)
+				tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=u, type=type, tvshow_type=tvshow_type, director=director, year=year, poster=poster_name)
 				tvshow.save()
 				
 				if not later:
@@ -418,6 +419,7 @@ def savemovienew(request):
 			tvshow.link=link
 			tvshow.vote=vote
 			tvshow.type=type
+			tvshow.tvshow_type=tvshow_type
 			tvshow.director=director
 			tvshow.year=year
 			if poster_name:
