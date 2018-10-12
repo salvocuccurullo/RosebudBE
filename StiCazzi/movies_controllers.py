@@ -13,7 +13,7 @@ from StiCazzi.utils  import decimal_dumps, safe_file_name
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import *
 from django.forms.models import model_to_dict
-from django.db.models import Q
+from django.db.models import Q, F, Count
 
 
 def get_tvshows_new(request):
@@ -87,8 +87,10 @@ def get_tvshows_new(request):
 	has_more = True
 	if len(l) <= upper_bound:
 		has_more = False
+		
+	votes_user = TvShowVote.objects.annotate(name=F('user__username')).values("name").annotate(count=Count('user'))
 
-	response['payload'] = {'tvshows': out_list, 'query': query, 'has_more':has_more}
+	response['payload'] = {'tvshows': out_list, 'query': query, 'has_more':has_more, 'votes_user':votes_user}
 
 	return HttpResponse(json.dumps(response), content_type="application/json")
 
