@@ -81,7 +81,7 @@ def get_tvshows_new(request):
 		avgVote_str = "%.2f" % avgVote
 		d = {'title':tvs.title, 'media':tvs.media, 'vote':str_vote1, 'username':tvs.user.username, 'name':tvs.user.name, 'poster':tvs.poster}
 		d.update( {'datetime_sec':dtsec, 'u_v_dict':u_v_dict} )
-		d.update( {'type': tvs.type, 'director':tvs.director, 'year':tvs.year, 'id':tvs.id_tv_show, 'link':tvs.link, 'datetime':dt, 'avg_vote':avgVote_str} )
+		d.update( {'type': tvs.type, 'tvshow_type': tvs.tvshow_type, 'director':tvs.director, 'year':tvs.year, 'id':tvs.id_tv_show, 'link':tvs.link, 'datetime':dt, 'avg_vote':avgVote_str} )
 		out_list.append(d)
 
 	has_more = True
