@@ -89,8 +89,9 @@ def get_tvshows_new(request):
 		has_more = False
 		
 	votes_user = TvShowVote.objects.annotate(name=F('user__username')).values("name").annotate(count=Count('user'))
+	votes_user = [{"name":rec['name'], "count":rec['count']} for rec in list(votes_user)]
 
-	response['payload'] = {'tvshows': out_list, 'query': query, 'has_more':has_more, 'votes_user':votes_user}
+	response['payload'] = {'tvshows': out_list, 'query': query, 'has_more':has_more, 'votes_user': votes_user}
 
 	return HttpResponse(json.dumps(response), content_type="application/json")
 
