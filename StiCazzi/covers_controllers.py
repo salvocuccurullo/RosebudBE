@@ -8,7 +8,7 @@ import json
 
 import requests
 from requests.auth import HTTPBasicAuth
-from django.http import HttpResponse
+from django.http import JsonResponse
 
 from StiCazzi.models import Notification
 from StiCazzi.controllers import check_session
@@ -31,7 +31,7 @@ def get_random_cover(request):
     if not username or not kanazzi or not check_session(kanazzi, username, action='getRandomCover', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
-        return HttpResponse(json.dumps(response_data), content_type="application/json", status=401)
+        return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getRandomCover"
@@ -41,10 +41,10 @@ def get_random_cover(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return HttpResponse(json.dumps(response_body), content_type="application/json")
+        return JsonResponse(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return HttpResponse(json.dumps(response_body), content_type="application/json", status=status_code)
+    return JsonResponse(response_body, status=status_code)
 
 
 def get_remote_covers(request):
@@ -57,7 +57,7 @@ def get_remote_covers(request):
     if not username or not kanazzi or not check_session(kanazzi, username, action='getRemoteCovers', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
-        return HttpResponse(json.dumps(response_data), content_type="application/json", status=401)
+        return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getRemoteCovers"
@@ -67,10 +67,10 @@ def get_remote_covers(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return HttpResponse(json.dumps(response_body), content_type="application/json")
+        return JsonResponse(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return HttpResponse(json.dumps(response_body), content_type="application/json", status=status_code)
+    return JsonResponse(response_body, status=status_code)
 
 
 def get_covers(request):
@@ -83,7 +83,7 @@ def get_covers(request):
     if not username or not kanazzi or not check_session(kanazzi, username, action='getCovers', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
-        return HttpResponse(json.dumps(response_data), content_type="application/json", status=401)
+        return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getAllCovers"
@@ -93,10 +93,10 @@ def get_covers(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return HttpResponse(json.dumps(response_body), content_type="application/json")
+        return JsonResponse(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return HttpResponse(json.dumps(response_body), content_type="application/json", status=status_code)
+    return JsonResponse(response_body, status=status_code)
 
 
 def upload_cover(request, safe_fname, cover_type="poster"):
@@ -136,7 +136,7 @@ def get_covers_stats(request):
     if not username or not kanazzi or not check_session(kanazzi, username, action='getCovers', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
-        return HttpResponse(json.dumps(response_data), content_type="application/json", status=401)
+        return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getStats"
@@ -146,10 +146,10 @@ def get_covers_stats(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return HttpResponse(json.dumps(response_body), content_type="application/json")
+        return JsonResponse(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return HttpResponse(json.dumps(response_body), content_type="application/json", status=status_code)
+    return JsonResponse(response_body, status=status_code)
 
 
 def save_cover(request):
@@ -169,7 +169,7 @@ def save_cover(request):
     if not username or not kanazzi or not check_session(kanazzi, username, action='uploadcover', store=True):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
-        return HttpResponse(json.dumps(response_data), content_type="application/json", status=401)
+        return JsonResponse(response_data, status=401)
 
     print("Cover Upload: %s - %s - %s" % (title.encode('utf-8'), author.encode('utf-8'), str(year)))
 
@@ -186,7 +186,7 @@ def save_cover(request):
     upload_res = upload_file_res.get('result', 'failure')
     if upload_res == 'failure' and cover_name != "" and id_cover != "":
         response_data = upload_file_res
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
+        return JsonResponse(response_data)
 
     headers = {'Content-Type': 'application/json'}
     payload = {"name": title, "author": author, "year": year, "username": username}
@@ -214,9 +214,9 @@ def save_cover(request):
         notif.save()
     else:
         response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-        return HttpResponse(json.dumps(response_body), content_type="application/json", status=status_code)
+        return JsonResponse(response_body, status=status_code)
 
-    return HttpResponse(json.dumps(response_body), content_type="application/json")
+    return JsonResponse(response_body)
 
 
 def handle_uploaded_file(up_file, safe_fname, cover_type="poster"):
