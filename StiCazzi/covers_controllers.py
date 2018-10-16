@@ -41,10 +41,10 @@ def get_random_cover(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body)
+        return JsonResponse(response_body, safe=False)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code)
+    return JsonResponse(response_body, status=status_code, safe=False)
 
 
 def get_remote_covers(request):
@@ -67,10 +67,10 @@ def get_remote_covers(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body)
+        return JsonResponse(response_body, safe=False)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code)
+    return JsonResponse(response_body, status=status_code, safe=False)
 
 
 def get_covers(request):
@@ -93,10 +93,10 @@ def get_covers(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body)
+        return JsonResponse(response_body, safe=False)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code)
+    return JsonResponse(response_body, status=status_code, safe=False)
 
 
 def upload_cover(request, safe_fname, cover_type="poster"):
@@ -146,10 +146,10 @@ def get_covers_stats(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body)
+        return JsonResponse(response_body, safe=False)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code)
+    return JsonResponse(response_body, status=status_code, safe=False)
 
 
 def save_cover(request):
@@ -214,9 +214,9 @@ def save_cover(request):
         notif.save()
     else:
         response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-        return JsonResponse(response_body, status=status_code)
+        return JsonResponse(response_body, status=status_code, safe=False)
 
-    return JsonResponse(response_body)
+    return JsonResponse(response_body, safe=False)
 
 
 def handle_uploaded_file(up_file, safe_fname, cover_type="poster"):
