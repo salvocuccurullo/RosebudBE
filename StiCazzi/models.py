@@ -79,6 +79,7 @@ class TvShow(models.Model):
     type = models.CharField(max_length=150, default='brand_new')
     tvshow_type = models.CharField(max_length=150, default='movie')
     director = models.CharField(max_length=150, default='')
+    serie_season = models.PositiveSmallIntegerField(default=1)
     year = models.IntegerField(default=0)
     link = models.CharField(max_length=400, default='')
     vote = models.DecimalField(max_digits=4, decimal_places=2, default=5)

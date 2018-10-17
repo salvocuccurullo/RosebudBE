@@ -82,6 +82,7 @@ def get_tvshows_new(request):
         tvshow_dict = {'title': tvs.title, 'media': tvs.media, 'vote': str_vote1, 'username': tvs.user.username, 'name': tvs.user.name, 'poster': tvs.poster}
         tvshow_dict.update({'datetime_sec': dtsec, 'u_v_dict': u_v_dict, 'type': tvs.type, 'tvshow_type': tvs.tvshow_type, 'director': tvs.director})
         tvshow_dict.update({'year': tvs.year, 'id': tvs.id_tv_show, 'link': tvs.link, 'datetime': movie_created, 'avg_vote': avg_vote_str})
+        tvshow_dict.update({'serie_season': tvs.serie_season})
         out_list.append(tvshow_dict)
 
     has_more = True
@@ -278,6 +279,7 @@ def savemovienew(request):
     vote = request.POST.get('vote', '')
     type = request.POST.get('type', 'brand_new')
     tvshow_type = request.POST.get('tvshow_type', 'movie')
+    serie_season = request.POST.get('serie_season', 1)
     director = request.POST.get('director', '')
     year = request.POST.get('year', '')
     username = request.POST.get('username', '')
@@ -383,7 +385,10 @@ def savemovienew(request):
 
             print("Adding tvshow... Title: " + title)
 
-            tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=current_user, type=type, tvshow_type=tvshow_type, director=director, year=year, poster=poster_name)
+            tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
+                            type=type, tvshow_type=tvshow_type,
+                            director=director, year=year,
+                            poster=poster_name, serie_season=serie_season)
             tvshow.save()
 
             if not later:
@@ -414,6 +419,7 @@ def savemovienew(request):
             tvshow.link = link
             tvshow.vote = vote
             tvshow.type = type
+            tvshow.serie_season = serie_season
             tvshow.tvshow_type = tvshow_type
             tvshow.director = director
             tvshow.year = year
@@ -478,6 +484,7 @@ def get_tvshows(request):
         movie_dict = {'title': tvs.title, 'media': tvs.media, 'vote': str_vote1, 'username': tvs.user.username, 'name': tvs.user.name, 'poster': tvs.poster}
         movie_dict.update({'datetime_sec': dtsec, 'u_v_dict': u_v_dict, 'type': tvs.type, 'director': tvs.director, 'year': tvs.year})
         movie_dict.update({'id': tvs.id_tv_show, 'link': tvs.link, 'datetime': movie_created, 'avg_vote': avg_vote_str})
+        tvshow_dict.update({'serie_season': tvs.serie_season})
         out_list.append(movie_dict)
 
     vote_user_dict = {}
