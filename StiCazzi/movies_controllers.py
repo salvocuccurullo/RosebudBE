@@ -487,7 +487,7 @@ def get_tvshows(request):
         movie_dict = {'title': tvs.title, 'media': tvs.media, 'vote': str_vote1, 'username': tvs.user.username, 'name': tvs.user.name, 'poster': tvs.poster}
         movie_dict.update({'datetime_sec': dtsec, 'u_v_dict': u_v_dict, 'type': tvs.type, 'director': tvs.director, 'year': tvs.year})
         movie_dict.update({'id': tvs.id_tv_show, 'link': tvs.link, 'datetime': movie_created, 'avg_vote': avg_vote_str})
-        tvshow_dict.update({'serie_season': tvs.serie_season})
+        movie_dict.update({'serie_season': tvs.serie_season})
         out_list.append(movie_dict)
 
     vote_user_dict = {}
