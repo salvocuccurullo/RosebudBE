@@ -334,7 +334,7 @@ def savemovienew(request):
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
 
-    if not title or not media or not type:
+    if not title or not media or not tvshow_type:
         response_data['result'] = 'failure'
         response_data['message'] = 'Missing required data: check title, media and type'
         return JsonResponse(response_data)
