@@ -351,7 +351,9 @@ def savemovienew(request):
         if not later:
             create_update_vote(current_user, current_tvshow, data_vote)
 
-        # New feature: to allow not movie owner to upload the poster and set a link
+        # New feature: to allow not movie owner to upload the poster, set a link and set the season
+        
+        tvshow.serie_season = serie_season
 
         if uploaded_file:
             upload_file_res = upload_cover(request, poster_name)
