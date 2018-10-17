@@ -49,16 +49,16 @@ def get_tvshows_new(request):
     out_list = []
     movie_list = TvShow.objects.filter(
         Q(title__icontains=query) | Q(media__icontains=query)
-    ).order_by('-datetime')
+    ).order_by('-created')
 
     lower_bound = limit * (current_page - 1)
     upper_bound = current_page * limit
     bounded = movie_list[lower_bound: upper_bound]
 
     for tvs in movie_list[lower_bound: upper_bound]:
-        # dt = tvs.datetime.strftime("%A, %d. %B %Y %I:%M%p")
-        movie_created = tvs.datetime.strftime("%d %B %Y ")
-        dtsec = time.mktime(tvs.datetime.timetuple())
+        # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
+        movie_created = tvs.created.strftime("%d %B %Y ")
+        dtsec = time.mktime(tvs.created.timetuple())
         tvshow_votes = TvShowVote.objects.filter(tvshow=tvs)
         avg_vote = 0
         valid_vote_count = 0
@@ -458,12 +458,12 @@ def get_tvshows(request):
 
     response_data['result'] = 'success'
     out_list = []
-    movies_list = TvShow.objects.filter().order_by('-datetime')
+    movies_list = TvShow.objects.filter().order_by('-created')
 
     for tvs in movies_list:
-        # dt = tvs.datetime.strftime("%A, %d. %B %Y %I:%M%p")
-        movie_created = tvs.datetime.strftime("%d %B %Y ")
-        dtsec = time.mktime(tvs.datetime.timetuple())
+        # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
+        movie_created = tvs.created.strftime("%d %B %Y ")
+        dtsec = time.mktime(tvs.created.timetuple())
         tvsv = TvShowVote.objects.filter(tvshow=tvs)
         avg_vote = 0
         valid_vote_count = 0
