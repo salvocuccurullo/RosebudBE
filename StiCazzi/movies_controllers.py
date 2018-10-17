@@ -354,6 +354,7 @@ def savemovienew(request):
         # New feature: to allow not movie owner to upload the poster, set a link and set the season
         
         tvshow.serie_season = serie_season
+        tvshow.save()
 
         if uploaded_file:
             upload_file_res = upload_cover(request, poster_name)
