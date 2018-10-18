@@ -32,6 +32,7 @@ def get_tvshows_new(request):
         query = i_data.get('query', '')
         limit = i_data.get('limit', 15)
         current_page = i_data.get('current_page', 1)
+        lazy_load = i_data.get('lazy_load', True)
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
