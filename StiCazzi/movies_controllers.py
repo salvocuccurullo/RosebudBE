@@ -99,6 +99,8 @@ def get_tvshows_new(request):
     print("List size: " + str(len(bounded)))
     print("Has more: " + str(has_more))
     print("Query: " + query)
+    print("Lower bound: " + str(lower_bound))
+    print("Upper bound: " + str(upper_bound))
 
     votes_user = TvShowVote.objects.annotate(name=F('user__username')).values("name").annotate(count=Count('user'))
     votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
