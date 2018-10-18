@@ -537,4 +537,4 @@ def get_catalogue(request):
     l = Catalogue.objects.all()
     response['payload'] = [ model_to_dict(rec) for rec in l]
     
-    return HttpResponse(json.dumps(response), content_type="application/json", status=200)
+    return return JsonResponse(response)
