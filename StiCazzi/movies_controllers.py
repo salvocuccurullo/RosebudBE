@@ -87,7 +87,7 @@ def get_tvshows_new(request):
         out_list.append(tvshow_dict)
 
     has_more = True
-    if len(bounded) <= upper_bound:
+    if len(movie_list) <= upper_bound:
         has_more = False
 
     print("List size: " + str(bounded))
