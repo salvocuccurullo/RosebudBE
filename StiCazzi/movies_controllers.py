@@ -55,7 +55,12 @@ def get_tvshows_new(request):
 
     lower_bound = limit * (current_page - 1)
     upper_bound = current_page * limit
-    bounded = movie_list[lower_bound: upper_bound]
+
+    print("Lazy loading: " + str(lazy_mode))
+    if lazy_load:
+        bounded = movie_list[lower_bound: upper_bound]
+    else:
+        bounded = movie_list
 
     for tvs in bounded:
         # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
