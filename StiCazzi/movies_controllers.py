@@ -531,6 +531,7 @@ def get_catalogue(request):
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
         firebase_id_token = i_data.get('firebase_id_token', '')
+        cat_type = i_data.get('cat_type','')
         kanazzi = i_data.get('kanazzi', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
@@ -542,7 +543,11 @@ def get_catalogue(request):
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
-    l = Catalogue.objects.all()
+    if not cat_type:
+        l = Catalogue.objects.all()
+    else:
+        l = Catalogue.objects.filter(cat_type=cat_type)
+
     response['payload'] = [ model_to_dict(rec) for rec in l]
     
     return JsonResponse(response)
