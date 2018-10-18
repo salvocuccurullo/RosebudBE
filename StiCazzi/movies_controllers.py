@@ -56,7 +56,7 @@ def get_tvshows_new(request):
     lower_bound = limit * (current_page - 1)
     upper_bound = current_page * limit
 
-    print("Lazy loading: " + str(lazy_mode))
+    print("Lazy loading: " + str(lazy_load))
     if lazy_load:
         bounded = movie_list[lower_bound: upper_bound]
     else:
