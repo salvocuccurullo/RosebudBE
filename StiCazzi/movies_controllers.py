@@ -90,7 +90,7 @@ def get_tvshows_new(request):
     if len(movie_list) <= upper_bound:
         has_more = False
 
-    print("List size: " + str(bounded))
+    print("List size: " + str(len(bounded)))
     print("Has more: " + str(has_more))
     print("Query: " + query)
 
