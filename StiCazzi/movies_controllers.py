@@ -95,6 +95,8 @@ def get_tvshows_new(request):
     has_more = True
     if len(movie_list) <= upper_bound:
         has_more = False
+    if lazy_load:
+        has_more = False
 
     print("List size: " + str(len(bounded)))
     print("Has more: " + str(has_more))
