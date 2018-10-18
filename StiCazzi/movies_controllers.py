@@ -526,13 +526,21 @@ def get_movies_datatable(request):
 def get_catalogue(request):
 
     response = {'result':'success'}
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi','').strip()
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        firebase_id_token = i_data.get('firebase_id_token', '')
+        kanazzi = i_data.get('kanazzi', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
 
     if not username or not kanazzi or not check_session(kanazzi, username, action='get_catalogue', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
-        return HttpResponse(json.dumps(response), content_type="application/json", status=401)
+        return JsonResponse(response, status=401)
 
     l = Catalogue.objects.all()
     response['payload'] = [ model_to_dict(rec) for rec in l]
