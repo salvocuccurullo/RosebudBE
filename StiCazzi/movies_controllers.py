@@ -56,7 +56,7 @@ def get_tvshows_new(request):
     upper_bound = current_page * limit
     bounded = movie_list[lower_bound: upper_bound]
 
-    for tvs in movie_list[lower_bound: upper_bound]:
+    for tvs in bounded:
         # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
         movie_created = tvs.created.strftime("%d %B %Y ")
         dtsec = time.mktime(tvs.created.timetuple())
@@ -87,8 +87,12 @@ def get_tvshows_new(request):
         out_list.append(tvshow_dict)
 
     has_more = True
-    if len(movie_list) <= upper_bound:
+    if len(bounded) <= upper_bound:
         has_more = False
+
+    print("List size: " + str(bounded))
+    print("Has more: " + str(has_more))
+    print("Query: " + query)
 
     votes_user = TvShowVote.objects.annotate(name=F('user__username')).values("name").annotate(count=Count('user'))
     votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
