@@ -9,6 +9,7 @@ import time
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Q, F, Count
+from django.forms.models import model_to_dict
 
 from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue
 from StiCazzi.controllers import check_session
@@ -520,3 +521,20 @@ def get_movies_datatable(request):
     response_data['data'] = out
 
     return JsonResponse(response_data)
+
+
+def get_catalogue(request):
+
+    response = {'result':'success'}
+    username = request.POST.get('username', '')
+    kanazzi = request.POST.get('kanazzi','').strip()
+
+    if not username or not kanazzi or not check_session(kanazzi, username, action='get_catalogue', store=True):
+        response['result'] = 'failure'
+        response['message'] = 'Invalid Session'
+        return HttpResponse(json.dumps(response), content_type="application/json", status=401)
+
+    l = Catalogue.objects.all()
+    response['payload'] = [ model_to_dict(rec) for rec in l]
+    
+    return HttpResponse(json.dumps(response), content_type="application/json", status=200)

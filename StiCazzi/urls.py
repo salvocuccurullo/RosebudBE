@@ -53,7 +53,7 @@ urlpatterns = [
 
     url(r'^geolocation$', controllers.geolocation),
     url(r'^geolocation2$', controllers.geolocation2),
-    url(r'^getcatalogue$', controllers.get_catalogue),
+    url(r'^getcatalogue$', movies_controllers.get_catalogue),
 
     url(r'^login$', controllers.login),
     url(r'^setFBToken$', controllers.setFBToken),

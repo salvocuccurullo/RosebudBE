@@ -20,7 +20,6 @@ from . import utils
 
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.hashers import *
-from django.forms.models import model_to_dict
 from django.db.models import Q
 
 def get_demo_json(request):
@@ -377,23 +376,6 @@ def login(request):
 		return HttpResponse(json.dumps(response_data), content_type="application/json", status=401)
 		
 	return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-
-def get_catalogue(request):
-
-	response = {'result':'success'}
-	username = request.POST.get('username', '')
-	kanazzi = request.POST.get('kanazzi','').strip()
-
-	if not username or not kanazzi or not check_session(kanazzi, username, action='geolocation', store=True):
-		response['result'] = 'failure'
-		response['message'] = 'Invalid Session'
-		return HttpResponse(json.dumps(response), content_type="application/json", status=401)
-
-	l = Catalogue.objects.all()
-	response['payload'] = [ model_to_dict(rec) for rec in l]
-	
-	return HttpResponse(json.dumps(response), content_type="application/json", status=200)
 
 
 def geolocation(request):
