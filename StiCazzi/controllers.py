@@ -355,7 +355,8 @@ def login(request):
 		u = User.objects.filter(username=username)
 		
 		if len(u) > 0:
-			pwd_ok = check_password(str(plain_text).strip(), u[0].password)
+			plain_text = plain_text.decode('utf-8').strip()
+			pwd_ok = check_password(plain_text, u[0].password)
 			out = "User found!"
 			if pwd_ok:
 				logged = "yes"
@@ -363,7 +364,7 @@ def login(request):
 			out = "User not found!"
 			logged = "no"
 		
-		print("login result for user " + username.encode('utf-8') + " : " + out)
+		print("login result for user " + username + " : " + out)
 		
 		response_data['payload'] = {"message":out, 'username':username, 'logged':logged}
 	except Exception as eee:
