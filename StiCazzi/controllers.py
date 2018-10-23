@@ -355,7 +355,7 @@ def login(request):
 		u = User.objects.filter(username=username)
 		
 		if len(u) > 0:
-			pwd_ok = check_password(plain_text.strip(), u[0].password)
+			pwd_ok = check_password(str(plain_text).strip(), u[0].password)
 			out = "User found!"
 			if pwd_ok:
 				logged = "yes"
