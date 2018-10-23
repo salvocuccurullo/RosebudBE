@@ -104,7 +104,7 @@ def get_tvshows_new(request):
     print("Lower bound: " + str(lower_bound))
     print("Upper bound: " + str(upper_bound))
 
-    votes_user = TvShowVote.objects.annotate(name=F('user__username')).values("name").annotate(count=Count('user'))
+    votes_user = TvShowVote.objects.annotate(name=F('user__username')).values("name").annotate(count=Count('user')).order_by('-count')
     votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
 
     response['payload'] = {'tvshows': out_list, 'query': query, 'has_more': has_more, 'votes_user': votes_user}
