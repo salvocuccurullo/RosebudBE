@@ -398,7 +398,7 @@ def geolocation2(request):
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    print("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
+    # print("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
 
     if not username or \
        (not check_fb_token_local(firebase_id_token) and \
