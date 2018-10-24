@@ -38,7 +38,7 @@ def get_tvshows_new(request):
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    if check_session(kanazzi, username, action='gettvshows2', store=True):
+    if not check_session(kanazzi, username, action='gettvshows2', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
