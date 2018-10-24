@@ -33,14 +33,9 @@ urlpatterns = [
     url(r'^get_all_pesate/$', controllers.get_all_pesate),
     url(r'^getByMonth/$', controllers.get_sum_by_month),
 
-    # url(r'^getDogma$', controllers.get_dogma),
-    # url(r'^getPeople/$', controllers.get_people),
-    url(r'^saveminchiata$', controllers.saveminchiata),
-
     url(r'^getTvShows$', movies_controllers.get_tvshows),
     url(r'^getTvShows2$', movies_controllers.get_tvshows_new),
     url(r'^deletemovie$', movies_controllers.deletemovie),
-    # url(r'^savemovie$', movies_controllers.savemovie),
     url(r'^savemovienew$', movies_controllers.savemovienew),
     url(r'^moviesdt/$', movies_controllers.get_movies_datatable, name='movie'),
     url(r'^moviesct/$', movies_controllers.get_movies_ct, name='movie'),
@@ -56,8 +51,8 @@ urlpatterns = [
     url(r'^getcatalogue$', movies_controllers.get_catalogue),
 
     url(r'^login$', controllers.login),
-    url(r'^setFBToken$', controllers.setFBToken),
-    url(r'^checkFBToken$', controllers.checkFBToken),
+    url(r'^setFBToken$', controllers.set_fb_token),
+    url(r'^checkFBToken$', controllers.check_fb_token),
 
     url(r'^testSession$', controllers.test_session),
 ]
