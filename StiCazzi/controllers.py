@@ -217,6 +217,9 @@ def check_session(session_id, username, action='', store=False):
     Controller:
     """
 
+    if not username:
+        return False
+
     print("Classic check session starting")
     session_id = session_id.strip()
     sessions = Session.objects.filter(session_string=session_id)
@@ -384,8 +387,6 @@ def geolocation2(request):
 
     try:
         i_data = json.loads(request.body)
-        print("Valid JSON data received.")
-        print(i_data)
         username = i_data.get('username', '')
         action = i_data.get('action', '')
         longitude = i_data.get('longitude', '')
@@ -400,9 +401,7 @@ def geolocation2(request):
 
     # print("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
 
-    if not username or \
-       (not check_fb_token_local(firebase_id_token) and \
-        not check_session(kanazzi, username, action='geolocation2', store=True)):
+    if not username or not check_session(kanazzi, username, action='geolocation2', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
