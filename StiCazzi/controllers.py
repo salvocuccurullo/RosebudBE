@@ -575,9 +575,7 @@ def check_fb_token_local(id_token):
         response = True
 
     except Exception as ee:
-
-        if SESSION_DBG and 'Token expired' in ee:
-            print(str(ee))
+        print(str(ee))
 
     return response
 
