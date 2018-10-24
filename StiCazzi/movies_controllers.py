@@ -289,9 +289,9 @@ def savemovienew(request):
     year = request.POST.get('year', '')
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '')
-    now_watch = request.POST.get('nw', False)
-    giveup = request.POST.get('giveup', False)
-    later = request.POST.get('later', False)
+    now_watch_sw = request.POST.get('nw', False)
+    giveup_sw = request.POST.get('giveup', False)
+    later_sw = request.POST.get('later', False)
     season = request.POST.get('season', 1)
     episode = request.POST.get('episode', 1)
     comment = request.POST.get('comment', '')
@@ -310,15 +310,15 @@ def savemovienew(request):
         poster_name = safe_file_name(temp_f_name, uploaded_file.content_type)
 
     now_watch = False
-    if now_watch == "on":
+    if now_watch_sw == "on":
         now_watch = True
 
     giveup = False
-    if giveup == "on":
+    if giveup_sw == "on":
         giveup = True
 
     later = False
-    if later == "on":
+    if later_sw == "on":
         later = True
 
     if not check_session(kanazzi, username, action='savemovienew', store=True):
