@@ -267,8 +267,6 @@ def login(request):
     try:
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
-        print(list(request.POST.keys()))
-        print(username)
 
         if username == '':
             response_data['result'] = 'failure'
@@ -415,16 +413,13 @@ def geolocation2(request):
 
     users = User.objects.filter(username=username)
     loc = Location.objects.filter(user=users[0])
+    status_code = 200
 
     if action == 'DELETE':
-        #DELETE
-        print("DELETE")
+        response['message'] = 'GPS coordinates not available for user %s, deletion not needed.' % username
         if loc:
             loc[0].delete()
             response['message'] = 'GPS coordinates have been delete from the system for user %s' % username
-        else:
-            response['message'] = 'GPS coordinates not available for user %s, deletion not needed.' % username
-        return JsonResponse(response, status=200)
 
     elif action == 'GET':
         locations = Location.objects.all()
@@ -439,9 +434,8 @@ def geolocation2(request):
                 })
         response['body'] = out
         response['message'] = 'Retrieved GPS coordinates for %s user(s)' % len(locations)
-        return JsonResponse(response, status=200)
 
-    elif action == 'SET':
+    else:
         if latitude and longitude:            #SET COORD
             if loc:
                 loc[0].latitude = latitude
@@ -451,13 +445,10 @@ def geolocation2(request):
                 location = Location(user=users[0], latitude=latitude, longitude=longitude)
                 location.save()
             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
-            return JsonResponse(response, status=200)
         else:
-            return JsonResponse(response, status=400)
-    else:
-        response['result'] = 'failure'
-        return JsonResponse(response, status=405)
+            status_code = 400
 
+    return JsonResponse(response, status=status_code)
 
 def set_fb_token(request):
     """
