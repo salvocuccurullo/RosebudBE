@@ -24,8 +24,6 @@ def get_tvshows_new(request):
 
     try:
         i_data = json.loads(request.body)
-        print("Valid JSON data received.")
-        print(i_data)
         username = i_data.get('username', '')
         firebase_id_token = i_data.get('firebase_id_token', '')
         kanazzi = i_data.get('kanazzi', '')
@@ -134,7 +132,8 @@ def get_tvshows_new(request):
     response['payload'] = {'tvshows': out_list,
                            'query': query,
                            'has_more': has_more,
-                           'votes_user': votes_user
+                           'votes_user': votes_user,
+                           'total_show': len(movie_list)
                           }
 
     return JsonResponse(response)
