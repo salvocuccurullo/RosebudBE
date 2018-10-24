@@ -300,39 +300,26 @@ def savemovienew(request):
     upload_file_res = {}
 
     print(id_movie)
-    '''
-    print "================"
-    print id
-    print title
-    print media
-    print type
-    print "================"
-    '''
+    # print (title)
+    # print (media)
+    # print (type)
 
     if uploaded_file:
         print("A file has been uploaded... " + uploaded_file.name)
         temp_f_name = title + '_' + uploaded_file.name
         poster_name = safe_file_name(temp_f_name, uploaded_file.content_type)
 
+    now_watch = False
     if now_watch == "on":
         now_watch = True
-    else:
-        now_watch = False
 
+    giveup = False
     if giveup == "on":
         giveup = True
-    else:
-        giveup = False
 
+    later = False
     if later == "on":
         later = True
-    else:
-        later = False
-
-    if not season:
-        season = 1
-    if not episode:
-        episode = 1
 
     if not check_session(kanazzi, username, action='savemovienew', store=True):
         response_data['result'] = 'failure'
