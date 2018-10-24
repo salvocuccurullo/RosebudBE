@@ -133,7 +133,7 @@ def get_tvshows_new(request):
                            'query': query,
                            'has_more': has_more,
                            'votes_user': votes_user,
-                           'total_show': len(movie_list)
+                           'total_show': movie_list.count()
                           }
 
     return JsonResponse(response)
