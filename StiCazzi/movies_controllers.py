@@ -38,7 +38,7 @@ def get_tvshows_new(request):
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    if not username or not kanazzi or not check_session(kanazzi, username, action='gettvshows2', store=True):
+    if check_session(kanazzi, username, action='gettvshows2', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
@@ -77,8 +77,15 @@ def get_tvshows_new(request):
                 valid_vote_count += 1
             us_dt = tvshow_vote.created.strftime("%A, %d. %B %Y %I:%M%p")
             str_vote = str(decimal.Decimal(tvshow_vote.vote))
-            u_v_dict[tvshow_vote.user.username] = {'us_username': tvshow_vote.user.username, 'us_name': tvshow_vote.user.name, 'us_vote': str_vote, 'us_date': us_dt}
-            u_v_dict[tvshow_vote.user.username].update({'now_watching': tvshow_vote.now_watching, 'episode': tvshow_vote.episode, 'season': tvshow_vote.season, 'comment': tvshow_vote.comment})
+            u_v_dict[tvshow_vote.user.username] = {'us_username': tvshow_vote.user.username,
+                                                   'us_name': tvshow_vote.user.name,
+                                                   'us_vote': str_vote,
+                                                   'us_date': us_dt,
+                                                   'now_watching': tvshow_vote.now_watching,
+                                                   'episode': tvshow_vote.episode,
+                                                   'season': tvshow_vote.season,
+                                                   'comment': tvshow_vote.comment
+                                                  }
 
         if tvshow_votes and avg_vote:
             avg_vote = float(avg_vote) / float(valid_vote_count)
@@ -86,10 +93,24 @@ def get_tvshows_new(request):
             avg_vote = 0
         str_vote1 = str(decimal.Decimal(tvs.vote))
         avg_vote_str = "%.2f" % avg_vote
-        tvshow_dict = {'title': tvs.title, 'media': tvs.media, 'vote': str_vote1, 'username': tvs.user.username, 'name': tvs.user.name, 'poster': tvs.poster}
-        tvshow_dict.update({'datetime_sec': dtsec, 'u_v_dict': u_v_dict, 'type': tvs.type, 'tvshow_type': tvs.tvshow_type, 'director': tvs.director})
-        tvshow_dict.update({'year': tvs.year, 'id': tvs.id_tv_show, 'link': tvs.link, 'datetime': movie_created, 'avg_vote': avg_vote_str})
-        tvshow_dict.update({'serie_season': tvs.serie_season})
+        tvshow_dict = {'title': tvs.title,
+                       'media': tvs.media,
+                       'vote': str_vote1,
+                       'username': tvs.user.username,
+                       'name': tvs.user.name,
+                       'poster': tvs.poster,
+                       'datetime_sec': dtsec,
+                       'u_v_dict': u_v_dict,
+                       'type': tvs.type,
+                       'tvshow_type': tvs.tvshow_type,
+                       'director': tvs.director,
+                       'year': tvs.year,
+                       'id': tvs.id_tv_show,
+                       'link': tvs.link,
+                       'datetime': movie_created,
+                       'avg_vote': avg_vote_str,
+                       'serie_season': tvs.serie_season
+                      }
         out_list.append(tvshow_dict)
 
     has_more = True
@@ -104,10 +125,17 @@ def get_tvshows_new(request):
     print("Lower bound: " + str(lower_bound))
     print("Upper bound: " + str(upper_bound))
 
-    votes_user = TvShowVote.objects.annotate(name=F('user__username')).values("name").annotate(count=Count('user')).order_by('-count')
+    votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
+                 .values("name")\
+                 .annotate(count=Count('user'))\
+                 .order_by('-count')
     votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
 
-    response['payload'] = {'tvshows': out_list, 'query': query, 'has_more': has_more, 'votes_user': votes_user}
+    response['payload'] = {'tvshows': out_list,
+                           'query': query,
+                           'has_more': has_more,
+                           'votes_user': votes_user
+                          }
 
     return JsonResponse(response)
 
@@ -118,7 +146,14 @@ def get_movies_ct(request):
     movie_list = Movie.objects.all().exclude(cinema="")
     out = []
     for rec in movie_list:
-        movie_dict = {'id': rec.id_movie, 'title': rec.title, 'year': rec.year, 'cinema': rec.cinema, 'cast': rec.cast, 'director': rec.director, 'filmtv': rec.filmtv}
+        movie_dict = {'id': rec.id_movie,
+                      'title': rec.title,
+                      'year': rec.year,
+                      'cinema': rec.cinema,
+                      'cast': rec.cast,
+                      'director': rec.director,
+                      'filmtv': rec.filmtv
+                     }
         out.append(movie_dict)
 
     response = {}
@@ -138,13 +173,14 @@ def deletemovie(request):
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '')
 
-    if not kanazzi or not username or not check_session(kanazzi, username, action='deletemovie', store=True):
+    if not check_session(kanazzi, username, action='deletemovie', store=True):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
 
     current_user = User.objects.filter(username=username)
-    tvrs = TvShowVote.objects.filter(tvshow=movie_id).exclude(user=current_user[0])  # Check existing votes
+    # Check existing votes
+    tvrs = TvShowVote.objects.filter(tvshow=movie_id).exclude(user=current_user[0])
 
     if tvrs:
         vote_check = tvrs[0]
@@ -167,18 +203,27 @@ def create_update_vote(current_user, tvshow, vote_dict):
     """ Create Update vote """
     tvsv = TvShowVote.objects.filter(user=current_user, tvshow=tvshow[0])
     if not tvsv:
-        tvsv = TvShowVote(vote=vote_dict['vote'], user=current_user, tvshow=tvshow[0], now_watching=vote_dict["nw"], season=vote_dict["season"], episode=vote_dict["episode"], comment=vote_dict['comment'])
+        tvsv = TvShowVote(vote=vote_dict['vote'], user=current_user, tvshow=tvshow[0], \
+                          now_watching=vote_dict["nw"], season=vote_dict["season"], \
+                          episode=vote_dict["episode"], comment=vote_dict['comment'])
         tvsv.save()
 
         if not vote_dict["nw"]:
-            notification = Notification(type="new_vote", title="%s has just voted for a movie..." % current_user.username, message="Title: %s - Vote: %s " % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
+            notification = Notification(
+                type="new_vote", \
+                title="%s has just voted for a movie..." % current_user.username, \
+                message="Title: %s - Vote: %s " \
+                % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
             notification.save()
     else:
         current_vote = tvsv[0]
         if vote_dict['giveup']:
             current_vote.delete()
 
-            notification = Notification(type="give_up", title="%s has just gave up to follow a movie" % current_user.username, message="%s" % tvshow[0].title, username=current_user.username)
+            notification = Notification(
+                type="give_up", \
+                title="%s has just gave up to follow a movie" % current_user.username, \
+                message="%s" % tvshow[0].title, username=current_user.username)
             notification.save()
 
         else:
@@ -200,84 +245,29 @@ def create_update_vote(current_user, tvshow, vote_dict):
             current_vote.save()
 
             if finished:
-                notification = Notification(type="new_vote", title="%s has just voted for a movie..." % current_user.username, message="Title: %s - Vote: %s " % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
+                notification = Notification(
+                    type="new_vote", \
+                    title="%s has just voted for a movie..." % current_user.username, \
+                    message="Title: %s - Vote: %s " \
+                    % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
                 notification.save()
 
             if first_comment:
-                notification = Notification(type="new_comment", title="%s has just set a comment for a movie..." % current_user.username, message="Title: %s - %s... " % (tvshow[0].title, vote_dict["comment"][:30]), username=current_user.username)
+                notification = Notification(
+                    type="new_comment", \
+                    title="%s has just set a comment for a movie..." % current_user.username, \
+                    message="Title: %s - %s... " \
+                    % (tvshow[0].title, vote_dict["comment"][:30]), username=current_user.username)
                 notification.save()
 
     # print(vote_dict)
     if vote_dict["nw"] and str(vote_dict["season"]) == "1" and str(vote_dict["episode"]) == "1":
-        notification = Notification(type="new_nw", title="%s has just started to watch a movie..." % current_user.username, message="Title: %s - S%s E%s " % (tvshow[0].title, vote_dict["season"], vote_dict["episode"]), username=current_user.username)
+        notification = Notification(
+            type="new_nw", \
+            title="%s has just started to watch a movie..." % current_user.username, \
+            message="Title: %s - S%s E%s " \
+            % (tvshow[0].title, vote_dict["season"], vote_dict["episode"]), username=current_user.username)
         notification.save()
-
-
-"""
-@ensure_csrf_cookie
-def savemovie(request):
-    ''' Save Movie '''
-
-    response_data = {}
-    response_data['result'] = 'success'
-
-    movie_id = request.POST.get('id', '')
-    title = request.POST.get('title', '')
-    media = request.POST.get('media', '')
-    link = request.POST.get('link', '')
-    vote = request.POST.get('vote', '')
-    type = request.POST.get('type', '')
-    director = request.POST.get('director', '')
-    year = request.POST.get('year', '')
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '')
-    now_watch = request.POST.get('nw', False)
-
-    if now_watch == "true":
-        now_watch = True
-    else:
-        now_watch = False
-
-    if not check_session(kanazzi, username, action='savemovie', store=True):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response, status=401)
-
-    t = TvShow.objects.filter(id_tv_show=movie_id)
-    u = User.objects.filter(username=username)[0]
-
-    if t and username != t[0].user.username:
-        print("User not owner of the movie is voting...")
-        data_vote = {'nw': now_watch, 'episode': 1, 'season':1, 'vote':vote, 'giveup':False}
-        create_update_vote(u, t, data_vote)
-
-    else:
-        if not t:
-            print("Adding tvshow... Title: " + title)
-            tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=u, type=type, director=director, year=year)
-            tvshow.save()
-
-            tvsv = TvShowVote(vote=vote, user=u, tvshow=tvshow, now_watching=now_watch)
-            tvsv.save()
-
-            response_data['message'] = 'TvShow/Movie %s saved!' % title
-        else:
-            print("Updating tvshow... Title: " + title)
-            tvshow = t[0]
-            tvshow.title = title
-            tvshow.media = media
-            tvshow.link = link
-            tvshow.vote = vote
-            tvshow.type = type
-            tvshow.director = director
-            tvshow.year = year
-            tvshow.save()
-
-            data_vote = {'nw': now_watch, 'episode': episode, 'season':season, 'vote':vote, 'giveup':False}
-            create_update_vote(u, t, data_vote)
-
-    return JsonResponse(response)
-"""
 
 
 @ensure_csrf_cookie
@@ -357,9 +347,16 @@ def savemovienew(request):
     current_tvshow = TvShow.objects.filter(id_tv_show=id_movie)
     current_user = User.objects.filter(username=username)[0]
 
-    if current_tvshow and username != current_tvshow[0].user.username:     # Movie exists and the current user is not the owner
+    # Movie exists and the current user is not the owner
+    if current_tvshow and username != current_tvshow[0].user.username:
         print("User not owner of the movie is voting...")
-        data_vote = {'nw': now_watch, 'episode': episode, 'season': season, 'vote': vote, 'giveup': giveup, 'comment': comment}
+        data_vote = {'nw': now_watch,
+                     'episode': episode,
+                     'season': season,
+                     'vote': vote,
+                     'giveup': giveup,
+                     'comment': comment
+                    }
 
         tvshow = current_tvshow[0]
 
@@ -367,7 +364,7 @@ def savemovienew(request):
             create_update_vote(current_user, current_tvshow, data_vote)
 
         # New feature: to allow not movie owner to upload the poster, set a link and set the season
-        
+
         tvshow.serie_season = serie_season
         tvshow.save()
 
@@ -386,7 +383,10 @@ def savemovienew(request):
         if upload_res != 'failure' or (tvshow.link == "" and link):
             tvshow.save()
 
-            notification = Notification(type="new_movie", title="%s has just added a new movie poster or a link" % username, message="Title: %s" % title, username=username)
+            notification = Notification(
+                type="new_movie", \
+                title="%s has just added a new movie poster or a link" \
+                % username, message="Title: %s" % title, username=username)
             notification.save()
 
         # End New feature
@@ -410,10 +410,21 @@ def savemovienew(request):
             tvshow.save()
 
             if not later:
-                tvsv = TvShowVote(vote=vote, user=current_user, tvshow=tvshow, now_watching=now_watch, season=season, episode=episode, comment=comment)
+                tvsv = TvShowVote(
+                    vote=vote,
+                    user=current_user,
+                    tvshow=tvshow,
+                    now_watching=now_watch,
+                    season=season,
+                    episode=episode,
+                    comment=comment
+                )
                 tvsv.save()
 
-            notification = Notification(type="new_movie", title="%s has just added a new movie" % username, message="Title: %s" % title, username=username)
+            notification = Notification(
+                type="new_movie", \
+                title="%s has just added a new movie" % username, \
+                message="Title: %s" % title, username=username)
             notification.save()
 
             response_data['message'] = 'TvShow/Movie %s saved!' % title
@@ -427,7 +438,10 @@ def savemovienew(request):
             if upload_res == 'failure':
                 poster_name = ''
             else:
-                notification = Notification(type="new_movie", title="%s has just added a new movie poster" % username, message="Title: %s" % title, username=username)
+                notification = Notification(
+                    type="new_movie", \
+                    title="%s has just added a new movie poster" % username, \
+                    message="Title: %s" % title, username=username)
                 notification.save()
 
             print("Updating tvshow... Title: " + title)
@@ -445,7 +459,13 @@ def savemovienew(request):
                 tvshow.poster = poster_name
             tvshow.save()
 
-            data_vote = {'nw': now_watch, 'episode': episode, 'season': season, 'vote': vote, 'giveup': giveup, 'comment': comment}
+            data_vote = {'nw': now_watch,
+                         'episode': episode,
+                         'season': season,
+                         'vote': vote,
+                         'giveup': giveup,
+                         'comment': comment
+                        }
             if not later:
                 create_update_vote(current_user, current_tvshow, data_vote)
 
@@ -466,7 +486,7 @@ def get_tvshows(request):
         kanazzi = request.GET.get('kanazzi', '')
         print("A client is using a deprecated GET method for get tv shows")
 
-    if not username or not kanazzi or not check_session(kanazzi, username, action='gettvshows', store=False):
+    if not check_session(kanazzi, username, action='gettvshows', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
@@ -490,8 +510,15 @@ def get_tvshows(request):
                 valid_vote_count += 1
             us_dt = tvshow_vote.created.strftime("%A, %d. %B %Y %I:%M%p")
             str_vote = str(decimal.Decimal(tvshow_vote.vote))
-            u_v_dict[tvshow_vote.user.username] = {'us_username': tvshow_vote.user.username, 'us_name': tvshow_vote.user.name, 'us_vote': str_vote, 'us_date': us_dt}
-            u_v_dict[tvshow_vote.user.username].update({'now_watching': tvshow_vote.now_watching, 'episode': tvshow_vote.episode, 'season': tvshow_vote.season, 'comment': tvshow_vote.comment})
+            u_v_dict[tvshow_vote.user.username] = {
+                'us_username': tvshow_vote.user.username,
+                'us_name': tvshow_vote.user.name,
+                'us_vote': str_vote, 'us_date': us_dt,
+                'now_watching': tvshow_vote.now_watching,
+                'episode': tvshow_vote.episode,
+                'season': tvshow_vote.season,
+                'comment': tvshow_vote.comment
+            }
 
         if tvsv and avg_vote:
             avg_vote = float(avg_vote) / float(valid_vote_count)
@@ -499,10 +526,24 @@ def get_tvshows(request):
             avg_vote = 0
         str_vote1 = str(decimal.Decimal(tvs.vote))
         avg_vote_str = "%.2f" % avg_vote
-        movie_dict = {'title': tvs.title, 'media': tvs.media, 'vote': str_vote1, 'username': tvs.user.username, 'name': tvs.user.name, 'poster': tvs.poster}
-        movie_dict.update({'datetime_sec': dtsec, 'u_v_dict': u_v_dict, 'type': tvs.type, 'director': tvs.director, 'year': tvs.year})
-        movie_dict.update({'id': tvs.id_tv_show, 'link': tvs.link, 'datetime': movie_created, 'avg_vote': avg_vote_str})
-        movie_dict.update({'serie_season': tvs.serie_season})
+        movie_dict = {
+            'title': tvs.title,
+            'media': tvs.media,
+            'vote': str_vote1,
+            'username': tvs.user.username,
+            'name': tvs.user.name,
+            'poster': tvs.poster,
+            'datetime_sec': dtsec,
+            'u_v_dict': u_v_dict,
+            'type': tvs.type,
+            'director': tvs.director,
+            'year': tvs.year,
+            'id': tvs.id_tv_show,
+            'link': tvs.link,
+            'datetime': movie_created,
+            'avg_vote': avg_vote_str,
+            'serie_season': tvs.serie_season
+        }
         out_list.append(movie_dict)
 
     vote_user_dict = {}
@@ -527,7 +568,14 @@ def get_movies_datatable(request):
     movies_list = Movie.objects.all().exclude(cinema="")
     out = []
     for rec in movies_list:
-        movie_dict = {'0': rec.title, '1': rec.year, '2': rec.cinema, '3': rec.cast, '4': rec.director, '5': rec.filmtv}
+        movie_dict = {
+            '0': rec.title,
+            '1': rec.year,
+            '2': rec.cinema,
+            '3': rec.cast,
+            '4': rec.director,
+            '5': rec.filmtv
+        }
         out.append(movie_dict)
 
     response_data = {}
@@ -538,30 +586,30 @@ def get_movies_datatable(request):
 
 
 def get_catalogue(request):
-
+    """ Get Media Catalogue """
     response = {'result':'success'}
 
     try:
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
         firebase_id_token = i_data.get('firebase_id_token', '')
-        cat_type = i_data.get('cat_type','')
+        cat_type = i_data.get('cat_type', '')
         kanazzi = i_data.get('kanazzi', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    if not username or not kanazzi or not check_session(kanazzi, username, action='get_catalogue', store=True):
+    if not check_session(kanazzi, username, action='get_catalogue', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
     if not cat_type:
-        l = Catalogue.objects.all()
+        media_cat = Catalogue.objects.all()
     else:
-        l = Catalogue.objects.filter(cat_type=cat_type)
+        media_cat = Catalogue.objects.filter(cat_type=cat_type)
 
-    response['payload'] = [ model_to_dict(rec) for rec in l]
-    
+    response['payload'] = [model_to_dict(rec) for rec in media_cat]
+
     return JsonResponse(response)

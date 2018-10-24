@@ -217,7 +217,7 @@ def check_session(session_id, username, action='', store=False):
     Controller:
     """
 
-    if not username:
+    if not username or not session_id:
         return False
 
     print("Classic check session starting")
@@ -322,8 +322,7 @@ def geolocation(request):
     kanazzi = request.POST.get('kanazzi', '').strip()
     ret_status = 200
 
-    if not username or not kanazzi or \
-       not check_session(kanazzi, username, action='geolocation', store=True):
+    if not check_session(kanazzi, username, action='geolocation', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
@@ -356,7 +355,7 @@ def geolocation(request):
             })
         response['body'] = out
         response['message'] = 'Retrieved GPS coordinates for %s user(s)' % len(locations)
-    elif action == 'SET':
+    else:
         if latitude and longitude:            #SET COORD
             if loc:
                 loc[0].latitude = latitude
@@ -371,9 +370,6 @@ def geolocation(request):
         else:
             response['result'] = 'failure'
             ret_status = 400
-    else:
-        response['result'] = 'failure'
-        ret_status = 405
 
     return JsonResponse(response, status=ret_status)
 
@@ -401,7 +397,7 @@ def geolocation2(request):
 
     # print("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
 
-    if not username or not check_session(kanazzi, username, action='geolocation2', store=True):
+    if not check_session(kanazzi, username, action='geolocation2', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
