@@ -35,12 +35,12 @@ def get_tvshows_new(request):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
-
+    '''
     if not check_session(kanazzi, username, action='gettvshows2', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
-
+    '''
     if query and len(query) < 4:
         response['result'] = 'failure'
         response['message'] = 'Query String too short'
@@ -123,6 +123,14 @@ def get_tvshows_new(request):
     print("Lower bound: " + str(lower_bound))
     print("Upper bound: " + str(upper_bound))
 
+    tvshow_stat = TvShow.objects\
+                  .filter(
+                      Q(title__icontains=query) | Q(media__icontains=query)
+                  )\
+                  .values("tvshow_type")\
+                  .annotate(count=Count('tvshow_type'))
+    tvshow_stat = [{"mtype": rec['tvshow_type'], "count": rec['count']} for rec in list(tvshow_stat)]
+
     votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
                  .values("name")\
                  .annotate(count=Count('user'))\
@@ -130,6 +138,7 @@ def get_tvshows_new(request):
     votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
 
     response['payload'] = {'tvshows': out_list,
+                           'stat': tvshow_stat,
                            'query': query,
                            'has_more': has_more,
                            'votes_user': votes_user,
