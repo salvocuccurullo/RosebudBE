@@ -16,8 +16,7 @@ from StiCazzi.controllers import check_session
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
 
-
-def get_tvshows_new(request):
+def get_tvshows_new_opt(request):
     """ Get Tvshow New """
 
     response = {'result': 'success'}
@@ -41,6 +40,136 @@ def get_tvshows_new(request):
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
     '''
+    if query and len(query) < 4:
+        response['result'] = 'failure'
+        response['message'] = 'Query String too short'
+        return JsonResponse(response, status=404)
+
+    out_list = []
+    movie_list = TvShow.objects.filter(
+        Q(title__icontains=query) | Q(media__icontains=query)
+    ).order_by('-created')
+
+    lower_bound = limit * (current_page - 1)
+    upper_bound = current_page * limit
+
+    print("Lazy loading: " + str(lazy_load))
+    if lazy_load:
+        bounded = movie_list[lower_bound: upper_bound]
+    else:
+        bounded = movie_list
+
+    for tvs in bounded:
+        # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
+        movie_created = tvs.created.strftime("%d %B %Y ")
+        dtsec = time.mktime(tvs.created.timetuple())
+        tvshow_votes = TvShowVote.objects.filter(tvshow=tvs)
+        avg_vote = 0
+        valid_vote_count = 0
+        u_v_dict = {}
+
+        for tvshow_vote in tvshow_votes:
+            if not tvshow_vote.now_watching:
+                avg_vote += tvshow_vote.vote
+                valid_vote_count += 1
+            us_dt = tvshow_vote.created.strftime("%A, %d. %B %Y %I:%M%p")
+            str_vote = str(decimal.Decimal(tvshow_vote.vote))
+            u_v_dict[tvshow_vote.user.username] = {'us_username': tvshow_vote.user.username,
+                                                   'us_name': tvshow_vote.user.name,
+                                                   'us_vote': str_vote,
+                                                   'us_date': us_dt,
+                                                   'now_watching': tvshow_vote.now_watching,
+                                                   'episode': tvshow_vote.episode,
+                                                   'season': tvshow_vote.season,
+                                                   'comment': tvshow_vote.comment
+                                                  }
+
+        if tvshow_votes and avg_vote:
+            avg_vote = float(avg_vote) / float(valid_vote_count)
+        else:
+            avg_vote = 0
+        str_vote1 = str(decimal.Decimal(tvs.vote))
+        avg_vote_str = "%.2f" % avg_vote
+        tvshow_dict = {'title': tvs.title,
+                       'media': tvs.media,
+                       'vote': str_vote1,
+                       'username': tvs.user.username,
+                       'name': tvs.user.name,
+                       'poster': tvs.poster,
+                       'datetime_sec': dtsec,
+                       'u_v_dict': u_v_dict,
+                       'type': tvs.type,
+                       'tvshow_type': tvs.tvshow_type,
+                       'director': tvs.director,
+                       'year': tvs.year,
+                       'id': tvs.id_tv_show,
+                       'link': tvs.link,
+                       'datetime': movie_created,
+                       'avg_vote': avg_vote_str,
+                       'serie_season': tvs.serie_season
+                      }
+        out_list.append(tvshow_dict)
+
+    has_more = True
+    if len(movie_list) <= upper_bound:
+        has_more = False
+    if not lazy_load:
+        has_more = False
+
+    print("List size: " + str(len(bounded)))
+    print("Has more: " + str(has_more))
+    print("Query: " + query)
+    print("Lower bound: " + str(lower_bound))
+    print("Upper bound: " + str(upper_bound))
+
+    tvshow_stat = TvShow.objects\
+                  .filter(
+                      Q(title__icontains=query) | Q(media__icontains=query)
+                  )\
+                  .values("tvshow_type")\
+                  .annotate(count=Count('tvshow_type'))\
+                  .values_list("tvshow_type","count")
+
+    votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
+                 .values("name")\
+                 .annotate(count=Count('user'))\
+                 .order_by('-count')
+    votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
+
+    response['payload'] = {'stat': dict(tvshow_stat),
+                           'tvshows': out_list,
+                           'query': query,
+                           'has_more': has_more,
+                           'votes_user': votes_user,
+                           'total_show': movie_list.count()
+                          }
+
+    return JsonResponse(response)
+
+def get_tvshows_new(request):
+    """ Get Tvshow New """
+
+    response = {'result': 'success'}
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        firebase_id_token = i_data.get('firebase_id_token', '')
+        kanazzi = i_data.get('kanazzi', '')
+        query = i_data.get('query', '')
+        limit = i_data.get('limit', 15)
+        current_page = i_data.get('current_page', 1)
+        lazy_load = i_data.get('lazy_load', True)
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+    
+    if not check_session(kanazzi, username, action='gettvshows2', store=True):
+        response['result'] = 'failure'
+        response['message'] = 'Invalid Session'
+        return JsonResponse(response, status=401)
+    
     if query and len(query) < 4:
         response['result'] = 'failure'
         response['message'] = 'Query String too short'
