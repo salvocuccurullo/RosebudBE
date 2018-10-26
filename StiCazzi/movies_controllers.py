@@ -128,8 +128,8 @@ def get_tvshows_new(request):
                       Q(title__icontains=query) | Q(media__icontains=query)
                   )\
                   .values("tvshow_type")\
-                  .annotate(count=Count('tvshow_type'))
-    tvshow_stat = [{"mtype": rec['tvshow_type'], "count": rec['count']} for rec in list(tvshow_stat)]
+                  .annotate(count=Count('tvshow_type'))\
+                  .values_list("tvshow_type","count")
 
     votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
                  .values("name")\
@@ -137,8 +137,8 @@ def get_tvshows_new(request):
                  .order_by('-count')
     votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
 
-    response['payload'] = {'tvshows': out_list,
-                           'stat': tvshow_stat,
+    response['payload'] = {'stat': dict(tvshow_stat),
+                           'tvshows': out_list,
                            'query': query,
                            'has_more': has_more,
                            'votes_user': votes_user,
