@@ -9,6 +9,7 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from django.http import JsonResponse
+import logging
 
 from StiCazzi.models import Notification
 from StiCazzi.controllers import check_session
@@ -19,7 +20,7 @@ MONGO_API_USER = os.environ.get('COVER_API_USER', '')
 MONGO_API_PWD = os.environ.get('COVER_API_PW', '')
 MONGO_SERVER_CERTIFICATE = os.environ.get('MONGO_SERVER_CERTIFICATE')
 MAX_FILE_SIZE = os.environ.get('UPLOAD_MAX_SIZE', 512000)
-
+logger = logging.getLogger(__name__)
 
 def get_random_cover(request):
     """ Get a random cover from API """
@@ -128,6 +129,7 @@ def upload_cover(request, safe_fname, cover_type="poster"):
 
 def get_covers_stats(request):
     """ Get covers statistics from API """
+    logger.debug("Get Covers Stats called")
     response_data = {}
 
     username = request.POST.get('username', '')
