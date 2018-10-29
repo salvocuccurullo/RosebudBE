@@ -5,20 +5,23 @@
 import json
 import decimal
 import time
+import logging
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.db.models import Q, F, Count
+from django.db.models import Q, F, Count, Avg, CharField
+from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
 
 from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue
 from StiCazzi.controllers import check_session
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
+logger = logging.getLogger(__name__)
 
 def get_tvshows_new_opt(request):
     """ Get Tvshow New """
-
+    logger.debug("Get Tvshows news opt called")
     response = {'result': 'success'}
 
     try:
@@ -34,12 +37,12 @@ def get_tvshows_new_opt(request):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
-    '''
+
     if not check_session(kanazzi, username, action='gettvshows2', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
-    '''
+
     if query and len(query) < 4:
         response['result'] = 'failure'
         response['message'] = 'Query String too short'
@@ -63,36 +66,24 @@ def get_tvshows_new_opt(request):
         # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
         movie_created = tvs.created.strftime("%d %B %Y ")
         dtsec = time.mktime(tvs.created.timetuple())
+
         tvshow_votes = TvShowVote.objects.filter(tvshow=tvs)
-        avg_vote = 0
-        valid_vote_count = 0
-        u_v_dict = {}
-
-        for tvshow_vote in tvshow_votes:
-            if not tvshow_vote.now_watching:
-                avg_vote += tvshow_vote.vote
-                valid_vote_count += 1
-            us_dt = tvshow_vote.created.strftime("%A, %d. %B %Y %I:%M%p")
-            str_vote = str(decimal.Decimal(tvshow_vote.vote))
-            u_v_dict[tvshow_vote.user.username] = {'us_username': tvshow_vote.user.username,
-                                                   'us_name': tvshow_vote.user.name,
-                                                   'us_vote': str_vote,
-                                                   'us_date': us_dt,
-                                                   'now_watching': tvshow_vote.now_watching,
-                                                   'episode': tvshow_vote.episode,
-                                                   'season': tvshow_vote.season,
-                                                   'comment': tvshow_vote.comment
-                                                  }
-
-        if tvshow_votes and avg_vote:
-            avg_vote = float(avg_vote) / float(valid_vote_count)
-        else:
-            avg_vote = 0
-        str_vote1 = str(decimal.Decimal(tvs.vote))
+        avg_vote = tvshow_votes.filter(now_watching=0).aggregate(avg_vote=Avg("vote"))['avg_vote']
         avg_vote_str = "%.2f" % avg_vote
+
+        dragon = tvshow_votes.values('episode', 'season', 'comment', 'now_watching')\
+                             .annotate(us_username=F('user__username'))\
+                             .annotate(us_name=F('user__name'))\
+                             .annotate(us_vote=Cast('vote', CharField()))\
+                             .annotate(us_date=Cast('created', CharField()))
+
+        u_v_dict = {}
+        for rec in list(dragon):
+            u_v_dict[rec['us_username']] = rec
+
         tvshow_dict = {'title': tvs.title,
                        'media': tvs.media,
-                       'vote': str_vote1,
+                       # 'vote': str_vote1,
                        'username': tvs.user.username,
                        'name': tvs.user.name,
                        'poster': tvs.poster,
@@ -128,7 +119,7 @@ def get_tvshows_new_opt(request):
                   )\
                   .values("tvshow_type")\
                   .annotate(count=Count('tvshow_type'))\
-                  .values_list("tvshow_type","count")
+                  .values_list("tvshow_type", "count")
 
     votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
                  .values("name")\
@@ -145,6 +136,7 @@ def get_tvshows_new_opt(request):
                           }
 
     return JsonResponse(response)
+
 
 def get_tvshows_new(request):
     """ Get Tvshow New """
@@ -164,12 +156,12 @@ def get_tvshows_new(request):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
-    
+
     if not check_session(kanazzi, username, action='gettvshows2', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
-    
+
     if query and len(query) < 4:
         response['result'] = 'failure'
         response['message'] = 'Query String too short'
@@ -258,7 +250,7 @@ def get_tvshows_new(request):
                   )\
                   .values("tvshow_type")\
                   .annotate(count=Count('tvshow_type'))\
-                  .values_list("tvshow_type","count")
+                  .values_list("tvshow_type", "count")
 
     votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
                  .values("name")\

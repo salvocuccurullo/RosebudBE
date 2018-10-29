@@ -5,11 +5,11 @@
 import os
 import urllib
 import json
+import logging
 
 import requests
 from requests.auth import HTTPBasicAuth
 from django.http import JsonResponse
-import logging
 
 from StiCazzi.models import Notification
 from StiCazzi.controllers import check_session
