@@ -69,7 +69,10 @@ def get_tvshows_new_opt(request):
 
         tvshow_votes = TvShowVote.objects.filter(tvshow=tvs)
         avg_vote = tvshow_votes.filter(now_watching=0).aggregate(avg_vote=Avg("vote"))['avg_vote']
-        avg_vote_str = "%.2f" % avg_vote
+        if avg_vote:
+            avg_vote_str = "%.2f" % avg_vote
+        else:
+            avg_vote_str = "0.0"
 
         dragon = tvshow_votes.values('episode', 'season', 'comment', 'now_watching')\
                              .annotate(us_username=F('user__username'))\
