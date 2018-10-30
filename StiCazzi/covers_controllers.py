@@ -102,7 +102,7 @@ def get_covers(request):
 
 def upload_cover(request, safe_fname, cover_type="poster"):
     """ Wrapper for handle_uploaded_file """
-    print("Finalizing uploaded file saving...")
+    logger.debug("Finalizing uploaded file saving...")
 
     saving_res = True
     response_data = {'result': 'success'}
@@ -110,9 +110,9 @@ def upload_cover(request, safe_fname, cover_type="poster"):
     if request.method == 'POST':
         cover_file = request.FILES.get('pic', '')
         if cover_file:
-            print("File Name: " + str(cover_file.name))            # Gives name
-            print("Content Type:" + str(cover_file.content_type))  # Gives Content type text/html etc
-            print("File size: " + str(cover_file.size))            # Gives file's size in byte
+            logger.debug("File Name: " + str(cover_file.name))            # Gives name
+            logger.debug("Content Type:" + str(cover_file.content_type))  # Gives Content type text/html etc
+            logger.debug("File size: " + str(cover_file.size))            # Gives file's size in byte
 
             if int(cover_file.size) > int(MAX_FILE_SIZE):
                 response_data = {'result': 'failure', 'message': 'file size is exceeding the maximum size allowed'}
@@ -173,14 +173,14 @@ def save_cover(request):
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
 
-    print("Cover Upload: %s - %s - %s" % (title.encode('utf-8'), author.encode('utf-8'), str(year)))
+    logger.debug("Cover Upload: %s - %s - %s" % (title.encode('utf-8'), author.encode('utf-8'), str(year)))
 
     if id_cover:
-        print("object id received: %s Going to update record...." % id_cover)
+        logger.debug("object id received: %s Going to update record...." % id_cover)
 
     upload_file_res = {}
     if cover_file:
-        print("A file has been uploaded... " + cover_file.name)
+        logger.debug("A file has been uploaded... " + cover_file.name)
         temp_f_name = title + '_' + cover_file.name
         cover_name = safe_file_name(temp_f_name, cover_file.content_type)
         upload_file_res = upload_cover(request, cover_name, cover_type="cover")
@@ -205,9 +205,9 @@ def save_cover(request):
     status_code = response.status_code
     response_body = response.text
 
-    print("**************")
-    print("%s - %s - %s ==> %s" % (mongo_final_url, str(status_code), str(payload), response_body))
-    print("**************")
+    logger.debug("**************")
+    logger.debug("%s - %s - %s ==> %s" % (mongo_final_url, str(status_code), str(payload), response_body))
+    logger.debug("**************")
 
     if str(status_code) == "200":
         title = urllib.parse.unquote(title)
@@ -229,12 +229,12 @@ def handle_uploaded_file(up_file, safe_fname, cover_type="poster"):
         path = os.environ.get('UPLOAD_SAVE_PATH_COVER', '')
 
     if not path:
-        print("Base path for saving uploaded file is not valid: %s" % path)
+        logger.debug("Base path for saving uploaded file is not valid: %s" % path)
         return False
 
     final_full_path = path + safe_fname
     try:
-        print("Saving uploaded file to %s ..." % final_full_path)
+        logger.debug("Saving uploaded file to %s ..." % final_full_path)
         with open(final_full_path, 'wb+') as destination:
             for chunk in up_file.chunks():
                 destination.write(chunk)

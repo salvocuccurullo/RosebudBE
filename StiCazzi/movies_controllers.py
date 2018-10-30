@@ -56,7 +56,7 @@ def get_tvshows_new_opt(request):
     lower_bound = limit * (current_page - 1)
     upper_bound = current_page * limit
 
-    print("Lazy loading: " + str(lazy_load))
+    logger.debug("Lazy loading: " + str(lazy_load))
     if lazy_load:
         bounded = movie_list[lower_bound: upper_bound]
     else:
@@ -110,11 +110,11 @@ def get_tvshows_new_opt(request):
     if not lazy_load:
         has_more = False
 
-    print("List size: " + str(len(bounded)))
-    print("Has more: " + str(has_more))
-    print("Query: " + query)
-    print("Lower bound: " + str(lower_bound))
-    print("Upper bound: " + str(upper_bound))
+    logger.debug("List size: " + str(len(bounded)))
+    logger.debug("Has more: " + str(has_more))
+    logger.debug("Query: " + query)
+    logger.debug("Lower bound: " + str(lower_bound))
+    logger.debug("Upper bound: " + str(upper_bound))
 
     tvshow_stat = dict(\
                   TvShow.objects\
@@ -181,7 +181,7 @@ def get_tvshows_new(request):
     lower_bound = limit * (current_page - 1)
     upper_bound = current_page * limit
 
-    print("Lazy loading: " + str(lazy_load))
+    logger.debug("Lazy loading: " + str(lazy_load))
     if lazy_load:
         bounded = movie_list[lower_bound: upper_bound]
     else:
@@ -244,11 +244,11 @@ def get_tvshows_new(request):
     if not lazy_load:
         has_more = False
 
-    print("List size: " + str(len(bounded)))
-    print("Has more: " + str(has_more))
-    print("Query: " + query)
-    print("Lower bound: " + str(lower_bound))
-    print("Upper bound: " + str(upper_bound))
+    logger.debug("List size: " + str(len(bounded)))
+    logger.debug("Has more: " + str(has_more))
+    logger.debug("Query: " + query)
+    logger.debug("Lower bound: " + str(lower_bound))
+    logger.debug("Upper bound: " + str(upper_bound))
 
     tvshow_stat = dict(\
                   TvShow.objects\
@@ -398,7 +398,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
                     % (tvshow[0].title, vote_dict["comment"][:30]), username=current_user.username)
                 notification.save()
 
-    # print(vote_dict)
+    # logger.debug(vote_dict)
     if vote_dict["nw"] and str(vote_dict["season"]) == "1" and str(vote_dict["episode"]) == "1":
         notification = Notification(
             type="new_nw", \
@@ -437,13 +437,13 @@ def savemovienew(request):
     poster_name = ''
     upload_file_res = {}
 
-    print(id_movie)
-    # print (title)
-    # print (media)
-    # print (type)
+    logger.debug(id_movie)
+    # logger.debug (title)
+    # logger.debug (media)
+    # logger.debug (type)
 
     if uploaded_file:
-        print("A file has been uploaded... " + uploaded_file.name)
+        logger.debug("A file has been uploaded... " + uploaded_file.name)
         temp_f_name = title + '_' + uploaded_file.name
         poster_name = safe_file_name(temp_f_name, uploaded_file.content_type)
 
@@ -474,7 +474,7 @@ def savemovienew(request):
 
     # Movie exists and the current user is not the owner
     if current_tvshow and username != current_tvshow[0].user.username:
-        print("User not owner of the movie is voting...")
+        logger.debug("User not owner of the movie is voting...")
         data_vote = {'nw': now_watch,
                      'episode': episode,
                      'season': season,
@@ -526,7 +526,7 @@ def savemovienew(request):
             if upload_res == 'failure':
                 poster_name = ''
 
-            print("Adding tvshow... Title: " + title)
+            logger.debug("Adding tvshow... Title: " + title)
 
             tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
                             type=type, tvshow_type=tvshow_type,
@@ -576,7 +576,7 @@ def savemovienew(request):
                     message="Title: %s" % title, username=username)
                 notification.save()
 
-            print("Updating tvshow... Title: " + title)
+            logger.debug("Updating tvshow... Title: " + title)
             tvshow = current_tvshow[0]
             tvshow.title = title
             tvshow.media = media
@@ -616,7 +616,7 @@ def get_tvshows(request):
     if not username and not kanazzi:
         username = request.GET.get('username', '')
         kanazzi = request.GET.get('kanazzi', '')
-        print("A client is using a deprecated GET method for get tv shows")
+        logger.debug("A client is using a deprecated GET method for get tv shows")
 
     if not check_session(kanazzi, username, action='gettvshows', store=False):
         response_data['result'] = 'failure'
