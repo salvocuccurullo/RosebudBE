@@ -535,6 +535,13 @@ def savemovienew(request):
             tvshow.save()
 
             if not later:
+                
+                if not episode:
+                    episode = 1
+                    
+                if not season:
+                    season = 1
+                
                 tvsv = TvShowVote(
                     vote=vote,
                     user=current_user,
