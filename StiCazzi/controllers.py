@@ -238,17 +238,17 @@ def check_session(session_id, username, action='', store=False):
         plain_text = plain_text.strip()
         session_dt = datetime.strptime(str(plain_text.decode("utf-8")), "%Y_%m_%d_%H_%M_%S_%f")
         if SESSION_DBG:
-            logger.debug("Valid session id for user %s" % username)
+            logger.debug("Valid session id for user %s", username)
         now = datetime.now()
         time_diff = now - session_dt
 
         if time_diff.days > 90:
             if SESSION_DBG:
-                logger.debug("Session expired : " + str(time_diff.days) + " days")
+                logger.debug("Session expired : %s days", str(time_diff.days))
             return False
 
         if SESSION_DBG:
-            logger.debug("Session not expired : " + str(time_diff.days) + " days")
+            logger.debug("Session not expired : %s days", str(time_diff.days))
 
     except Exception as exception:
         if SESSION_DBG:
@@ -498,7 +498,7 @@ def check_fb_token(request):
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
         if SESSION_DBG:
-            logger.debug('Starting session check for user %s' % username)
+            logger.debug('Starting session check for user %s', username)
 
 
         #Google Initializazion
