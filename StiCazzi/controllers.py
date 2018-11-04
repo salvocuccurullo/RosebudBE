@@ -5,6 +5,8 @@
 import json
 import base64
 import os
+import logging
+
 from random import randint
 from datetime import datetime
 from Crypto.Cipher import AES
@@ -23,6 +25,7 @@ from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session,
 from . import utils
 
 SESSION_DBG = True
+logger = logging.getLogger(__name__)
 
 def get_demo_json(request):
     """
@@ -48,7 +51,7 @@ def get_random_song(request):
     if not username and not kanazzi:
         username = request.GET.get('username', '')
         kanazzi = request.GET.get('kanazzi', '')
-        print("A client is using a deprecated GET method for get random song")
+        logger.debug("A client is using a deprecated GET method for get random song")
     else:
         # CHECK SESSION - SOFT VERSION - NO SAVE ON DB
         if not check_session(kanazzi, username, action='getRandomSong', store=False):
@@ -220,7 +223,7 @@ def check_session(session_id, username, action='', store=False):
     if not username or not session_id:
         return False
 
-    print("Classic check session starting")
+    logger.debug("Classic check session starting")
     session_id = session_id.strip()
     sessions = Session.objects.filter(session_string=session_id)
     if sessions:
@@ -235,22 +238,22 @@ def check_session(session_id, username, action='', store=False):
         plain_text = plain_text.strip()
         session_dt = datetime.strptime(str(plain_text.decode("utf-8")), "%Y_%m_%d_%H_%M_%S_%f")
         if SESSION_DBG:
-            print("Valid session id for user %s" % username)
+            logger.debug("Valid session id for user %s" % username)
         now = datetime.now()
         time_diff = now - session_dt
 
         if time_diff.days > 90:
             if SESSION_DBG:
-                print("Session expired : " + str(time_diff.days) + " days")
+                logger.debug("Session expired : " + str(time_diff.days) + " days")
             return False
 
         if SESSION_DBG:
-            print("Session not expired : " + str(time_diff.days) + " days")
+            logger.debug("Session not expired : " + str(time_diff.days) + " days")
 
     except Exception as exception:
         if SESSION_DBG:
-            print(exception)
-            print("Not valid session id")
+            logger.debug(exception)
+            logger.debug("Not valid session id")
         return False
 
     if store:
@@ -293,13 +296,13 @@ def login(request):
             out = "User not found!"
             logged = "no"
 
-        print("login result for user " + username + " : " + out)
+        logger.debug("login result for user " + username + " : " + out)
         response_data['payload'] = {"message":out, 'username':username, 'logged':logged}
 
     except Exception as eee:
         response_data['result'] = 'failure'
         response_data['payload'] = {}
-        print(eee)
+        logger.debug(eee)
 
     if logged == "no":
         response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
@@ -336,7 +339,7 @@ def geolocation(request):
 
     if action == 'DELETE':
         #DELETE
-        print("DELETE")
+        logger.debug("DELETE")
         if loc:
             loc[0].delete()
             response['message'] = 'GPS coordinates have been delete from the system for user %s' % username
@@ -395,7 +398,7 @@ def geolocation2(request):
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    # print("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
+    # logger.debug("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
 
     if not check_session(kanazzi, username, action='geolocation2', store=True):
         response['result'] = 'failure'
@@ -452,10 +455,10 @@ def set_fb_token(request):
 
     response = {'result':'success'}
 
-    # print(" ====== request info =====")
-    # print(request.method)
-    # print(request.content_type)
-    # print(" =========================")
+    # logger.debug(" ====== request info =====")
+    # logger.debug(request.method)
+    # logger.debug(request.content_type)
+    # logger.debug(" =========================")
 
     try:
         i_data = json.loads(request.body)
@@ -495,7 +498,7 @@ def check_fb_token(request):
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
         if SESSION_DBG:
-            print('Starting session check for user %s' % username)
+            logger.debug('Starting session check for user %s' % username)
 
 
         #Google Initializazion
@@ -523,7 +526,7 @@ def check_fb_token(request):
         response["payload"] = {"firebase_id_token":id_token}
 
     except Exception as ee:
-        print(ee)
+        logger.debug(ee)
         if 'Token expired' in ee:
             response = {"result":"failure", "message":"token expired"}
             return JsonResponse(response, status=401)
@@ -544,7 +547,7 @@ def check_fb_token_local(id_token):
 
     try:
         if SESSION_DBG:
-            print('Starting firebase id token check...')
+            logger.debug('Starting firebase id token check...')
 
         #Google Initializazion
         google_account_file = os.environ.get('GOOGLE_JSON', '')
@@ -561,7 +564,7 @@ def check_fb_token_local(id_token):
         response = True
 
     except Exception as ee:
-        print(str(ee))
+        logger.debug(str(ee))
 
     return response
 
@@ -592,7 +595,7 @@ def check_google(token):
 
     except ValueError as ee:
         # Invalid token
-        print(str(ee))
+        logger.debug(str(ee))
         return False
 
 def test_session(request):
@@ -604,7 +607,7 @@ def test_session(request):
 
     try:
         i_data = json.loads(request.body)
-        print("Valid JSON data received.")
+        logger.debug("Valid JSON data received.")
         username = i_data.get('username', '')
         firebase_id_token = i_data.get('firebase_id_token', '')
         kanazzi = i_data.get('kanazzi', '')
