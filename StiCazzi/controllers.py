@@ -274,7 +274,7 @@ def login(request):
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
 
-        if username == '':
+        if not username or not password:
             response_data['result'] = 'failure'
             response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
             return JsonResponse(response_data, status=401)
@@ -525,13 +525,13 @@ def check_fb_token(request):
         response["message"] = "Firebase idToken successulfy verified"
         response["payload"] = {"firebase_id_token":id_token}
 
-    except Exception as ee:
-        logger.debug(ee)
-        if 'Token expired' in ee:
+    except Exception as exception:
+        logger.debug(exception)
+        if 'Token expired' in str(exception):
             response = {"result":"failure", "message":"token expired"}
             return JsonResponse(response, status=401)
 
-        response = {"result":"failure", "message":str(ee)}
+        response = {"result":"failure", "message":str(exception)}
         return JsonResponse(response, status=500)
 
 
@@ -563,8 +563,8 @@ def check_fb_token_local(id_token):
 
         response = True
 
-    except Exception as ee:
-        logger.debug(str(ee))
+    except Exception as exception:
+        logger.debug(str(exception))
 
     return response
 
@@ -572,6 +572,8 @@ def check_google(token):
     """
     Controller:
     """
+
+    out = {"result": False, "info": ""}
 
     try:
         # Specify the CLIENT_ID of the app that accesses the backend:
@@ -590,13 +592,16 @@ def check_google(token):
         #     raise ValueError('Wrong hosted domain.')
 
         # ID token is valid. Get the user's Google Account ID from the decoded token.
-        userid = idinfo['sub']
+        out['result'] = True
+        out['info'] = idinfo['sub']
         return True
 
-    except ValueError as ee:
+    except ValueError as exception:
         # Invalid token
-        logger.debug(str(ee))
-        return False
+        logger.debug(str(exception))
+        out['info'] = str(exception)
+        
+    return out
 
 def test_session(request):
     """
@@ -619,10 +624,10 @@ def test_session(request):
     token_check = check_google(firebase_id_token)
     user_check = check_session(kanazzi, username, action='test_session', store=True)
 
-    if not username or (not token_check and not user_check):
+    if not username or (not token_check['result'] and not user_check):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
-    response['message'] = 'Authentication successful! By User:%s - by Token: %s' % (user_check, token_check)
+    response['message'] = 'Authentication successful! By User:%s - by Token: %s' % (user_check, token_check['info'])
     return JsonResponse(response, status=200)
