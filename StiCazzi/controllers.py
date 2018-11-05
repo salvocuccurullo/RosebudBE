@@ -594,7 +594,6 @@ def check_google(token):
         # ID token is valid. Get the user's Google Account ID from the decoded token.
         out['result'] = True
         out['info'] = idinfo['sub']
-        return True
 
     except ValueError as exception:
         # Invalid token
