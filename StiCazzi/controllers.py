@@ -617,7 +617,7 @@ def test_session(request):
         return JsonResponse(response, status=400)
 
     token_check = check_google(firebase_id_token)
-    user_check = check_session(kanazzi, username, action='geolocation2', store=True)
+    user_check = check_session(kanazzi, username, action='test_session', store=True)
 
     if not username or (not token_check and not user_check):
         response['result'] = 'failure'
