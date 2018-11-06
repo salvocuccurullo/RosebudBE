@@ -135,7 +135,7 @@ def get_covers_stats(request):
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
 
-    if not username or not test_session:
+    if not username or not check_session(kanazzi, username, action='getCovers', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
@@ -159,6 +159,7 @@ def get_covers_stats_2(request):
     response_data = {}
 
     username = request.POST.get('username', '')
+    firebase_id_token = request.POST.get('firebase_id_token', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
     token_check = check_google(firebase_id_token)
 
