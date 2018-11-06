@@ -12,7 +12,7 @@ from requests.auth import HTTPBasicAuth
 from django.http import JsonResponse
 
 from StiCazzi.models import Notification
-from StiCazzi.controllers import check_session
+from StiCazzi.controllers import check_session, check_google
 from StiCazzi.utils import safe_file_name
 
 MONGO_API_URL = os.environ.get('MONGO_API_URL', '')
@@ -135,7 +135,7 @@ def get_covers_stats(request):
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
 
-    if not username or not kanazzi or not check_session(kanazzi, username, action='getCovers', store=False):
+    if not username or not test_session:
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
@@ -153,6 +153,32 @@ def get_covers_stats(request):
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
 
+def get_covers_stats_2(request):
+    """ Get covers statistics from API """
+    logger.debug("Get Covers Stats called")
+    response_data = {}
+
+    username = request.POST.get('username', '')
+    kanazzi = request.POST.get('kanazzi', '').strip()
+    token_check = check_google(firebase_id_token)
+
+    if not username or not kanazzi or not token_check['result']:
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Invalid Session: %s' % token_check['info']
+        return JsonResponse(response_data, status=401)
+
+    headers = {'Content-Type': 'application/json'}
+    mongo_final_url = MONGO_API_URL + "/getStats"
+    response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+
+    status_code = response.status_code
+    response_body = response.text
+
+    if str(status_code) == "200":
+        return JsonResponse(response_body, safe=False)
+
+    response_body = {"result": "failure", "message": response.text, "status_code": status_code}
+    return JsonResponse(response_body, status=status_code, safe=False)
 
 def save_cover(request):
     """ Save a new cover """

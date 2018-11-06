@@ -14,7 +14,7 @@ from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
 
 from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue
-from StiCazzi.controllers import check_session
+from StiCazzi.controllers import check_session, test_session
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
 logger = logging.getLogger(__name__)
@@ -469,95 +469,6 @@ def savemovienew(request):
 
     response_data.update({"upload_result": upload_file_res})
 
-    return JsonResponse(response_data)
-
-
-def get_tvshows(request):
-    """ Get Tvshow Old """
-
-    response_data = {}
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '')
-
-    if not username and not kanazzi:
-        username = request.GET.get('username', '')
-        kanazzi = request.GET.get('kanazzi', '')
-        logger.debug("A client is using a deprecated GET method for get tv shows")
-
-    if not check_session(kanazzi, username, action='gettvshows', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
-
-    response_data['result'] = 'success'
-    out_list = []
-    movies_list = TvShow.objects.filter().order_by('-created')
-
-    for tvs in movies_list:
-        # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
-        movie_created = tvs.created.strftime("%d %B %Y ")
-        dtsec = time.mktime(tvs.created.timetuple())
-        tvsv = TvShowVote.objects.filter(tvshow=tvs)
-        avg_vote = 0
-        valid_vote_count = 0
-        u_v_dict = {}
-
-        for tvshow_vote in tvsv:
-            if not tvshow_vote.now_watching:
-                avg_vote += tvshow_vote.vote
-                valid_vote_count += 1
-            us_dt = tvshow_vote.created.strftime("%A, %d. %B %Y %I:%M%p")
-            str_vote = str(decimal.Decimal(tvshow_vote.vote))
-            u_v_dict[tvshow_vote.user.username] = {
-                'us_username': tvshow_vote.user.username,
-                'us_name': tvshow_vote.user.name,
-                'us_vote': str_vote, 'us_date': us_dt,
-                'now_watching': tvshow_vote.now_watching,
-                'episode': tvshow_vote.episode,
-                'season': tvshow_vote.season,
-                'comment': tvshow_vote.comment
-            }
-
-        if tvsv and avg_vote:
-            avg_vote = float(avg_vote) / float(valid_vote_count)
-        else:
-            avg_vote = 0
-        str_vote1 = str(decimal.Decimal(tvs.vote))
-        avg_vote_str = "%.2f" % avg_vote
-        movie_dict = {
-            'title': tvs.title,
-            'media': tvs.media,
-            'vote': str_vote1,
-            'username': tvs.user.username,
-            'name': tvs.user.name,
-            'poster': tvs.poster,
-            'datetime_sec': dtsec,
-            'u_v_dict': u_v_dict,
-            'type': tvs.type,
-            'director': tvs.director,
-            'year': tvs.year,
-            'id': tvs.id_tv_show,
-            'link': tvs.link,
-            'datetime': movie_created,
-            'avg_vote': avg_vote_str,
-            'serie_season': tvs.serie_season
-        }
-        out_list.append(movie_dict)
-
-    vote_user_dict = {}
-    vote_user = []
-    all_votes = TvShowVote.objects.all()
-    for tvshow_vote in all_votes:
-        if tvshow_vote.user.username in vote_user_dict:
-            vote_user_dict[tvshow_vote.user.username] += 1
-        else:
-            vote_user_dict[tvshow_vote.user.username] = 1
-    for k in vote_user_dict:
-        vote_user.append({'name': k, 'count': vote_user_dict[k]})
-
-    payload = {'tvshows': out_list, 'votes_user': vote_user}
-
-    response_data['payload'] = json.dumps(payload)
     return JsonResponse(response_data)
 
 

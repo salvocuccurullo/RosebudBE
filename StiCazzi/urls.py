@@ -44,6 +44,7 @@ urlpatterns = [
     url(r'^getrandomcover$', covers_controllers.get_random_cover),
     url(r'^getremotecovers$', covers_controllers.get_remote_covers),
     url(r'^getcoversstats$', covers_controllers.get_covers_stats),
+    url(r'^getcoversstats2$', covers_controllers.get_covers_stats_2),
 
     url(r'^geolocation$', controllers.geolocation),
     url(r'^geolocation2$', controllers.geolocation2),
