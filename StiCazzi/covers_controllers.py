@@ -155,7 +155,7 @@ def get_covers_stats(request):
 
 def get_covers_stats_2(request):
     """ Get covers statistics from API """
-    logger.debug("Get Covers Stats called")
+    logger.debug("Get Covers Stats 2 called")
     response_data = {}
 
     username = request.POST.get('username', '')
