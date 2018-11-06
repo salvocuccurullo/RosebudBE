@@ -573,27 +573,28 @@ def check_google(token):
     Controller:
     """
 
-    out = {"result": False, "info": ""}
+    out = {"result": False, "info": "Invalid token"}
 
     try:
-        # Specify the CLIENT_ID of the app that accesses the backend:
-        idinfo = google_id_token.verify_oauth2_token(token, google_requests.Request())
+        if token:
+            # Specify the CLIENT_ID of the app that accesses the backend:
+            idinfo = google_id_token.verify_oauth2_token(token, google_requests.Request())
 
-        # Or, if multiple clients access the backend server:
-        # idinfo = google_id_token.verify_oauth2_token(token, requests.Request())
-        # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
-        #     raise ValueError('Could not verify audience.')
+            # Or, if multiple clients access the backend server:
+            # idinfo = google_id_token.verify_oauth2_token(token, requests.Request())
+            # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
+            #     raise ValueError('Could not verify audience.')
 
-        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            raise ValueError('Wrong issuer.')
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer.')
 
-        # If auth request is from a G Suite domain:
-        # if idinfo['hd'] != GSUITE_DOMAIN_NAME:
-        #     raise ValueError('Wrong hosted domain.')
+            # If auth request is from a G Suite domain:
+            # if idinfo['hd'] != GSUITE_DOMAIN_NAME:
+            #     raise ValueError('Wrong hosted domain.')
 
-        # ID token is valid. Get the user's Google Account ID from the decoded token.
-        out['result'] = True
-        out['info'] = idinfo['sub']
+            # ID token is valid. Get the user's Google Account ID from the decoded token.
+            out['result'] = True
+            out['info'] = idinfo['sub']
 
     except ValueError as exception:
         # Invalid token
