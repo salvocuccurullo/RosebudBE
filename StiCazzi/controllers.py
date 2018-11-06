@@ -629,5 +629,5 @@ def test_session(request):
         response['message'] = 'Invalid Session: %s' % token_check['info']
         return JsonResponse(response, status=401)
 
-    response['message'] = 'Authentication successful! By User:%s - by Token: %s' % (user_check, token_check['info'])
+    response['message'] = 'Authentication successful! By Google Token: %s' % token_check['info']
     return JsonResponse(response, status=200)
