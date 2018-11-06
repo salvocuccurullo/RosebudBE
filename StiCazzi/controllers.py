@@ -621,9 +621,9 @@ def test_session(request):
         return JsonResponse(response, status=400)
 
     token_check = check_google(firebase_id_token)
-    user_check = check_session(kanazzi, username, action='test_session', store=True)
+    # user_check = check_session(kanazzi, username, action='test_session', store=True)
 
-    if not username or (not token_check['result'] and not user_check):
+    if not username or not token_check['result']:
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
