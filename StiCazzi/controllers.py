@@ -625,7 +625,7 @@ def test_session(request):
 
     if not username or not token_check['result']:
         response['result'] = 'failure'
-        response['message'] = 'Invalid Session'
+        response['message'] = 'Invalid Session: %s' % token_check['info']
         return JsonResponse(response, status=401)
 
     response['message'] = 'Authentication successful! By User:%s - by Token: %s' % (user_check, token_check['info'])
