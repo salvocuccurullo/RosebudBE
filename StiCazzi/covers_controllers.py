@@ -160,10 +160,10 @@ def get_covers_stats_2(request):
 
     username = request.POST.get('username', '')
     firebase_id_token = request.POST.get('firebase_id_token', '')
-    kanazzi = request.POST.get('kanazzi', '').strip()
+
     token_check = check_google(firebase_id_token)
 
-    if not username or not kanazzi or not token_check['result']:
+    if not username or token_check['result']:
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session: %s' % token_check['info']
         return JsonResponse(response_data, status=401)

@@ -344,6 +344,7 @@ def login2(request):
         user.firebase_id_token = firebase_id_token
         user.save()
         logger.debug("Existing user logged in: %s", email)
+        response['payload']['new_user'] = False
     else:
         u = User(
             username=username, \
@@ -355,8 +356,9 @@ def login2(request):
             fcm_token=fcm_token \
         )
         u.save()
-
         logger.debug("New user logged in: %s", email)
+        response['payload']['new_user'] = True
+
     response['payload'] = {"message":"welcome", 'username':username, 'logged':True}
 
     return JsonResponse(response)
