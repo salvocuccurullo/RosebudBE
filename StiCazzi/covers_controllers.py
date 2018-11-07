@@ -169,7 +169,7 @@ def get_covers_stats_2(request):
 
     token_check = check_google(firebase_id_token)
 
-    if not username or token_check['result']:
+    if not username or not token_check['result']:
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session: %s' % token_check['info']
         return JsonResponse(response_data, status=401)
