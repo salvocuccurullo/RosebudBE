@@ -158,8 +158,14 @@ def get_covers_stats_2(request):
     logger.debug("Get Covers Stats 2 called")
     response_data = {}
 
-    username = request.POST.get('username', '')
-    firebase_id_token = request.POST.get('firebase_id_token', '')
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        firebase_id_token = i_data.get('firebase_id_token', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
 
     token_check = check_google(firebase_id_token)
 
