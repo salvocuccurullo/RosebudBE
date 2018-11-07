@@ -543,7 +543,7 @@ def set_fb_token2(request):
     """
     Controller:
     """
-
+    logger.debug("Set FB Token 2 called")
     response = {'result':'success'}
 
     # logger.debug(" ====== request info =====")
