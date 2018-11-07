@@ -333,9 +333,9 @@ def login2(request):
     token_check = check_google(firebase_id_token)
 
     if not username or not token_check['result']:
-        response_data['result'] = 'failure'
-        response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
-        return JsonResponse(response_data, status=401)
+        response['result'] = 'failure'
+        response['payload'] = {"message": "Not valid credentials", 'logged':'no'}
+        return JsonResponse(response, status=401)
 
     user = User.objects.filter(username=username).first()
 
@@ -349,7 +349,7 @@ def login2(request):
             username=username, \
             email=email, \
             firebase_id_token=firebase_id_token, \
-            app_version = app_version, \
+            app_version=app_version, \
             password='', \
             firebase_uid='', \
             fcm_token=fcm_token \
@@ -357,9 +357,9 @@ def login2(request):
         u.save()
 
         logger.debug("New user logged in: %s", email)
-    response_data['payload'] = {"message":"welcome", 'username':username, 'logged':True}
+    response['payload'] = {"message":"welcome", 'username':username, 'logged':True}
 
-    return JsonResponse(response_data)
+    return JsonResponse(response)
 
 
 def geolocation(request):
