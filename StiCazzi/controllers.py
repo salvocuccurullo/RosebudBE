@@ -311,6 +311,57 @@ def login(request):
     return JsonResponse(response_data)
 
 
+def login2(request):
+    """
+    Controller:
+    """
+
+    response = {'result':'success'}
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        email = i_data.get('email', '')
+        firebase_id_token = i_data.get('firebase_id_token', '')
+        app_version = i_data.get('app_version', '')
+        fcm_token = i_data.get('fcm_token', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    token_check = check_google(firebase_id_token)
+
+    if not username or not token_check['result']:
+        response_data['result'] = 'failure'
+        response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
+        return JsonResponse(response_data, status=401)
+
+    user = User.objects.filter(username=username).first()
+
+    if user:
+        user.email = email
+        user.firebase_id_token = firebase_id_token
+        user.save()
+        logger.debug("Existing user logged in: %s", email)
+    else:
+        u = User(
+            username=username, \
+            email=email, \
+            firebase_id_token=firebase_id_token, \
+            app_version = app_version, \
+            password='', \
+            firebase_uid='', \
+            fcm_token=fcm_token \
+        )
+        u.save()
+
+        logger.debug("New user logged in: %s", email)
+    response_data['payload'] = {"message":"welcome", 'username':username, 'logged':True}
+
+    return JsonResponse(response_data)
+
+
 def geolocation(request):
     """
     Controller:
