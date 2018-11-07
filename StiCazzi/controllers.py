@@ -575,8 +575,8 @@ def set_fb_token2(request):
         user.app_version = app_version
         if token:
             user.fcm_token = token
-        if id_token:
-            user.firebase_id_token = id_token
+        if firebase_id_token:
+            user.firebase_id_token = firebase_id_token
         user.save()
         return JsonResponse(response, status=200)
 
