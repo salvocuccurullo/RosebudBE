@@ -358,7 +358,7 @@ def login2(request):
         u.save()
         logger.debug("New user logged in: %s", email)
         response['payload']['new_user'] = True
-
+        
     response['payload'] = {"message":"welcome", 'username':username, 'logged':True}
 
     return JsonResponse(response)
@@ -535,6 +535,50 @@ def set_fb_token(request):
                 user.firebase_id_token = id_token
             user.save()
             return JsonResponse(response, status=200)
+
+    response['result'] = 'failure'
+    return JsonResponse(response, status=400)
+
+def set_fb_token2(request):
+    """
+    Controller:
+    """
+
+    response = {'result':'success'}
+
+    # logger.debug(" ====== request info =====")
+    # logger.debug(request.method)
+    # logger.debug(request.content_type)
+    # logger.debug(" =========================")
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        token = i_data.get('token', '')
+        firebase_id_token = i_data.get('firebase_id_token', '')
+        app_version = i_data.get('app_version', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    token_check = check_google(firebase_id_token)
+
+    if not username or not token_check['result']:
+        response['result'] = 'failure'
+        response['payload'] = {"message": "Not valid credentials", 'logged':'no'}
+        return JsonResponse(response, status=401)
+
+    users = User.objects.filter(username=username)
+    if users:
+        user = users[0]
+        user.app_version = app_version
+        if token:
+            user.fcm_token = token
+        if id_token:
+            user.firebase_id_token = id_token
+        user.save()
+        return JsonResponse(response, status=200)
 
     response['result'] = 'failure'
     return JsonResponse(response, status=400)
