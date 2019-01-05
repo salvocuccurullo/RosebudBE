@@ -265,12 +265,12 @@ def create_update_vote(current_user, tvshow, vote_dict):
                 notification.save()
 
     # logger.debug(vote_dict)
-    if vote_dict["nw"] and str(vote_dict["season"]) == "1" and str(vote_dict["episode"]) == "1":
+    if vote_dict["nw"] and str(vote_dict["episode"]) == "1":
         notification = Notification(
             type="new_nw", \
             title="%s has just started to watch a movie..." % current_user.username, \
             message="Title: %s - S%s E%s " \
-            % (tvshow[0].title, vote_dict["season"], vote_dict["episode"]), username=current_user.username)
+            % (tvshow[0].title, tvshow[0].serie_season, vote_dict["episode"]), username=current_user.username)
         notification.save()
 
 
