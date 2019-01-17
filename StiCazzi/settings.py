@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os,sys
+from socket import gethostname
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,10 +24,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY','')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DJANGO_LOGGING',False)
 
 OPENSHIT_ALLOWED_HOST = os.environ.get('OPENSHIFT_ALLOWED_HOST','')
-ALLOWED_HOSTS = ['127.0.0.1','localhost',OPENSHIT_ALLOWED_HOST]
+ALLOWED_HOSTS = [
+	'127.0.0.1',
+	'localhost',
+	OPENSHIT_ALLOWED_HOST,
+	gethostname()
+]
 
 
 # Application definition
