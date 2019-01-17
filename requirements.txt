@@ -3,3 +3,5 @@ mysqlclient
 mod_wsgi
 django-cors-headers
 pycrypto>=2.6.1
+firebase-admin
+requests[security]
