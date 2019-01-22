@@ -421,7 +421,7 @@ def savemovienew(request):
 
             notification = Notification(
                 type="new_movie", \
-                title="%s has just added a new movie" % username, \
+                title="%s has just added a new %s" % (username, serie_season), \
                 message="Title: %s" % title, username=username)
             notification.save()
 
