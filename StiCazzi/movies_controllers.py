@@ -43,7 +43,10 @@ def get_tvshows_new_opt(request):
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
-    if len(query) < 4 and current_page > 1:
+    logger.debug("Get Tvshows news opt called")
+    logger.debug("Current page: %s", current_page) 
+
+    if len(query) < 4 and int(current_page) > 1:
         logger.debug("Query too short: %s", query)
         response['result'] = 'failure'
         response['message'] = 'Query String too short'
@@ -57,7 +60,6 @@ def get_tvshows_new_opt(request):
     lower_bound = limit * (current_page - 1)
     upper_bound = current_page * limit
 
-    logger.debug("Lazy loading: %s", str(lazy_load))
     if lazy_load:
         bounded = movie_list[lower_bound: upper_bound]
     else:
