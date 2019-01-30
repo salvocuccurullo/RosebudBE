@@ -46,12 +46,15 @@ def get_tvshows_new_opt(request):
     logger.debug("Get Tvshows news opt called")
     logger.debug("Current page: %s", current_page) 
 
-    if query and len(query) < 4 and int(current_page) == 1:
-        logger.debug("Query too short: %s", query)
-        response['result'] = 'failure'
-        response['message'] = 'Query String too short'
-        return JsonResponse(response, status=404)
-
+    if query and len(query) < 4:
+        if int(current_page) == 1:
+            logger.debug("Query too short: %s", query)
+            response['result'] = 'failure'
+            response['message'] = 'Query String too short'
+            return JsonResponse(response, status=404)
+        else:
+            query = ''
+        
     out_list = []
     movie_list = TvShow.objects.filter(
         Q(title__icontains=query) | Q(media__icontains=query)
