@@ -204,6 +204,8 @@ def save_cover(request):
     cover_name = ''
     upload_file_res = {}
 
+    logger.debug("%s - %s",username,kanazzi)
+
     if not username or not kanazzi or not check_session(kanazzi, username, action='uploadcover', store=True):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
