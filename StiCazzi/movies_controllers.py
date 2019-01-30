@@ -43,7 +43,8 @@ def get_tvshows_new_opt(request):
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
-    if query and len(query) < 4:
+    if len(query) < 4 and current_page > 1:
+        logger.debug("Query too short: %s", query)
         response['result'] = 'failure'
         response['message'] = 'Query String too short'
         return JsonResponse(response, status=404)
