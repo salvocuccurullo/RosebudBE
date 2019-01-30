@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 def get_random_cover(request):
     """ Get a random cover from API """
+    logger.debug("get_random_cover called")
     response_data = {}
 
     username = request.POST.get('username', '')
@@ -50,6 +51,7 @@ def get_random_cover(request):
 
 def get_remote_covers(request):
     """ Get all covers not stored in the app """
+    logger.debug("get_remote_covers called")
     response_data = {}
 
     username = request.POST.get('username', '')
@@ -129,7 +131,7 @@ def upload_cover(request, safe_fname, cover_type="poster"):
 
 def get_covers_stats(request):
     """ Get covers statistics from API """
-    logger.debug("Get Covers Stats called")
+    logger.debug("get_covers_stats called")
     response_data = {}
 
     username = request.POST.get('username', '')
@@ -155,7 +157,7 @@ def get_covers_stats(request):
 
 def get_covers_stats_2(request):
     """ Get covers statistics from API """
-    logger.debug("Get Covers Stats 2 called")
+    logger.debug("get_covers_stats_2 called")
     response_data = {}
 
     try:
@@ -189,6 +191,7 @@ def get_covers_stats_2(request):
 
 def save_cover(request):
     """ Save a new cover """
+    logger.debug("save_cover called")
     response_data = {}
 
     title = request.POST.get('title', '')

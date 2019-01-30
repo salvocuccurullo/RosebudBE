@@ -223,7 +223,7 @@ def check_session(session_id, username, action='', store=False):
     if not username or not session_id:
         return False
 
-    logger.debug("Classic check session starting")
+    logger.debug("Classic check session starting for user %s" % username)
     session_id = session_id.strip()
     sessions = Session.objects.filter(session_string=session_id)
     if sessions:
@@ -238,7 +238,7 @@ def check_session(session_id, username, action='', store=False):
         plain_text = plain_text.strip()
         session_dt = datetime.strptime(str(plain_text.decode("utf-8")), "%Y_%m_%d_%H_%M_%S_%f")
         if SESSION_DBG:
-            logger.debug("Valid session id for user %s", username)
+            logger.debug("Valid session id for user %s with %s", username, plain_text)
         now = datetime.now()
         time_diff = now - session_dt
 
