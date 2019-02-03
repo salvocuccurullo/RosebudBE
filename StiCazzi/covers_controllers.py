@@ -37,7 +37,7 @@ def get_random_cover(request):
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getRandomCover"
-    response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
@@ -64,7 +64,7 @@ def get_remote_covers(request):
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getRemoteCovers"
-    response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
@@ -90,7 +90,7 @@ def get_covers(request):
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getAllCovers"
-    response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
@@ -144,7 +144,7 @@ def get_covers_stats(request):
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getStats"
-    response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
@@ -178,7 +178,7 @@ def get_covers_stats_2(request):
 
     headers = {'Content-Type': 'application/json'}
     mongo_final_url = MONGO_API_URL + "/getStats"
-    response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
