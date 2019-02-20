@@ -20,6 +20,7 @@ from google.auth.transport import requests as google_requests
 from django.http import JsonResponse
 from django.contrib.auth.hashers import check_password
 from django.core import serializers
+from django import get_version
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location
 from . import utils
@@ -358,7 +359,7 @@ def login2(request):
         u.save()
         logger.debug("New user logged in: %s", email)
         response['payload']['new_user'] = True
-        
+
     response['payload'] = {"message":"welcome", 'username':username, 'logged':True}
 
     return JsonResponse(response)
@@ -697,7 +698,7 @@ def check_google(token):
         # Invalid token
         logger.debug(str(exception))
         out['info'] = str(exception)
-        
+
     return out
 
 def test_session(request):
@@ -727,4 +728,34 @@ def test_session(request):
         return JsonResponse(response, status=401)
 
     response['message'] = 'Authentication successful! By Google Token: %s' % token_check['info']
+    return JsonResponse(response, status=200)
+
+def version(request):
+    """
+    Controller:
+    """
+
+    response = {'result':'success'}
+
+    try:
+        i_data = json.loads(request.body)
+        logger.debug("Valid JSON data received.")
+        username = i_data.get('username', '')
+        firebase_id_token = i_data.get('firebase_id_token', '')
+        kanazzi = i_data.get('kanazzi', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    token_check = check_google(firebase_id_token)
+
+    if not username or not token_check['result']:
+        response['result'] = 'failure'
+        response['message'] = 'Invalid Session: %s' % token_check['info']
+        return JsonResponse(response, status=401)
+
+    current_version = get_version()
+
+    response['message'] = 'Current Django version: %s' % current_version
     return JsonResponse(response, status=200)
