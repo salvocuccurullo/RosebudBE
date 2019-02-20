@@ -317,6 +317,8 @@ def login2(request):
     Controller:
     """
 
+    logger.debug("Login 2 called")
+
     response = {'result':'success'}
 
     try:

@@ -148,10 +148,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static_files'),
-                   )  # create static_files dir and place there your static  
+                   )  # create static_files dir and place there your static
                       # files to be collected, as static is the destination
-                      # directory of your local and other Django 
-                      # modules static files 
+                      # directory of your local and other Django
+                      # modules static files
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static', )
 
@@ -189,4 +189,3 @@ LOGGING = {
         },
     },
 }
-
