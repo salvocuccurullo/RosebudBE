@@ -319,7 +319,7 @@ def login2(request):
 
     logger.debug("Login 2 called")
 
-    response = {'result':'success'}
+    response = {'result':'success','payload':{}}
 
     try:
         i_data = json.loads(request.body)
