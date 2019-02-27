@@ -21,6 +21,7 @@ from django.http import JsonResponse
 from django.contrib.auth.hashers import check_password
 from django.core import serializers
 from django import get_version
+from django.contrib.auth import authenticate
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location
 from . import utils
@@ -365,6 +366,42 @@ def login2(request):
     response['payload'] = {"message":"welcome", 'username':username, 'logged':True}
 
     return JsonResponse(response)
+
+def auth(username, password, request):
+
+    if request.user.is_authenticated:
+        logger.debug("User is already authenticated")
+        return True
+    else:
+        logger.debug("User is not authenticated")
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            return True
+
+    return False
+
+def django_login(request):
+    """
+    Controller:
+    """
+
+    logger.debug("Django Login called")
+
+    response = {'result':'success','payload':{}}
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        password = i_data.get('password', '')
+        firebase_id_token = i_data.get('firebase_id_token', '')
+        app_version = i_data.get('app_version', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    #token_check = check_google(firebase_id_token)
+    return auth(username, password, request)
 
 
 def geolocation(request):
