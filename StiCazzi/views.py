@@ -6,14 +6,19 @@ from StiCazzi.controllers import get_demo_json, get_lyrics_by_song
 from StiCazzi.models import Song, Lyric
 
 def auth(request):
-    
-    username = request.POST.get('username','')
-    password = request.POST.get('password','')
-    user = authenticate(username=username, password=password)
-    if user == None:
-        return False
-    
-    return True
+
+    if request.user.is_authenticated:
+        return True
+    else:
+        # Redirection to login page to be implemented
+        # OR
+        username = request.POST.get('username','')
+        password = request.POST.get('password','')
+        user = authenticate(username=username, password=password)
+        if user == None:
+            return False
+        else: 
+            return True
 
 def index(request):
 
@@ -62,12 +67,12 @@ def movies(request):
     return HttpResponse(html)    
 
 def peso(request):
-    
+
     if not auth(request):
         html = render_to_string('err_auth.html')
         return HttpResponse(html)
-    
+
     html = render_to_string('peso.html')    
-    
-    return HttpResponse(html)    
-    
+
+    return HttpResponse(html)
+
