@@ -9,6 +9,7 @@ import logging
 
 from random import randint
 from datetime import datetime
+import datetime as dttt
 from Crypto.Cipher import AES
 
 import firebase_admin
@@ -137,7 +138,7 @@ def get_pesate_by_soggetto(request, id_soggetto):
 
     if soggetti:
         soggetto = soggetti[0]
-        lista_pesi = Pesata.objects.filter(id_soggetto=id_soggetto)
+        lista_pesi = Pesata.objects.filter(id_soggetto=id_soggetto).filter(data__gte=dttt.date(2019,1,1))
         peso_list = []
         for peso in lista_pesi:
             peso_diz = {'data':peso.data.strftime("%d/%m/%y"), 'peso':peso.peso}
@@ -162,7 +163,7 @@ def get_all_pesate(request):
     out = {}
     soggetti = Soggetto.objects.values_list('id_soggetto', 'nome')
     for soggetto in soggetti:
-        pesate = Pesata.objects.filter(id_soggetto=soggetto)
+        pesate = Pesata.objects.filter(id_soggetto=soggetto).filter(data__gte=dttt.date(2019,1,1))
         peso_list = []
         for peso in pesate:
             peso_diz = {'data':peso.data.strftime("%Y/%m/%d"), 'peso':peso.peso}
@@ -187,7 +188,7 @@ def get_sum_by_month(request):
     out = {}
     soggetti = Soggetto.objects.values_list('id_soggetto', 'nome')
     for soggetto in soggetti:
-        pesate = Pesata.objects.filter(id_soggetto=soggetto[0]) #.order_by('data')
+        pesate = Pesata.objects.filter(id_soggetto=soggetto[0]).filter(data__gte=dttt.date(2019,1,1))
         peso_list = []
         mesi_diz = {}
         for peso in pesate:
