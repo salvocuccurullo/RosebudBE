@@ -291,7 +291,7 @@ def login(request):
 
         if users:
             plain_text = plain_text.decode('utf-8').strip()
-            pwd_ok = check_password(plain_text, users[0].password)
+            pwd_ok = check_password(plain_text, users.first().password)
             out = "User found!"
             if pwd_ok:
                 logged = "yes"
@@ -300,7 +300,7 @@ def login(request):
             logged = "no"
 
         logger.debug("login result for user " + username + " : " + out)
-        response_data['payload'] = {"message":out, 'username':username, 'logged':logged}
+        response_data['payload'] = {"message":out, 'username':users.first().username, 'logged':logged}
 
     except Exception as eee:
         response_data['result'] = 'failure'
