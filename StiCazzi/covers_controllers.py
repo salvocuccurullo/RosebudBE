@@ -85,7 +85,6 @@ def spotify(request):
         username = i_data.get('username', '')
         kanazzi = i_data.get('kanazzi', '')
         album_url = i_data.get('album_url', '')
-        logger.debug(i_data)
     except ValueError:
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
