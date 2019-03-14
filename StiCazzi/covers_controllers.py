@@ -75,6 +75,54 @@ def get_remote_covers(request):
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
 
+def spotify(request):
+    """ Get album info from spotify """
+    logger.debug("get_spotify_called")
+    response_data = {}
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        kanazzi = i_data.get('kanazzi', '')
+        album_url = i_data.get('album_url', '')
+    except ValueError:
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Bad input format'
+        return JsonResponse(response_data, status=400)
+
+    if not username or not kanazzi or not check_session(kanazzi, username, action='getRemoteCovers', store=False):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Invalid Session'
+        return JsonResponse(response_data, status=401)
+
+    client_info = {
+          "grant_type":    "authorization_code",
+          "response_type":  "code",
+          "redirect_uri":  os.environ.get('SPOTIPY_REDIRECT_URI',''),
+          "client_secret": os.environ.get('SPOTIPY_CLIENT_SECRET',''),
+          "client_id":     os.environ.get('SPOTIPY_CLIENT_ID','')
+    }
+
+    spotify_auth_url = "https://accounts.spotify.com/api/token"
+    payload = {"grant_type": "client_credentials"}
+    res = requests.post(spotify_auth_url, auth=(os.environ.get('SPOTIPY_CLIENT_ID',''),os.environ.get('SPOTIPY_CLIENT_SECRET','')), data=payload)
+    response_code=res.status_code
+    response=res.text
+
+    if response_code == 200:
+        auth_data = json.loads(response)
+        print(auth_data)
+        access_token = auth_data['access_token']
+
+        headers = {"Authorization": "Bearer %s" % access_token}
+        res = requests.get(album_url, headers=headers)
+        if res.status_code == 200:
+            return JsonResponse(res.text, safe=False)
+
+    response_body = {"result": "failure", "message": response.text, "status_code": status_code}
+    return JsonResponse(response_body, status=status_code, safe=False)
+
+
 
 def get_covers(request):
     """ Get all covers from API """
