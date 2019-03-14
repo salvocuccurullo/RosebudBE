@@ -85,6 +85,7 @@ def spotify(request):
         username = i_data.get('username', '')
         kanazzi = i_data.get('kanazzi', '')
         album_url = i_data.get('album_url', '')
+        logger.debug(i_data)
     except ValueError:
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
@@ -102,7 +103,6 @@ def spotify(request):
           "client_secret": os.environ.get('SPOTIPY_CLIENT_SECRET',''),
           "client_id":     os.environ.get('SPOTIPY_CLIENT_ID','')
     }
-
     spotify_auth_url = "https://accounts.spotify.com/api/token"
     payload = {"grant_type": "client_credentials"}
     res = requests.post(spotify_auth_url, auth=(os.environ.get('SPOTIPY_CLIENT_ID',''),os.environ.get('SPOTIPY_CLIENT_SECRET','')), data=payload)
@@ -111,16 +111,18 @@ def spotify(request):
 
     if response_code == 200:
         auth_data = json.loads(response)
-        print(auth_data)
         access_token = auth_data['access_token']
 
         headers = {"Authorization": "Bearer %s" % access_token}
+        album_url = "https://api.spotify.com/v1/albums/" + album_url.split("/")[-1]
         res = requests.get(album_url, headers=headers)
         if res.status_code == 200:
-            return JsonResponse(res.text, safe=False)
+            album = json.loads(res.text)
+            logger.debug("Fond on spotify the album: %(name)s" % album)
+            return JsonResponse(res.text, status=res.status_code, safe=False)
 
-    response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
+    response_body = {"result": "failure", "message": response, "status_code": response_code}
+    return JsonResponse(response_body, status=response_code, safe=False)
 
 
 
