@@ -133,6 +133,18 @@ def get_covers(request):
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
 
+    #backward compatibility - will be removed soon
+    if not username:
+    
+        try:
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            kanazzi = i_data.get('kanazzi', '')
+        except ValueError:
+            response_data['result'] = 'failure'
+            response_data['message'] = 'Bad input format'
+            return JsonResponse(response_data, status=400)
+
     if not username or not kanazzi or not check_session(kanazzi, username, action='getCovers', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
