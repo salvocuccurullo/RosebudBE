@@ -114,10 +114,11 @@ def spotify(request):
 
         headers = {"Authorization": "Bearer %s" % access_token}
         album_url = "https://api.spotify.com/v1/albums/" + album_url.split("/")[-1]
+        logger.debug("Spotify get album: %s" % album_url)
         res = requests.get(album_url, headers=headers)
         if res.status_code == 200:
             album = json.loads(res.text)
-            logger.debug("Fond on spotify the album: %(name)s" % album)
+            logger.debug("Found on spotify the album: %(name)s" % album)
             return JsonResponse(res.text, status=res.status_code, safe=False)
 
     response_body = {"result": "failure", "message": response, "status_code": response_code}
@@ -251,6 +252,7 @@ def save_cover(request):
     kanazzi = request.POST.get('kanazzi', '').strip()
     cover_file = request.FILES.get('pic', '')
     spoti_img_url = request.POST.get('spoti_img_url', '')
+    spotify_api_url = request.POST.get('spotify_api_url', '')
     cover_name = ''
     upload_file_res = {}
 
@@ -288,6 +290,8 @@ def save_cover(request):
         payload.update({'fileName': cover_name})
     if spoti_img_url:
         payload.update({'fileName': spoti_img_url})
+    if spotify_api_url:
+        payload.update({'spotifyUrl': spotify_api_url})
 
     payload = json.dumps(payload)
     mongo_final_url = MONGO_API_URL + "/createCover2"
