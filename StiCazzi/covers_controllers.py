@@ -250,10 +250,11 @@ def save_cover(request):
     username = request.POST.get('username2', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
     cover_file = request.FILES.get('pic', '')
+    spoti_img_url = request.POST.get('spoti_img_url', '')
     cover_name = ''
     upload_file_res = {}
 
-    logger.debug("%s - %s",username,kanazzi)
+    #logger.debug("%s - %s",username,kanazzi)
 
     if not username or not kanazzi or not check_session(kanazzi, username, action='uploadcover', store=True):
         response_data['result'] = 'failure'
@@ -265,17 +266,18 @@ def save_cover(request):
     if id_cover:
         logger.debug("object id received: %s Going to update record...." % id_cover)
 
-    upload_file_res = {}
-    if cover_file:
-        logger.debug("A file has been uploaded... " + cover_file.name)
-        temp_f_name = title + '_' + cover_file.name
-        cover_name = safe_file_name(temp_f_name, cover_file.content_type)
-        upload_file_res = upload_cover(request, cover_name, cover_type="cover")
+    if not spoti_img_url:
+        upload_file_res = {}
+        if cover_file:
+            logger.debug("A file has been uploaded... " + cover_file.name)
+            temp_f_name = title + '_' + cover_file.name
+            cover_name = safe_file_name(temp_f_name, cover_file.content_type)
+            upload_file_res = upload_cover(request, cover_name, cover_type="cover")
 
-    upload_res = upload_file_res.get('result', 'failure')
-    if upload_res == 'failure' and cover_name != "" and id_cover != "":
-        response_data = upload_file_res
-        return JsonResponse(response_data)
+        upload_res = upload_file_res.get('result', 'failure')
+        if upload_res == 'failure' and cover_name != "" and id_cover != "":
+            response_data = upload_file_res
+            return JsonResponse(response_data)
 
     headers = {'Content-Type': 'application/json'}
     payload = {"name": title, "author": author, "year": year, "username": username}
@@ -284,6 +286,8 @@ def save_cover(request):
         payload.update({'id': id_cover})
     if cover_name:
         payload.update({'fileName': cover_name})
+    if spoti_img_url:
+        payload.update({'fileName': spoti_img_url})
 
     payload = json.dumps(payload)
     mongo_final_url = MONGO_API_URL + "/createCover2"
@@ -296,13 +300,13 @@ def save_cover(request):
     logger.debug("%s - %s - %s ==> %s" % (mongo_final_url, str(status_code), str(payload), response_body))
     logger.debug("**************")
 
-    if str(status_code) == "200":
+    if str(status_code) == "200" and json.loads(response_body)['result'] != 'failure':
         title = urllib.parse.unquote(title)
         author = urllib.parse.unquote(author)
         notif = Notification(type="new_cover", title="%s has just added a new cover" % username, message="%s - %s" % (title, author), username=username)
         notif.save()
     else:
-        response_body = {"result": "failure", "message": response.text, "status_code": status_code}
+        response_body = {"result": "failure", "message": json.loads(response.text)['message'], "status_code": str(status_code)}
         return JsonResponse(response_body, status=status_code, safe=False)
 
     return JsonResponse(response_body, safe=False)
