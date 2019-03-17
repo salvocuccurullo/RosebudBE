@@ -120,8 +120,10 @@ def spotify(request):
             album = json.loads(res.text)
             logger.debug("Found on spotify the album: %(name)s" % album)
             return JsonResponse(res.text, status=res.status_code, safe=False)
-
-    response_body = {"result": "failure", "message": response, "status_code": response_code}
+        else:
+            response = res.text
+            response_code = res.status_code
+    response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
     return JsonResponse(response_body, status=response_code, safe=False)
 
 
