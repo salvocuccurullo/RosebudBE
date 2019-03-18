@@ -94,9 +94,12 @@ def spotify(request):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
+   
+    logger.debug("Spotify URL: %s" % album_url)
+    
+    expected_base_url = ("https://open.spotify.com", "https://api.spotify.com")
 
-    expected_base_url = "https://open.spotify.com/album/"
-    if not album_url or not album_url.startswith(expected_base_url):
+    if album_url and not album_url.startswith(expected_base_url):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Spotify URL'
         return JsonResponse(response_data, status=400)
