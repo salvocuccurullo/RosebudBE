@@ -241,7 +241,8 @@ def check_session(session_id, username, action='', store=False):
         plain_text = plain_text.strip()
         session_dt = datetime.strptime(str(plain_text.decode("utf-8")), "%Y_%m_%d_%H_%M_%S_%f")
         if SESSION_DBG:
-            logger.debug("Valid session id for user %s with %s", username, plain_text)
+            #logger.debug("Valid session id for user %s with %s", username, plain_text)
+            logger.debug("Valid session id for user %s", username)
         now = datetime.now()
         time_diff = now - session_dt
 
