@@ -24,7 +24,8 @@ from django.core import serializers
 from django import get_version
 from django.contrib.auth import authenticate
 
-from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location
+from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration
+from StiCazzi.models import ConfigurationSerializer
 from . import utils
 
 SESSION_DBG = True
@@ -800,3 +801,35 @@ def version(request):
 
     response['message'] = 'Current Django version: %s' % current_version
     return JsonResponse(response, status=200)
+
+def get_configs(request):
+    """ Get covers statistics from API """
+    logger.debug("get configurations called")
+    response_data = {}
+
+    username = request.POST.get('username', '')
+    kanazzi = request.POST.get('kanazzi', '').strip()
+
+    #backward compatibility - will be removed soon
+    if not username:
+        try:
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            kanazzi = i_data.get('kanazzi', '')
+        except ValueError:
+            response_data['result'] = 'failure'
+            response_data['message'] = 'Bad input format'
+            return JsonResponse(response_data, status=400)
+
+    if not username or not check_session(kanazzi, username, action='getCovers', store=False):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Invalid Session'
+        return JsonResponse(response_data, status=401)
+
+    configs = Configuration.objects.all()
+    serializer = ConfigurationSerializer(configs, many=True)
+
+    response_data['result'] = 'success'
+    response_data['payload'] = serializer.data
+    return JsonResponse(response_data, status=200)
+

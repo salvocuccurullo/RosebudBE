@@ -1,4 +1,5 @@
 django>=2.1.2
+djangorestframework
 mysqlclient
 mod_wsgi
 django-cors-headers

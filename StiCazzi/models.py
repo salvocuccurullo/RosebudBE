@@ -1,7 +1,7 @@
 from django.db import models
 from unittest.util import _MAX_LENGTH
 from datetime import *
-
+from rest_framework import serializers
 
 class Soggetto(models.Model):
     id_soggetto = models.AutoField(primary_key=True)
@@ -170,3 +170,20 @@ class Location(models.Model):
         indexes = [
             models.Index(fields=['user'], name='location_idx'),
         ]
+
+class Configuration(models.Model):
+    id_config = models.AutoField(primary_key=True)
+    config_type = models.CharField(max_length=100, null=False, default="unassigned")
+    name = models.CharField(max_length=100, null=False)
+    value = models.CharField(max_length=300, null=False)
+    extra = models.CharField(max_length=500, null=True, default="")
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['name'], name='configuration_name_idx'),
+        ]
+
+class ConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Configuration
+        fields = ('config_type','name','value')

@@ -15,7 +15,7 @@
         2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 from StiCazzi import views, controllers, movies_controllers, covers_controllers
 
@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^get_pesate_by_soggetto/(?P<id_soggetto>\d+)$', controllers.get_pesate_by_soggetto),
     url(r'^get_all_pesate/$', controllers.get_all_pesate),
     url(r'^getByMonth/$', controllers.get_sum_by_month),
+    url(r'^getconfigs$', controllers.get_configs),
 
     url(r'^getTvShows3$', movies_controllers.get_tvshows_new_opt),
     url(r'^deletemovie$', movies_controllers.deletemovie),
@@ -59,4 +60,5 @@ urlpatterns = [
 
     url(r'^testSession$', controllers.test_session),
     url(r'^version', controllers.version),
+
 ]
