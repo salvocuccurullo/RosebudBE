@@ -343,7 +343,8 @@ def save_cover(request):
         title = urllib.parse.unquote(title)
         author = urllib.parse.unquote(author)
         notif = Notification(type="new_cover", title="%s has just added a new cover" % username, message="%s - %s" % (title, author), username=username)
-        notif.save()
+        if not id_cover:    #do not send notification for cover editing...
+            notif.save()
     else:
         response_body = {"result": "failure", "message": json.loads(response.text)['message'], "status_code": str(status_code)}
         return JsonResponse(response_body, status=status_code, safe=False)
