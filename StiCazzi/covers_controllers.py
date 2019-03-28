@@ -75,9 +75,9 @@ def get_remote_covers(request):
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
 
-def spotify(request):
-    """ Get album info from spotify """
-    logger.debug("get_spotify_called")
+
+def spotify_auth(request):
+    logger.debug("Spotify Auth Called")
     response_data = {}
 
     try:
@@ -85,17 +85,25 @@ def spotify(request):
         username = i_data.get('username', '')
         kanazzi = i_data.get('kanazzi', '')
         album_url = i_data.get('album_url', '')
+        query = i_data.get('query', '')
+        search_type = i_data.get('search_type', '')
     except ValueError:
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
         return JsonResponse(response_data, status=400)
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='getRemoteCovers', store=False):
+   
+    #logger.debug("%s - %s" % (username, kanazzi))
+    logger.debug("%s - %s - %s" % (album_url, search_type, query))
+    
+    if not (album_url or (query and search_type)):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Unprocessable Entity: missing parameter'
+        return JsonResponse(response_data, status=422)
+    
+    if not username or not kanazzi or not check_session(kanazzi, username, action='spotifyAuthorization', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
-   
-    logger.debug("Spotify URL: %s" % album_url)
     
     expected_base_url = ("https://open.spotify.com", "https://api.spotify.com")
 
@@ -114,8 +122,23 @@ def spotify(request):
     spotify_auth_url = "https://accounts.spotify.com/api/token"
     payload = {"grant_type": "client_credentials"}
     res = requests.post(spotify_auth_url, auth=(os.environ.get('SPOTIPY_CLIENT_ID',''),os.environ.get('SPOTIPY_CLIENT_SECRET','')), data=payload)
-    response_code=res.status_code
-    response=res.text
+
+    return {"result": res.text, "status_code": res.status_code, "search_type": search_type, "album_url": album_url, "query": query}
+
+
+def spotify(request):
+    """ Get album info from spotify """
+   
+    logger.debug("Spotify Album Called")
+    response_data = {}
+    
+    spotify_pre_auth = spotify_auth(request)
+    if type(spotify_pre_auth) is JsonResponse:
+        return spotify_pre_auth
+
+    response = spotify_pre_auth.get('result','')
+    album_url = spotify_pre_auth.get('album_url','')
+    response_code=spotify_pre_auth.get('status_code','')
 
     if response_code == 200:
         auth_data = json.loads(response)
@@ -134,6 +157,42 @@ def spotify(request):
             response_code = res.status_code
     response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
     return JsonResponse(response_body, status=response_code, safe=False)
+
+
+def spotify_search(request):
+    """ Get album info from spotify """
+   
+    logger.debug("Spotify Search Called")
+    response_data = {}
+   
+    spotify_pre_auth = spotify_auth(request)
+    if type(spotify_pre_auth) is JsonResponse:
+        return spotify_pre_auth
+
+    response = spotify_pre_auth.get('result','')
+    query = spotify_pre_auth.get('query','')
+    search_type = spotify_pre_auth.get('search_type','')
+    response_code=spotify_pre_auth.get('status_code','')
+
+    if response_code == 200:
+        auth_data = json.loads(response)
+        access_token = auth_data['access_token']
+        headers = {"Authorization": "Bearer %s" % access_token}
+        res = requests.get("https://api.spotify.com/v1/search?q=%s&type=%s" % (query, search_type), headers=headers)
+        if res.status_code == 200:
+            result = json.loads(res.text)
+            data_out = []
+            for track in result['tracks']['items']:
+                album = {"name": track['album']['name'], "author":track['artists'][0]['name'], "url":track['album']['href'], "tracks_num": track['album']['total_tracks'], 'year': track['album']['release_date'][:4]}
+                if album not in data_out:
+                    data_out.append(album)
+            return JsonResponse({"result":"success", "payload":data_out}, status=res.status_code, safe=False)
+        else:
+            response = res.text
+            response_code = res.status_code
+    response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
+    return JsonResponse(response_body, status=response_code, safe=False)
+
 
 
 

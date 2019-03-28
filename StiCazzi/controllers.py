@@ -232,6 +232,7 @@ def check_session(session_id, username, action='', store=False):
     sessions = Session.objects.filter(session_string=session_id)
     if sessions:
         #print "session already exists"
+        logger.debug("Session already exist")
         return False
 
     #Semantic check
@@ -246,14 +247,14 @@ def check_session(session_id, username, action='', store=False):
             logger.debug("Valid session id for user %s", username)
         now = datetime.now()
         time_diff = now - session_dt
-
-        if time_diff.days > 90:
+        logger.debug("Session time : %1.3f hours" % float(time_diff.seconds/3600))
+        if (time_diff.seconds / 3600) > 2:  # Expired after two hours (actually one becasue aws timezone)
             if SESSION_DBG:
-                logger.debug("Session expired : %s days", str(time_diff.days))
+                logger.debug("Session expired : %.3f hours" % float(time_diff.seconds/3600))
             return False
 
         if SESSION_DBG:
-            logger.debug("Session not expired : %s days", str(time_diff.days))
+            logger.debug("Session not expired : %.3f hours" % float(time_diff.seconds/3600)) 
 
     except Exception as exception:
         if SESSION_DBG:
