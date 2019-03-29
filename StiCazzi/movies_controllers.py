@@ -68,6 +68,14 @@ def get_tvshows_new_opt(request):
     else:
         bounded = movie_list
 
+    # Adding all NW
+    if not query:
+        nwtv = TvShowVote.objects.filter(now_watching=True)
+        nwtv_list = [show.tvshow for show in nwtv if show.tvshow not in bounded]
+        nwtv_list = list(set(nwtv_list))
+        bounded = list(bounded) + nwtv_list
+    # End Adding all NW
+
     for tvs in bounded:
         # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
         movie_created = tvs.created.strftime("%d %B %Y ")
