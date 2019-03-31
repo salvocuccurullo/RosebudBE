@@ -248,7 +248,7 @@ def check_session(session_id, username, action='', store=False):
         now = datetime.now()
         time_diff = now - session_dt
         logger.debug("Session time : %1.3f hours" % float(time_diff.seconds/3600))
-        if (time_diff.seconds / 3600) > 2:  # Expired after two hours (actually one becasue aws timezone)
+        if (time_diff.seconds / 3600) > 3:  # Expired after two hours (actually one becasue aws timezone)
             if SESSION_DBG:
                 logger.debug("Session expired : %.3f hours" % float(time_diff.seconds/3600))
             return False
@@ -287,6 +287,7 @@ def login(request):
 
         decryption_suite = AES.new(os.environ['OPENSHIFT_DUMMY_KEY'], AES.MODE_ECB, '')
         plain_text = decryption_suite.decrypt(base64.b64decode(password))
+        #logger.debug(password)
 
         out = ""
         logged = "no"
