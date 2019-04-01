@@ -247,14 +247,15 @@ def check_session(session_id, username, action='', store=False):
             logger.debug("Valid session id for user %s", username)
         now = datetime.now()
         time_diff = now - session_dt
-        logger.debug("Session time : %1.3f hours" % float(time_diff.seconds/3600))
-        if (time_diff.seconds / 3600) > 3:  # Expired after two hours (actually one becasue aws timezone)
+        time_diff_hrs = time_diff.total_seconds() / 3600
+        logger.debug("Session time : %1.3f hours" % time_diff_hrs)
+        if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
             if SESSION_DBG:
-                logger.debug("Session expired : %.3f hours" % float(time_diff.seconds/3600))
+                logger.debug("Session expired : %.3f hours" % time_diff_hrs)
             return False
 
         if SESSION_DBG:
-            logger.debug("Session not expired : %.3f hours" % float(time_diff.seconds/3600)) 
+            logger.debug("Session not expired : %.3f hours" % time_diff_hrs) 
 
     except Exception as exception:
         if SESSION_DBG:
