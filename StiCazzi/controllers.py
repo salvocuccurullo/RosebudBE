@@ -11,6 +11,7 @@ from random import randint
 from datetime import datetime
 import datetime as dttt
 from Crypto.Cipher import AES
+import Padding
 
 import firebase_admin
 from firebase_admin import credentials, auth
@@ -835,4 +836,44 @@ def get_configs(request):
     response_data['result'] = 'success'
     response_data['payload'] = serializer.data
     return JsonResponse(response_data, status=200)
+
+
+def comfortably_numb(request):
+    """
+    Controller:
+    """
+
+    logger.debug("Comfortably numb")
+
+    response = {'result':'success','payload':{}}
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        password = i_data.get('password', '')
+        password2 = i_data.get('password2', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    if not username or not password:
+        response['result'] = 'failure'
+        response['payload'] = {"message": "Not valid credentials", 'logged':'no'}
+        return JsonResponse(response, status=401)
+
+    logger.debug("Pw: ",password)
+    logger.debug("Pw2: ", password2)
+    decryption_suite = AES.new(os.environ['OPENSHIFT_DUMMY_KEY'], AES.MODE_ECB, '')
+    bsixty4 = base64.b64decode(password)
+    logger.debug(bsixty4)
+    #plain_text = decryption_suite.decrypt(base64.b64decode(password))
+    plain_text = decryption_suite.decrypt(bsixty4)
+    #logger.debug(plain_text)
+    #plain_text = Padding.removePadding(plain_text,blocksize=Padding.AES_blocksize,mode='CMS')
+    logger.debug(plain_text)
+    
+    response['payload'] = {"message":"welcome", 'username':username, 'logged':True}
+
+    return JsonResponse(response)
 
