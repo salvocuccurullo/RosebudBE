@@ -1,4 +1,4 @@
-django>=2.1.2
+django>=2.1.2,<3.0
 djangorestframework
 mysqlclient
 mod_wsgi
