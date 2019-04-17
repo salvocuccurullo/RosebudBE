@@ -48,6 +48,7 @@ urlpatterns = [
     url(r'^getcoversstats2$', covers_controllers.get_covers_stats_2),
     url(r'^spotify$', covers_controllers.spotify),
     url(r'^spotifysearch$', covers_controllers.spotify_search),
+    url(r'^localsearch$', covers_controllers.get_covers_by_search),
 
     url(r'^geolocation$', controllers.geolocation),
     url(r'^geolocation2$', controllers.geolocation2),
@@ -55,6 +56,7 @@ urlpatterns = [
 
     url(r'^login$', controllers.login),
     url(r'^login2$', controllers.login2),
+    url(r'^cnumb$', controllers.comfortably_numb),
     url(r'^setFBToken$', controllers.set_fb_token),
     url(r'^setFBToken2$', controllers.set_fb_token2),
     url(r'^checkFBToken$', controllers.check_fb_token),

@@ -69,7 +69,7 @@ def get_tvshows_new_opt(request):
         bounded = movie_list
 
     # Adding all NW
-    if not query:
+    if not query and current_page == 1:
         nwtv = TvShowVote.objects.filter(now_watching=True)
         nwtv_list = [show.tvshow for show in nwtv if show.tvshow not in bounded]
         nwtv_list = list(set(nwtv_list))
