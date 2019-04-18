@@ -14,12 +14,8 @@ from django.http import JsonResponse
 from StiCazzi.models import Notification
 from StiCazzi.controllers import check_session, check_google
 from StiCazzi.utils import safe_file_name
+from StiCazzi.env import MONGO_API_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 
-MONGO_API_URL = os.environ.get('MONGO_API_URL', '')
-MONGO_API_USER = os.environ.get('COVER_API_USER', '')
-MONGO_API_PWD = os.environ.get('COVER_API_PW', '')
-MONGO_SERVER_CERTIFICATE = os.environ.get('MONGO_SERVER_CERTIFICATE')
-MAX_FILE_SIZE = os.environ.get('UPLOAD_MAX_SIZE', 512000)
 logger = logging.getLogger(__name__)
 
 def get_random_cover(request):
@@ -194,8 +190,6 @@ def spotify_search(request):
     return JsonResponse(response_body, status=response_code, safe=False)
 
 
-
-
 def get_covers(request):
     """ Get all covers from API """
     response_data = {}
@@ -210,6 +204,7 @@ def get_covers(request):
             i_data = json.loads(request.body)
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
+            limit = i_data.get('limit', '15')
         except ValueError:
             response_data['result'] = 'failure'
             response_data['message'] = 'Bad input format'
@@ -223,7 +218,8 @@ def get_covers(request):
     #logger.debug(kanazzi)
 
     headers = {'Content-Type': 'application/json'}
-    mongo_final_url = MONGO_API_URL + "/getAllCovers"
+    #mongo_final_url = MONGO_API_URL + "/getAllCovers"
+    mongo_final_url = MONGO_API_URL + "/getLatest?limit=%s" % limit
     response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
@@ -477,3 +473,4 @@ def get_covers_by_search(request):
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
+

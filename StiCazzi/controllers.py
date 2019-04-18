@@ -12,6 +12,8 @@ from datetime import datetime
 import datetime as dttt
 from Crypto.Cipher import AES
 import Padding
+import requests
+from requests.auth import HTTPBasicAuth
 
 import firebase_admin
 from firebase_admin import credentials, auth
@@ -27,6 +29,7 @@ from django.contrib.auth import authenticate
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration
 from StiCazzi.models import ConfigurationSerializer
+from StiCazzi.env import MONGO_API_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 from . import utils
 
 SESSION_DBG = True
@@ -776,11 +779,28 @@ def test_session(request):
     response['message'] = 'Authentication successful! By Google Token: %s' % token_check['info']
     return JsonResponse(response, status=200)
 
+def get_mongoapi_version():
+    """ Get info about mongoapi version"""
+    response_data = {}
+
+    headers = {'Content-Type': 'application/json'}
+    mongo_final_url = MONGO_API_URL + "/getVersion"
+    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+
+    status_code = response.status_code
+    response_body = response.text
+
+    if str(status_code) == "200":
+        return json.loads(response.text)
+    else:
+        return {}
+
+
 def version(request):
     """
     Controller:
     """
-
+    logger.debug("get version called")
     response = {'result':'success'}
 
     try:
@@ -802,8 +822,14 @@ def version(request):
         return JsonResponse(response, status=401)
 
     current_version = get_version()
+    mongoapi_version = get_mongoapi_version()
+    logger.debug(mongoapi_version)
+    if mongoapi_version:
+        mongoapi_version = mongoapi_version['payload']['version']
+    else:
+        mongoapi_version = "N/A"
 
-    response['message'] = 'Current Django version: %s' % current_version
+    response['message'] = 'Django: %s - MongoAPI: %s' % (current_version, mongoapi_version)
     return JsonResponse(response, status=200)
 
 def get_configs(request):
