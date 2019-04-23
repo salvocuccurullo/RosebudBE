@@ -531,7 +531,7 @@ def get_catalogue(request):
     if not cat_type:
         media_cat = Catalogue.objects.all()
     else:
-        media_cat = Catalogue.objects.filter(cat_type=cat_type)
+        media_cat = Catalogue.objects.filter(cat_type=cat_type).order_by('label')
 
     response['payload'] = [model_to_dict(rec) for rec in media_cat]
 
