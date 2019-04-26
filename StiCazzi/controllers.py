@@ -17,6 +17,7 @@ from requests.auth import HTTPBasicAuth
 
 import firebase_admin
 from firebase_admin import credentials, auth
+from geopy.distance import geodesic
 
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
@@ -27,7 +28,7 @@ from django.core import serializers
 from django import get_version
 from django.contrib.auth import authenticate
 
-from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration
+from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification
 from StiCazzi.models import ConfigurationSerializer
 from StiCazzi.env import MONGO_API_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 from . import utils
@@ -464,11 +465,25 @@ def geolocation(request):
     else:
         if latitude and longitude:            #SET COORD
             if loc:
+
+                old_loc = (loc[0].latitude, loc[0].longitude)
+                new_loc = (latitude, longitude)
+                distance = geodesic(old_loc, new_loc).kilometers
+                logger.debug("Distance %s km." % "{0:.2f}".format(float(distance)))
+
                 loc[0].latitude = latitude
                 loc[0].longitude = longitude
                 if photo:
                     loc[0].photo = photo
                 loc[0].save()
+
+                if float(distance) > 20:
+                    notification = Notification(
+                        type="new_location", \
+                        title="%s has moved to a new location" % (users[0].username), \
+                        message="As the crow flies: %s km" % "{0:.2f}".format(float(distance)))
+                    notification.save()
+
             else:
                 location = Location(user=users[0], latitude=latitude, longitude=longitude, photo=photo)
                 location.save()
