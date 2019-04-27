@@ -426,7 +426,8 @@ def handle_uploaded_file(up_file, safe_fname, cover_type="poster"):
         with open(final_full_path, 'wb+') as destination:
             for chunk in up_file.chunks():
                 destination.write(chunk)
-    except IOError:
+    except IOError as ioe:
+        logger.error(ioe)
         return False
 
     return True
