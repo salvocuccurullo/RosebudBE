@@ -349,6 +349,7 @@ def save_cover(request):
     upload_file_res = {}
 
     #logger.debug("%s - %s",username,kanazzi)
+    logger.debug("id cover: %s" % id_cover)
 
     if not username or not kanazzi or not check_session(kanazzi, username, action='uploadcover', store=True):
         response_data['result'] = 'failure'
@@ -357,7 +358,7 @@ def save_cover(request):
 
     logger.debug("Cover Upload: %s - %s - %s" % (title.encode('utf-8'), author.encode('utf-8'), str(year)))
 
-    if id_cover:
+    if id_cover != "0":
         logger.debug("object id received: %s Going to update record...." % id_cover)
 
     if not spoti_img_url:
@@ -400,7 +401,7 @@ def save_cover(request):
         title = urllib.parse.unquote(title)
         author = urllib.parse.unquote(author)
         notif = Notification(type="new_cover", title="%s has just added a new cover" % username, message="%s - %s" % (title, author), username=username)
-        if not id_cover:    #do not send notification for cover editing...
+        if id_cover == "0":    #do not send notification for cover editing...
             notif.save()
     else:
         response_body = {"result": "failure", "message": json.loads(response.text)['message'], "status_code": str(status_code)}

@@ -420,7 +420,7 @@ def geolocation(request):
     Controller:
     """
 
-    response = {'result':'success'}
+    response = {'result':'success', 'distance':0}
     username = request.POST.get('username', '')
     longitude = request.POST.get('longitude', '')
     latitude = request.POST.get('latitude', '')
@@ -464,6 +464,7 @@ def geolocation(request):
         response['message'] = 'Retrieved GPS coordinates for %s user(s)' % len(locations)
     else:
         if latitude and longitude:            #SET COORD
+            distance = 0
             if loc:
 
                 old_loc = (loc[0].latitude, loc[0].longitude)
@@ -488,6 +489,7 @@ def geolocation(request):
                 location = Location(user=users[0], latitude=latitude, longitude=longitude, photo=photo)
                 location.save()
             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
+            response['distance'] = distance
         else:
             response['result'] = 'failure'
             ret_status = 400
