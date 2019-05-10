@@ -303,6 +303,7 @@ def savemovienew(request):
     type = request.POST.get('type', 'brand_new')
     tvshow_type = request.POST.get('tvshow_type', 'movie')
     serie_season = request.POST.get('serie_season', 1)
+    clone_season = request.POST.get('clone_season', 1)
     director = request.POST.get('director', '')
     year = request.POST.get('year', '')
     username = request.POST.get('username', '')
@@ -413,6 +414,19 @@ def savemovienew(request):
                             director=director, year=year,
                             poster=poster_name, serie_season=serie_season)
             tvshow.save()
+
+            if int(clone_season) > 1:
+                logger.debug("Cloning serie %s started..." % tvshow.title)
+                start = int(tvshow.serie_season) + 1
+                stop = start + int(clone_season)
+                for i in range(start, stop):
+                    tvshow_clone = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
+                            type=type, tvshow_type=tvshow_type,
+                            director=director, year=year,
+                            poster='', serie_season=i)
+                    logger.debug("Saving season %s" % str(tvshow_clone.serie_season))
+                    tvshow_clone.save()
+                logger.debug("Cloning serie %s finished." % tvshow_clone.title)
 
             if not later:
 
