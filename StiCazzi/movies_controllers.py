@@ -415,7 +415,7 @@ def savemovienew(request):
                             poster=poster_name, serie_season=serie_season)
             tvshow.save()
 
-            if int(clone_season) > 0 and int(clone_season) < 10:
+            if tvshow_type == 'serie' and int(clone_season) > 1 and int(clone_season) < 10:
                 logger.debug("Cloning serie %s started..." % tvshow.title)
                 start = int(tvshow.serie_season) + 1
                 stop = start + int(clone_season)
