@@ -345,6 +345,7 @@ def save_cover(request):
     cover_file = request.FILES.get('pic', '')
     spoti_img_url = request.POST.get('spoti_img_url', '')
     spotify_api_url = request.POST.get('spotify_api_url', '')
+    spotify_album_url = request.POST.get('spotify_album_url', '')
     cover_name = ''
     upload_file_res = {}
 
@@ -385,6 +386,9 @@ def save_cover(request):
         payload.update({'fileName': spoti_img_url})
     if spotify_api_url:
         payload.update({'spotifyUrl': spotify_api_url})
+    if spotify_album_url:
+        payload.update({'spotifyAlbumUrl': spotify_album_url})
+
 
     payload = json.dumps(payload)
     mongo_final_url = MONGO_API_URL + "/createCover2"
