@@ -25,6 +25,11 @@ class Song(models.Model):
     id_song = models.AutoField(primary_key=True)
     title = models.CharField(max_length=150)
     author = models.CharField(max_length=100)
+    spotify = models.CharField(max_length=400, default='')
+    youtube = models.CharField(max_length=400, default='')
+    deezer = models.CharField(max_length=400, default='')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
 
 class Lyric(models.Model):
