@@ -77,7 +77,7 @@ def get_random_song(request):
     if song:
         lyrics_list = Lyric.objects.all().filter(id_song_id=song.id_song)
         final_list = [{'id':rec.id_lyric, 'text':rec.lyric} for rec in lyrics_list]
-        out = {'title':song.title, 'author':song.author, 'lyrics':final_list}
+        out = {'title':song.title, 'author':song.author, 'spotify': song.spotify, 'youtube': song.youtube, 'deezer': song.deezer, 'lyrics':final_list}
         response_data['message'] = out
     else:
         response_data['message'] = 'song not found'
