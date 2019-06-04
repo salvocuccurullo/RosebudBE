@@ -346,6 +346,8 @@ def save_cover(request):
     spoti_img_url = request.POST.get('spoti_img_url', '')
     spotify_api_url = request.POST.get('spotify_api_url', '')
     spotify_album_url = request.POST.get('spotify_album_url', '')
+    review = request.POST.get('review', '')
+    vote = request.POST.get('vote', '')
     cover_name = ''
     upload_file_res = {}
 
@@ -388,10 +390,17 @@ def save_cover(request):
         payload.update({'spotifyUrl': spotify_api_url})
     if spotify_album_url:
         payload.update({'spotifyAlbumUrl': spotify_album_url})
-
+    if review:
+        payload.update({'review': review})
+    if vote:
+        try:
+            float(vote)
+        except:
+            vote = 5
+        payload.update({'vote': float(vote)})
 
     payload = json.dumps(payload)
-    mongo_final_url = MONGO_API_URL + "/createCover2"
+    mongo_final_url = MONGO_API_URL + "/createCover3"
     response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers, data=payload)
 
     status_code = response.status_code
@@ -463,7 +472,7 @@ def get_covers_by_search(request):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
-
+    logger.debug(kanazzi)
     logger.debug("Searching covers by query: %s" % search)
 
     headers = {'Content-Type': 'application/json'}
