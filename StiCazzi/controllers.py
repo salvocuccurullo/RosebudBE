@@ -6,6 +6,7 @@ import json
 import base64
 import os
 import logging
+import uuid
 
 from random import randint
 from datetime import datetime
@@ -23,7 +24,7 @@ from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
 from django.http import JsonResponse
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.core import serializers
 from django import get_version
 from django.contrib.auth import authenticate
@@ -224,6 +225,66 @@ def get_sum_by_month(request):
 
     return JsonResponse(response_data)
 
+
+def check_session_ng(request):
+
+    result = {"success":False, "new_token":""}
+
+    username = request.POST.get('username', '')
+    kanazzi = request.POST.get('kanazzi', '').strip()
+    rosebud_uid = request.POST.get('username', '')
+
+    #backward compatibility - will be removed soon
+    if not username:
+        try:
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            kanazzi = i_data.get('kanazzi', '')
+            rosebud_uid = i_data.get('rosebud_uid', '')
+        except ValueError:
+            result['message'] = 'Invalid data'
+            return result
+
+    users = User.objects.filter(username=username)
+    current_user = users.first()
+    logger.debug("="*30)
+    logger.debug(rosebud_uid)
+    logger.debug("="*30)
+    if check_password(rosebud_uid, current_user.rosebud_uid):
+        logger.debug("Auth NG successful")
+        result['success'] = True
+
+        #Check if token is expired
+        #now = datetime.now().replace(tzinfo=None)
+        now = datetime.utcnow()
+        uid_ts = current_user.rosebud_uid_ts
+        logger.debug(" ======= BEFORE ====== ")
+        logger.debug("Now: %s" % now)
+        logger.debug("Uid ts: %s" % uid_ts)
+        uid_ts = uid_ts.replace(tzinfo=None)
+        now = now.replace(tzinfo=None)
+        logger.debug(" ======= AFTER ====== ")
+        logger.debug("Now: %s" % now)
+        logger.debug("Uid ts: %s" % uid_ts)
+        now = now.replace(tzinfo=None)
+        time_diff = now - uid_ts
+        time_diff_hrs = time_diff.total_seconds() / 3600
+        logger.debug("Session time : %1.3f hours" % time_diff_hrs)
+        if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
+            new_token = uuid.uuid4()
+            current_user.rosebud_uid = make_password(new_token)
+            current_user.rosebud_uid_ts = datetime.now()
+            current_user.save()
+            result['new_token'] = new_token
+    else:
+        logger.debug("Auth NG failed!")
+    
+    logger.debug("="*30)
+    logger.debug(result)
+    logger.debug("="*30)
+    return result
+  
+
 def check_session(session_id, username, action='', store=False):
     """
     Controller:
@@ -297,6 +358,7 @@ def login(request):
 
         out = ""
         logged = "no"
+        rosebud_uid = uuid.uuid4()
         users = User.objects.filter(username=username)
 
         if users:
@@ -305,12 +367,16 @@ def login(request):
             out = "User found!"
             if pwd_ok:
                 logged = "yes"
+                current_user = users.first()
+                current_user.rosebud_uid = make_password(rosebud_uid)
+                current_user.rosebud_uid_ts = datetime.now()
+                current_user.save()
         else:
             out = "User not found!"
             logged = "no"
 
         logger.debug("login result for user " + username + " : " + out)
-        response_data['payload'] = {"message":out, 'username':users.first().username, 'logged':logged}
+        response_data['payload'] = {"message":out, 'username':users.first().username, 'logged':logged, 'rosebud_uid': rosebud_uid}
 
     except Exception as eee:
         response_data['result'] = 'failure'
@@ -856,7 +922,7 @@ def get_configs(request):
 
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
-
+    
     #backward compatibility - will be removed soon
     if not username:
         try:
@@ -872,6 +938,22 @@ def get_configs(request):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
+
+    configs = Configuration.objects.all()
+    serializer = ConfigurationSerializer(configs, many=True)
+
+    response_data['result'] = 'success'
+    response_data['payload'] = serializer.data
+    return JsonResponse(response_data, status=200)
+
+
+def get_configs_new(request):
+    """ Get Configurations """
+    logger.debug("get configurations new called")
+    response_data = {}
+
+    auth_res = check_session_ng(request)
+    response_data['new_token'] = auth_res['new_token']
 
     configs = Configuration.objects.all()
     serializer = ConfigurationSerializer(configs, many=True)

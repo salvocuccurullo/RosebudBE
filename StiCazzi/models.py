@@ -59,6 +59,8 @@ class User(models.Model):
     fcm_token = models.CharField(max_length=300, null=False, default='')
     firebase_id_token = models.CharField(max_length=1024, null=False, default='')
     firebase_uid = models.CharField(max_length=300, null=False, default='')
+    rosebud_uid = models.CharField(max_length=300, null=False, default='')
+    rosebud_uid_ts = models.DateTimeField(auto_now_add=True)
     app_version = models.CharField(max_length=300, null=False, default='')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

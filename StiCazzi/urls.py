@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^get_all_pesate/$', controllers.get_all_pesate),
     url(r'^getByMonth/$', controllers.get_sum_by_month),
     url(r'^getconfigs$', controllers.get_configs),
+    url(r'^getconfigs2$', controllers.get_configs_new),
 
     url(r'^getTvShows3$', movies_controllers.get_tvshows_new_opt),
     url(r'^deletemovie$', movies_controllers.deletemovie),
