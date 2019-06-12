@@ -43,6 +43,7 @@ urlpatterns = [
 
     url(r'^uploadcover$', covers_controllers.save_cover),
     url(r'^getcovers$', covers_controllers.get_covers),
+    url(r'^getcovers2$', covers_controllers.get_covers_ng),
     url(r'^getrandomcover$', covers_controllers.get_random_cover),
     url(r'^getremotecovers$', covers_controllers.get_remote_covers),
     url(r'^getcoversstats$', covers_controllers.get_covers_stats),
@@ -50,6 +51,7 @@ urlpatterns = [
     url(r'^spotify$', covers_controllers.spotify),
     url(r'^spotifysearch$', covers_controllers.spotify_search),
     url(r'^localsearch$', covers_controllers.get_covers_by_search),
+    url(r'^localsearch2$', covers_controllers.get_covers_by_search_ng),
 
     url(r'^geolocation$', controllers.geolocation),
     url(r'^geolocation2$', controllers.geolocation2),
