@@ -114,7 +114,8 @@ def get_tvshows_new_opt(request):
                        'link': tvs.link,
                        'datetime': movie_created,
                        'avg_vote': avg_vote_str,
-                       'serie_season': tvs.serie_season
+                       'serie_season': tvs.serie_season,
+                       'miniseries': tvs.miniseries
                       }
         out_list.append(tvshow_dict)
 
@@ -303,6 +304,7 @@ def savemovienew(request):
     type = request.POST.get('type', 'brand_new')
     tvshow_type = request.POST.get('tvshow_type', 'movie')
     serie_season = request.POST.get('serie_season', 1)
+    miniseries_sw = request.POST.get('miniseries', False)
     clone_season = request.POST.get('clone_season', 1)
     director = request.POST.get('director', '')
     year = request.POST.get('year', '')
@@ -340,6 +342,10 @@ def savemovienew(request):
     if later_sw == "on":
         later = True
 
+    miniseries = False
+    if miniseries_sw == "on":
+        miniseries = True
+
     if not check_session(kanazzi, username, action='savemovienew', store=True):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
@@ -372,6 +378,7 @@ def savemovienew(request):
         # New feature: to allow not movie owner to upload the poster, set a link and set the season
 
         tvshow.serie_season = serie_season
+        tvshow.miniseries = miniseries
         tvshow.save()
 
         if uploaded_file:
@@ -412,7 +419,7 @@ def savemovienew(request):
             tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
                             type=type, tvshow_type=tvshow_type,
                             director=director, year=year,
-                            poster=poster_name, serie_season=serie_season)
+                            poster=poster_name, serie_season=serie_season, miniseries=miniseries)
             tvshow.save()
 
             if tvshow_type == 'serie' and int(clone_season) > 1 and int(clone_season) < 10:
@@ -422,7 +429,7 @@ def savemovienew(request):
                 for i in range(start, stop):
                     tvshow_clone = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
                             type=type, tvshow_type=tvshow_type,
-                            director=director, year=year,
+                            director=director, year=year, miniseries=miniseries,
                             poster='', serie_season=i)
                     logger.debug("Saving season %s" % str(tvshow_clone.serie_season))
                     tvshow_clone.save()
@@ -479,6 +486,7 @@ def savemovienew(request):
             tvshow.type = type
             tvshow.serie_season = serie_season
             tvshow.tvshow_type = tvshow_type
+            tvshow.miniseries = miniseries
             tvshow.director = director
             tvshow.year = year
             if poster_name:
