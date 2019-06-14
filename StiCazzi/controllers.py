@@ -241,6 +241,7 @@ def check_session_ng(request):
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
             rosebud_uid = i_data.get('rosebud_uid', '')
+            app_version = i_data.get('app_version', '')
         except ValueError:
             result['message'] = 'Invalid data'
             return result
@@ -248,8 +249,12 @@ def check_session_ng(request):
     users = User.objects.filter(username=username)
     current_user = users.first()
     logger.debug("="*30)
+    logger.debug("App Version %s" % app_version)
     logger.debug(rosebud_uid)
     logger.debug("="*30)
+    if app_version and app_version != current_user.app_version:
+        current_user.app_version = app_version
+        current_user.save()
     if check_password(rosebud_uid, current_user.rosebud_uid):
         logger.debug("Auth NG successful")
         result['success'] = True
