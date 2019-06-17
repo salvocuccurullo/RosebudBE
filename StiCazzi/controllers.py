@@ -19,6 +19,7 @@ from requests.auth import HTTPBasicAuth
 import firebase_admin
 from firebase_admin import credentials, auth
 from geopy.distance import geodesic
+from geopy.geocoders import Nominatim
 
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
@@ -541,6 +542,20 @@ def geolocation(request):
                 old_loc = (loc[0].latitude, loc[0].longitude)
                 new_loc = (latitude, longitude)
                 distance = geodesic(old_loc, new_loc).kilometers
+
+                ### GeoLocation Info
+                geolocator = Nominatim()
+                location_info = geolocator.reverse([latitude, longitude])
+                town = 'Ghost Town'
+                country = 'Nowhere land'
+                try:
+                    #logger.debug(location_info.raw)
+                    city = location_info.raw['address']['city']
+                    country = location_info.raw['address']['country']
+                except Exception as e:
+                    logger.error(e)
+                ### End GeoLocation Info
+
                 logger.debug("Distance %s km." % "{0:.2f}".format(float(distance)))
 
                 loc[0].latitude = latitude
@@ -549,10 +564,13 @@ def geolocation(request):
                     loc[0].photo = photo
                 loc[0].save()
 
+                message = "%s has moved to somewhere close to %s (%s)" % (users[0].username, city, country)
+                logger.debug(message)
+
                 if float(distance) > 20:
                     notification = Notification(
                         type="new_location", \
-                        title="%s has moved to a new location" % (users[0].username), \
+                        title=message, \
                         message="As the crow flies: %s km" % "{0:.2f}".format(float(distance)))
                     notification.save()
 
