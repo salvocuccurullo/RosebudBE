@@ -548,10 +548,17 @@ def geolocation(request):
                 location_info = geolocator.reverse([latitude, longitude])
                 town = 'Ghost Town'
                 country = 'Nowhere land'
+                county = ''
                 try:
                     #logger.debug(location_info.raw)
                     city = location_info.raw['address']['city']
                     country = location_info.raw['address']['country']
+                    county = location_info.raw['address']['county']
+                    logger.debug("%s %s %s" % (city, county, country))
+                    if county != city:
+                        county = "-%s-" % county
+                    else:
+                        county =''
                 except Exception as e:
                     logger.error(e)
                 ### End GeoLocation Info
@@ -564,7 +571,7 @@ def geolocation(request):
                     loc[0].photo = photo
                 loc[0].save()
 
-                message = "%s has moved to somewhere close to %s (%s)" % (users[0].username, city, country)
+                message = "%s has moved to %s %s (%s)" % (users[0].username, city, county, country)
                 logger.debug(message)
 
                 if float(distance) > 20:
