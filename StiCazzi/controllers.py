@@ -546,7 +546,7 @@ def geolocation(request):
                 ### GeoLocation Info
                 geolocator = Nominatim()
                 location_info = geolocator.reverse([latitude, longitude])
-                town = 'Ghost Town'
+                city = 'Ghost Town'
                 country = 'Nowhere land'
                 county = ''
                 try:
