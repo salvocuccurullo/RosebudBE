@@ -363,6 +363,7 @@ def login(request):
         #logger.debug(password)
 
         out = ""
+        extra_info = {}
         logged = "no"
         rosebud_uid = uuid.uuid4()
         users = User.objects.filter(username=username)
@@ -377,12 +378,15 @@ def login(request):
                 current_user.rosebud_uid = make_password(rosebud_uid)
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
+                extra_info['poweruser'] = current_user.poweruser
+                extra_info['geoloc_enabled'] = current_user.geoloc_enabled
+
         else:
             out = "User not found!"
             logged = "no"
 
         logger.debug("login result for user " + username + " : " + out)
-        response_data['payload'] = {"message":out, 'username':users.first().username, 'logged':logged, 'rosebud_uid': rosebud_uid}
+        response_data['payload'] = {"message":out, 'username':users.first().username, 'logged':logged, 'rosebud_uid': rosebud_uid, 'extra_info': extra_info}
 
     except Exception as eee:
         response_data['result'] = 'failure'

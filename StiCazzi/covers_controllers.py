@@ -146,7 +146,7 @@ def spotify(request):
         res = requests.get(album_url, headers=headers)
         if res.status_code == 200:
             album = json.loads(res.text)
-            logger.debug("Found on spotify the album: %(name)s" % album)
+            logger.debug("Found on Spotify the album: %(name)s" % album)
             return JsonResponse(res.text, status=res.status_code, safe=False)
         else:
             response = res.text
