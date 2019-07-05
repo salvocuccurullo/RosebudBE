@@ -23,8 +23,20 @@ def get_random_cover(request):
     logger.debug("get_random_cover called")
     response_data = {}
 
+    # backward compatibility
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
+    # end backward compatibility
+
+    if not username:
+        try:
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            kanazzi = i_data.get('kanazzi', '')
+        except ValueError:
+            response_data['result'] = 'failure'
+            response_data['message'] = 'Bad input format'
+            return JsonResponse(response_data, status=400)
 
     if not username or not kanazzi or not check_session(kanazzi, username, action='getRandomCover', store=False):
         response_data['result'] = 'failure'
@@ -305,10 +317,11 @@ def get_covers_stats(request):
     logger.debug("get_covers_stats called")
     response_data = {}
 
+    # backward compatibility - will be removed soon
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
-
-    #backward compatibility - will be removed soon
+    # end backward compatibility - will be removed soon
+    
     if not username:
 
         try:
@@ -320,7 +333,7 @@ def get_covers_stats(request):
             response_data['message'] = 'Bad input format'
             return JsonResponse(response_data, status=400)
 
-    if not username or not check_session(kanazzi, username, action='getCovers', store=False):
+    if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)

@@ -35,7 +35,7 @@ from StiCazzi.models import ConfigurationSerializer
 from StiCazzi.env import MONGO_API_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 from . import utils
 
-SESSION_DBG = True
+SESSION_DBG = False
 logger = logging.getLogger(__name__)
 
 def get_demo_json(request):
@@ -56,21 +56,21 @@ def get_random_song(request):
     response_data = {}
     response_data['result'] = 'success'
 
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '')
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        kanazzi = i_data.get('kanazzi', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
 
-    if not username and not kanazzi:
-        username = request.GET.get('username', '')
-        kanazzi = request.GET.get('kanazzi', '')
-        logger.debug("A client is using a deprecated GET method for get random song")
-    else:
-        # CHECK SESSION - SOFT VERSION - NO SAVE ON DB
-        if not check_session(kanazzi, username, action='getRandomSong', store=False):
-            response_data['result'] = 'failure'
-            response_data['message'] = 'Invalid Session'
-            return JsonResponse(response_data, status=401)
-
-        # END CHECK SESSION
+    # CHECK SESSION - SOFT VERSION - NO SAVE ON DB
+    if not check_session(kanazzi, username, action='getRandomSong', store=False):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Invalid Session'
+        return JsonResponse(response_data, status=401)
+    # END CHECK SESSION
 
     song_rs = Song.objects.all()
     random_index = randint(0, len(song_rs) - 1)
@@ -231,11 +231,13 @@ def check_session_ng(request):
 
     result = {"success":False, "new_token":""}
 
+    #backward compatibility - will be removed soon
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
-    rosebud_uid = request.POST.get('username', '')
+    rosebud_uid = request.POST.get('rosebud_uid', '')
+    app_version = request.POST.get('app_version', '')
+    #end backward compatibility - will be removed soon
 
-    #backward compatibility - will be removed soon
     if not username:
         try:
             i_data = json.loads(request.body)
@@ -250,7 +252,7 @@ def check_session_ng(request):
     users = User.objects.filter(username=username)
     current_user = users.first()
     logger.debug("="*30)
-    logger.debug("App Version %s" % app_version)
+    #logger.debug("App Version %s" % app_version)
     logger.debug(rosebud_uid)
     logger.debug("="*30)
     if app_version and app_version != current_user.app_version:
@@ -264,14 +266,14 @@ def check_session_ng(request):
         #now = datetime.now().replace(tzinfo=None)
         now = datetime.utcnow()
         uid_ts = current_user.rosebud_uid_ts
-        logger.debug(" ======= BEFORE ====== ")
-        logger.debug("Now: %s" % now)
-        logger.debug("Uid ts: %s" % uid_ts)
+        #logger.debug(" ======= BEFORE ====== ")
+        #logger.debug("Now: %s" % now)
+        #logger.debug("Uid ts: %s" % uid_ts)
         uid_ts = uid_ts.replace(tzinfo=None)
         now = now.replace(tzinfo=None)
-        logger.debug(" ======= AFTER ====== ")
-        logger.debug("Now: %s" % now)
-        logger.debug("Uid ts: %s" % uid_ts)
+        #logger.debug(" ======= AFTER ====== ")
+        #logger.debug("Now: %s" % now)
+        #logger.debug("Uid ts: %s" % uid_ts)
         now = now.replace(tzinfo=None)
         time_diff = now - uid_ts
         time_diff_hrs = time_diff.total_seconds() / 3600
@@ -299,7 +301,7 @@ def check_session(session_id, username, action='', store=False):
     if not username or not session_id:
         return False
 
-    logger.debug("Classic check session starting for user %s" % username)
+    logger.debug("Session check [%s] [%s]" % (action, username))
     session_id = session_id.strip()
     sessions = Session.objects.filter(session_string=session_id)
     if sessions:
@@ -311,8 +313,10 @@ def check_session(session_id, username, action='', store=False):
     decryption_suite = AES.new(os.environ['OPENSHIFT_DUMMY_KEY'], AES.MODE_ECB, '')
     plain_text = decryption_suite.decrypt(base64.b64decode(session_id))
     try:
-        #print session_id.strip()
         plain_text = plain_text.strip()
+        #logger.debug("-------------------------")
+        #logger.debug(plain_text)
+        #logger.debug("-------------------------")
         session_dt = datetime.strptime(str(plain_text.decode("utf-8")), "%Y_%m_%d_%H_%M_%S_%f")
         if SESSION_DBG:
             #logger.debug("Valid session id for user %s with %s", username, plain_text)
@@ -320,7 +324,7 @@ def check_session(session_id, username, action='', store=False):
         now = datetime.now()
         time_diff = now - session_dt
         time_diff_hrs = time_diff.total_seconds() / 3600
-        logger.debug("Session time : %1.3f hours" % time_diff_hrs)
+        #logger.debug("Session time : %1.3f hours" % time_diff_hrs)
         if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
             if SESSION_DBG:
                 logger.debug("Session expired : %.3f hours" % time_diff_hrs)
@@ -350,8 +354,19 @@ def login(request):
     response_data = {}
     response_data['result'] = 'success'
     try:
+        #backward compatibility
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
+        #end backward compatibility
+
+        if not username:
+            try:
+                i_data = json.loads(request.body)
+                username = i_data.get('username', '')
+                password = i_data.get('password', '')
+                logger.debug("New login have been used")
+            except ValueError:
+                ressponse_data['message'] = 'Invalid data'
 
         if not username or not password:
             response_data['result'] = 'failure'
@@ -496,19 +511,45 @@ def geolocation(request):
     Controller:
     """
 
+    logger.debug("GeoLocation called")
+
     response = {'result':'success', 'distance':0}
+    ret_status = 200
+
+    # TO BE REMOVED
     username = request.POST.get('username', '')
     longitude = request.POST.get('longitude', '')
     latitude = request.POST.get('latitude', '')
     photo = request.POST.get('photo', '')
     action = request.POST.get('action', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
-    ret_status = 200
 
-    if not check_session(kanazzi, username, action='geolocation', store=True):
+    if not username:
+        try:
+            logger.debug("New post method used")
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            longitude = i_data.get('longitude', '')
+            latitude = i_data.get('latitude', '')
+            photo = i_data.get('photo', '')
+            action = i_data.get('action', '')
+            kanazzi = i_data.get('kanazzi', '').strip()
+        except ValueError as e:
+            response['result'] = 'failure'
+            response['message'] = 'Bad input format'
+            logger.error(e)
+            return JsonResponse(response, status=400)
+
+    logger.debug("Action: %s" % action)
+
+    auth_res = check_session_ng(request)
+
+    if not check_session(kanazzi, username, action='geolocation', store=True) and not auth_res['success']:
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
+    
+    response['new_token'] = auth_res['new_token']
 
     if not action or action not in ('GET', 'SET', 'DELETE'):
         response = {'result':'failure'}
@@ -562,7 +603,7 @@ def geolocation(request):
                         city = location_info.raw['address'].get('village','Ghost Town')
                     country = location_info.raw['address'].get('country','')
                     county = location_info.raw['address'].get('county','')
-                    logger.debug("%s %s %s" % (city, county, country))
+                    #logger.debug("%s %s %s" % (city, county, country))
                     if county != city:
                         county = "-%s-" % county
                     else:
@@ -580,7 +621,7 @@ def geolocation(request):
                 loc[0].save()
 
                 message = "%s has moved to %s %s (%s)" % (users[0].username, city, county, country)
-                logger.debug(message)
+                #logger.debug(message)
 
                 if float(distance) > 20:
                     notification = Notification(
@@ -880,7 +921,7 @@ def test_session(request):
 
     try:
         i_data = json.loads(request.body)
-        logger.debug("Valid JSON data received.")
+        #logger.debug("Valid JSON data received.")
         username = i_data.get('username', '')
         firebase_id_token = i_data.get('firebase_id_token', '')
         kanazzi = i_data.get('kanazzi', '')
@@ -926,7 +967,7 @@ def version(request):
 
     try:
         i_data = json.loads(request.body)
-        logger.debug("Valid JSON data received.")
+        #logger.debug("Valid JSON data received.")
         username = i_data.get('username', '')
         firebase_id_token = i_data.get('firebase_id_token', '')
         kanazzi = i_data.get('kanazzi', '')
@@ -944,7 +985,7 @@ def version(request):
 
     current_version = get_version()
     mongoapi_version = get_mongoapi_version()
-    logger.debug(mongoapi_version)
+    #logger.debug(mongoapi_version)
     if mongoapi_version:
         mongoapi_version = mongoapi_version['payload']['version']
     else:
@@ -952,6 +993,7 @@ def version(request):
 
     response['message'] = 'Django: %s - MongoAPI: %s' % (current_version, mongoapi_version)
     return JsonResponse(response, status=200)
+
 
 def get_configs(request):
     """ Get covers statistics from API """
@@ -972,7 +1014,7 @@ def get_configs(request):
             response_data['message'] = 'Bad input format'
             return JsonResponse(response_data, status=400)
 
-    if not username or not check_session(kanazzi, username, action='getCovers', store=False):
+    if not username or not check_session(kanazzi, username, action='getConfig', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)

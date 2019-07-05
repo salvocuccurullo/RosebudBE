@@ -43,8 +43,7 @@ def get_tvshows_new_opt(request):
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
-    logger.debug("Get Tvshows news opt called")
-    logger.debug("Current page: %s", current_page) 
+    #logger.debug("Current page: %s", current_page) 
 
     if query and len(query) < 4:
         if int(current_page) == 1:
@@ -125,11 +124,11 @@ def get_tvshows_new_opt(request):
     if not lazy_load:
         has_more = False
 
-    logger.debug("List size: %s", str(len(bounded)))
-    logger.debug("Has more: %s", str(has_more))
-    logger.debug("Query: %s", query)
-    logger.debug("Lower bound: %s", str(lower_bound))
-    logger.debug("Upper bound: %s", str(upper_bound))
+    #logger.debug("List size: %s", str(len(bounded)))
+    #logger.debug("Has more: %s", str(has_more))
+    #logger.debug("Query: %s", query)
+    #logger.debug("Lower bound: %s", str(lower_bound))
+    #logger.debug("Upper bound: %s", str(upper_bound))
 
     tvshow_stat = dict(\
                   TvShow.objects\
@@ -163,6 +162,7 @@ def get_movies_ct(request):
     """ Get Tvshow CT """
 
     movie_list = Movie.objects.all().exclude(cinema="")
+    logger.debug("Movie CT (unsecure) called")
     out = []
     for rec in movie_list:
         movie_dict = {'id': rec.id_movie,
@@ -188,9 +188,24 @@ def deletemovie(request):
 
     response_data = {}
     response_data['result'] = 'success'
+
+    # backward compatibility
     movie_id = request.POST.get('id', '')
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '')
+    # end backward compatibility
+
+    if not username:
+        try:
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            kanazzi = i_data.get('kanazzi', '')
+            movie_id = i_data.get('id', '')
+        except (TypeError, ValueError):
+            response['result'] = 'failure'
+            response['message'] = 'Bad input format'
+            return JsonResponse(response, status=400)
+
 
     if not check_session(kanazzi, username, action='deletemovie', store=True):
         response_data['result'] = 'failure'
