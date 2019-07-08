@@ -513,7 +513,11 @@ def geolocation(request):
 
     logger.debug("GeoLocation called")
 
-    response = {'result':'success', 'distance':0}
+    response = {
+            'result':'success', 
+            'distance': 0,
+            'location_string': ''
+    }
     ret_status = 200
 
     # TO BE REMOVED
@@ -522,6 +526,7 @@ def geolocation(request):
     latitude = request.POST.get('latitude', '')
     photo = request.POST.get('photo', '')
     action = request.POST.get('action', '')
+    notification_on = request.POST.get('notification_on', False)
     kanazzi = request.POST.get('kanazzi', '').strip()
 
     if not username:
@@ -533,6 +538,7 @@ def geolocation(request):
             latitude = i_data.get('latitude', '')
             photo = i_data.get('photo', '')
             action = i_data.get('action', '')
+            notification_on = i_data.get('notification_on', False)
             kanazzi = i_data.get('kanazzi', '').strip()
         except ValueError as e:
             response['result'] = 'failure'
@@ -541,6 +547,12 @@ def geolocation(request):
             return JsonResponse(response, status=400)
 
     logger.debug("Action: %s" % action)
+    logger.debug("Notification On: %s" % notification_on)
+
+    if notification_on == "true":
+        notification_on = True
+    else:
+        notification_on = False
 
     auth_res = check_session_ng(request)
 
@@ -594,6 +606,7 @@ def geolocation(request):
                 city = 'Ghost Town'
                 country = 'Nowhere land'
                 county = ''
+                location_string = ''
                 try:
                     #logger.debug(location_info.raw)
                     city = location_info.raw['address'].get('city','')
@@ -603,6 +616,7 @@ def geolocation(request):
                         city = location_info.raw['address'].get('village','Ghost Town')
                     country = location_info.raw['address'].get('country','')
                     county = location_info.raw['address'].get('county','')
+                    location_string = "%s %s %s" % (city, county, country)
                     #logger.debug("%s %s %s" % (city, county, country))
                     if county != city:
                         county = "-%s-" % county
@@ -623,7 +637,7 @@ def geolocation(request):
                 message = "%s has moved to %s %s (%s)" % (users[0].username, city, county, country)
                 #logger.debug(message)
 
-                if float(distance) > 20:
+                if notification_on or float(distance) > 20:
                     notification = Notification(
                         type="new_location", \
                         title=message, \
@@ -635,6 +649,7 @@ def geolocation(request):
                 location.save()
             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
             response['distance'] = "{0:.2f}".format(float(distance))
+            response['location_string'] = location_string
         else:
             response['result'] = 'failure'
             ret_status = 400
