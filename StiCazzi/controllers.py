@@ -634,14 +634,22 @@ def geolocation(request):
                     loc[0].photo = photo
                 loc[0].save()
 
-                message = "%s has moved to %s %s (%s)" % (users[0].username, city, county, country)
-                #logger.debug(message)
+                notif_title = ''
+                message = ''
+                if notification_on:
+                    notif_title = "%s shared his/her current location!" % users[0].username
+                    message="%s %s (%s)" % (city, county, country)
+                elif float(distance) > 20:
+                    notif_title = "%s has moved to %s %s (%s)" % (users[0].username, city, county, country)
+                    message="As the crow flies: %s km" % "{0:.2f}".format(float(distance))
+
+                #logger.debug(notif_title)
 
                 if notification_on or float(distance) > 20:
                     notification = Notification(
                         type="new_location", \
-                        title=message, \
-                        message="As the crow flies: %s km" % "{0:.2f}".format(float(distance)))
+                        title=notif_title, \
+                        message=message)
                     notification.save()
 
             else:
