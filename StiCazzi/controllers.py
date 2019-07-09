@@ -649,7 +649,8 @@ def geolocation(request):
                     notification = Notification(
                         type="new_location", \
                         title=notif_title, \
-                        message=message)
+                        message=message, \
+                        username=users[0].username)
                     notification.save()
 
             else:
