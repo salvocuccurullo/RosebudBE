@@ -91,7 +91,8 @@ def get_tvshows_new_opt(request):
                              .annotate(us_username=F('user__username'))\
                              .annotate(us_name=F('user__name'))\
                              .annotate(us_vote=Cast('vote', CharField()))\
-                             .annotate(us_date=Cast('created', CharField()))
+                             .annotate(us_date=Cast('created', CharField()))\
+                             .annotate(us_update=Cast('updated', CharField()))
 
         u_v_dict = {}
         for rec in list(dragon):
