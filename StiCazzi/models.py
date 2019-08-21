@@ -172,7 +172,7 @@ class Location(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=7)
     longitude = models.DecimalField(max_digits=10, decimal_places=7)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    photo = models.CharField(max_length=400, default='')
+    photo = models.CharField(max_length=400, default='', null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
