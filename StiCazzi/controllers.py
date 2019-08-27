@@ -20,6 +20,7 @@ import firebase_admin
 from firebase_admin import credentials, auth
 from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
+import git
 
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
@@ -291,7 +292,94 @@ def check_session_ng(request):
     logger.debug(result)
     logger.debug("="*30)
     return result
-  
+
+
+def authentication(fn):
+
+    def wrapper_fn(*args, **kwargs):
+
+        result = {"success":False, "new_token":"", "code": 401}
+        request = args[0]
+
+        #backward compatibility - will be removed soon
+        username = request.POST.get('username', '')
+        kanazzi = request.POST.get('kanazzi', '').strip()
+        rosebud_uid = request.POST.get('rosebud_uid', '')
+        app_version = request.POST.get('app_version', '')
+        #end backward compatibility - will be removed soon
+
+        if not username:
+            try:
+                i_data = json.loads(request.body)
+                username = i_data.get('username', '')
+                kanazzi = i_data.get('kanazzi', '')
+                rosebud_uid = i_data.get('rosebud_uid', '')
+                app_version = i_data.get('app_version', '')
+                logger.debug("Authentication [%s] [%s]" % (request.path, username))
+            except ValueError:
+                result['message'] = 'Invalid data'
+                result['code'] = 400
+                return JsonResponse(result, status=result['code'])
+
+        users = User.objects.filter(username=username)
+        current_user = users.first()
+        if not current_user:
+            result['code'] = 404
+            return JsonResponse(result, status=result['code'])
+
+        #logger.debug("="*30)
+        #logger.debug(rosebud_uid)
+        #logger.debug("="*30)
+
+        if app_version and app_version != current_user.app_version:
+            current_user.app_version = app_version
+            current_user.save()
+
+        if check_password(rosebud_uid, current_user.rosebud_uid):
+            logger.debug("Authentication Successful [%s] [%s]" % (request.path, username))
+            result['success'] = True
+
+            #Check if token is expired
+            #now = datetime.now().replace(tzinfo=None)
+            now = datetime.utcnow()
+            uid_ts = current_user.rosebud_uid_ts
+            #logger.debug(" ======= BEFORE ====== ")
+            #logger.debug("Now: %s" % now)
+            #logger.debug("Uid ts: %s" % uid_ts)
+            uid_ts = uid_ts.replace(tzinfo=None)
+            now = now.replace(tzinfo=None)
+            #logger.debug(" ======= AFTER ====== ")
+            #logger.debug("Now: %s" % now)
+            #logger.debug("Uid ts: %s" % uid_ts)
+            now = now.replace(tzinfo=None)
+            time_diff = now - uid_ts
+            time_diff_hrs = time_diff.total_seconds() / 3600
+            logger.debug("Session time : %1.3f hours" % time_diff_hrs)
+            if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
+                new_token = uuid.uuid4()
+                current_user.rosebud_uid = make_password(new_token)
+                current_user.rosebud_uid_ts = datetime.now()
+                current_user.save()
+                result['new_token'] = new_token
+            result['code'] = 200
+            result['payload'] = fn(*args, **kwargs)
+        else:
+            logger.debug("Authentication Failed [%s] [%s]" % (request.path, username))
+            result['payload'] = {}
+
+        return JsonResponse(result, status=result['code'])
+
+    return wrapper_fn
+
+@authentication
+def get_last_commit(request):
+    git_folder = '/home/ubuntu/Work/StiCazziD2'
+    repo = git.Repo(".")
+    if repo:
+        response = {'revision': repo.head.commit.name_rev, "message": repo.head.commit.summary}
+    else:
+        response = {}
+    return response
 
 def check_session(session_id, username, action='', store=False):
     """
@@ -554,14 +642,10 @@ def geolocation(request):
     else:
         notification_on = False
 
-    auth_res = check_session_ng(request)
-
-    if not check_session(kanazzi, username, action='geolocation', store=True) and not auth_res['success']:
+    if not check_session(kanazzi, username, action='geolocation', store=True):
         response['result'] = 'failure'
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
-    
-    response['new_token'] = auth_res['new_token']
 
     if not action or action not in ('GET', 'SET', 'DELETE'):
         response = {'result':'failure'}
@@ -775,50 +859,28 @@ def set_fb_token(request):
     response['result'] = 'failure'
     return JsonResponse(response, status=400)
 
+@authentication
 def set_fb_token2(request):
     """
     Controller:
     """
+    from types import SimpleNamespace
     logger.debug("Set FB Token 2 called")
-    response = {'result':'success'}
+    response = {}
 
-    # logger.debug(" ====== request info =====")
-    # logger.debug(request.method)
-    # logger.debug(request.content_type)
-    # logger.debug(" =========================")
-
-    try:
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        token = i_data.get('token', '')
-        firebase_id_token = i_data.get('firebase_id_token', '')
-        app_version = i_data.get('app_version', '')
-    except ValueError:
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
-
-    token_check = check_google(firebase_id_token)
-
-    if not username or not token_check['result']:
-        response['result'] = 'failure'
-        response['payload'] = {"message": "Not valid credentials", 'logged':'no'}
-        return JsonResponse(response, status=401)
-
-    users = User.objects.filter(username=username)
+    i_data = json.loads(request.body)
+    n = SimpleNamespace(**i_data)
+    users = User.objects.filter(username=n.username)
     if users:
-        user = users[0]
-        user.app_version = app_version
-        if token:
-            user.fcm_token = token
-        if firebase_id_token:
-            user.firebase_id_token = firebase_id_token
+        user = users.first()
+        user.app_version = n.app_version
+        if n.token:
+            user.fcm_token = n.token
+        if n.firebase_id_token:
+            user.firebase_id_token = n.firebase_id_token
         user.save()
-        return JsonResponse(response, status=200)
 
-    response['result'] = 'failure'
-    return JsonResponse(response, status=400)
-
+    return response
 
 def check_fb_token(request):
     """
@@ -981,42 +1043,24 @@ def get_mongoapi_version():
     else:
         return {}
 
-
+@authentication
 def version(request):
     """
     Controller:
     """
     logger.debug("get version called")
-    response = {'result':'success'}
-
-    try:
-        i_data = json.loads(request.body)
-        #logger.debug("Valid JSON data received.")
-        username = i_data.get('username', '')
-        firebase_id_token = i_data.get('firebase_id_token', '')
-        kanazzi = i_data.get('kanazzi', '')
-    except ValueError:
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
-
-    token_check = check_google(firebase_id_token)
-
-    if not username or not token_check['result']:
-        response['result'] = 'failure'
-        response['message'] = 'Invalid Session: %s' % token_check['info']
-        return JsonResponse(response, status=401)
+    response = {}
 
     current_version = get_version()
     mongoapi_version = get_mongoapi_version()
-    #logger.debug(mongoapi_version)
     if mongoapi_version:
         mongoapi_version = mongoapi_version['payload']['version']
     else:
         mongoapi_version = "N/A"
 
-    response['message'] = 'Django: %s - MongoAPI: %s' % (current_version, mongoapi_version)
-    return JsonResponse(response, status=200)
+    response['django'] = current_version
+    response['mongo'] = mongoapi_version
+    return response
 
 
 def get_configs(request):
@@ -1051,20 +1095,14 @@ def get_configs(request):
     return JsonResponse(response_data, status=200)
 
 
+@authentication
 def get_configs_new(request):
     """ Get Configurations """
     logger.debug("get configurations new called")
-    response_data = {}
-
-    auth_res = check_session_ng(request)
-    response_data['new_token'] = auth_res['new_token']
 
     configs = Configuration.objects.all()
     serializer = ConfigurationSerializer(configs, many=True)
-
-    response_data['result'] = 'success'
-    response_data['payload'] = serializer.data
-    return JsonResponse(response_data, status=200)
+    return serializer.data
 
 
 def comfortably_numb(request):

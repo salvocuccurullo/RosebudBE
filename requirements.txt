@@ -8,3 +8,4 @@ firebase-admin
 requests[security]
 Padding
 geopy
+GitPython

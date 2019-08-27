@@ -66,5 +66,6 @@ urlpatterns = [
 
     url(r'^testSession$', controllers.test_session),
     url(r'^version', controllers.version),
+    url(r'^commit', controllers.get_last_commit),
 
 ]
