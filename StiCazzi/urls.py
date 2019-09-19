@@ -21,7 +21,7 @@ from StiCazzi import views, controllers, movies_controllers, covers_controllers
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', views.songs, name='index'),
+    url(r'^$', views.index, name='index'),
     url(r'^showmovies/$', views.movies, name='movie'),
     url(r'^showpesi/$', views.peso, name='peso'),
     url(r'^showsongs/$', views.songs, name='song'),

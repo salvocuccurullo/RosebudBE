@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.auth import authenticate
 from StiCazzi.controllers import get_demo_json, get_lyrics_by_song
-from StiCazzi.models import Song, Lyric
+from StiCazzi.models import Song, Lyric, TvShow
 
 def auth(request):
 
@@ -25,8 +25,20 @@ def index(request):
     if not auth(request):
         html = render_to_string('err_auth.html')
         return HttpResponse(html)
+ 
+    m = []
+    s = []
+    tvshows = TvShow.objects.all()
+    for rec in tvshows:
+        if rec.tvshow_type == "movie":
+            m.append({"title":rec.title, "media":rec.media})
+        else:
+            s.append({"title":rec.title, "media":rec.media, "serie_season": rec.serie_season})
+   
+    m = sorted(m, key = lambda i: i['title'])
+    s = sorted(s, key = lambda i: i['title'])
     
-    html = render_to_string('song.html')
+    html = render_to_string('home.html', {'movies': m, 'series': s})
     
     return HttpResponse(html)
 
