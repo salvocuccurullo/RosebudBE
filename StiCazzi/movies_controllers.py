@@ -246,7 +246,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
         if not vote_dict["nw"]:
             notification = Notification(
                 type="new_vote", \
-                title="%s has just voted for a %s..." % (current_user.username, tvshow[0].tvshow_type), \
+                title="%s voted for a %s..." % (current_user.username, tvshow[0].tvshow_type), \
                 message="Title: %s - Vote: %s " \
                 % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
             notification.save()
@@ -257,7 +257,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
             notification = Notification(
                 type="give_up", \
-                title="%s has just gave up to follow a %s" % (current_user.username, tvshow[0].tvshow_type), \
+                title="%s gave up to follow a %s" % (current_user.username, tvshow[0].tvshow_type), \
                 message="%s" % tvshow[0].title, username=current_user.username)
             notification.save()
 
@@ -282,7 +282,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
             if finished:
                 notification = Notification(
                     type="new_vote", \
-                    title="%s has just voted for a %s..." % (current_user.username, tvshow[0].tvshow_type), \
+                    title="%s voted for a %s..." % (current_user.username, tvshow[0].tvshow_type), \
                     message="Title: %s - Vote: %s " \
                     % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
                 notification.save()
@@ -290,7 +290,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
             if first_comment:
                 notification = Notification(
                     type="new_comment", \
-                    title="%s has just set a comment for a %s..." % (current_user.username, tvshow[0].tvshow_type), \
+                    title="%s commented %s..." % (current_user.username, tvshow[0].tvshow_type), \
                     message="Title: %s - %s... " \
                     % (tvshow[0].title, vote_dict["comment"][:30]), username=current_user.username)
                 notification.save()
@@ -299,7 +299,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
     if vote_dict["nw"] and str(vote_dict["episode"]) == "1":
         notification = Notification(
             type="new_nw", \
-            title="%s has just started to watch a %s..." % (current_user.username, tvshow[0].tvshow_type), \
+            title="%s started to watch a %s..." % (current_user.username, tvshow[0].tvshow_type), \
             message="Title: %s - S%s E%s " \
             % (tvshow[0].title, tvshow[0].serie_season, vote_dict["episode"]), username=current_user.username)
         notification.save()
@@ -414,7 +414,7 @@ def savemovienew(request):
 
             notification = Notification(
                 type="new_movie", \
-                title="%s has just added a new movie poster or a link" \
+                title="%s uploaded a new poster/link" \
                 % username, message="Title: %s" % title, username=username)
             notification.save()
 
@@ -472,7 +472,7 @@ def savemovienew(request):
 
             notification = Notification(
                 type="new_movie", \
-                title="%s has just added a new %s" % (username, tvshow_type), \
+                title="%s added a new %s" % (username, tvshow_type), \
                 message="Title: %s" % title, username=username)
             notification.save()
 
@@ -489,7 +489,7 @@ def savemovienew(request):
             else:
                 notification = Notification(
                     type="new_movie", \
-                    title="%s has just added a new movie poster" % username, \
+                    title="%s added a new movie poster" % username, \
                     message="Title: %s" % title, username=username)
                 notification.save()
 

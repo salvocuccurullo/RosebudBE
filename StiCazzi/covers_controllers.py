@@ -467,7 +467,7 @@ def save_cover(request):
     if str(status_code) == "200" and json.loads(response_body)['result'] != 'failure':
         title = urllib.parse.unquote(title)
         author = urllib.parse.unquote(author)
-        notif = Notification(type="new_cover", title="%s has just added a new cover" % username, message="%s - %s" % (title, author), username=username)
+        notif = Notification(type="new_cover", title="%s added a new album" % username, message="%s - %s" % (title, author), username=username)
         if id_cover == "0":    #do not send notification for cover editing...
             notif.save()
     else:
