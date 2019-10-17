@@ -2,6 +2,7 @@ import json, random
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.auth import authenticate
+from django.forms.models import model_to_dict
 from StiCazzi.controllers import get_demo_json, get_lyrics_by_song
 from StiCazzi.models import Song, Lyric, TvShow
 
@@ -29,11 +30,16 @@ def index(request):
     m = []
     s = []
     tvshows = TvShow.objects.all()
-    for rec in tvshows:
-        if rec.tvshow_type == "movie":
-            m.append({"title":rec.title, "media":rec.media})
+    shows = [model_to_dict(rec) for rec in tvshows]
+    for rec in shows:
+        if rec.get('tvshow_type','') == "movie":
+            #m.append({"title":rec.title, "media":rec.media})
+            m.append(rec)
+        elif rec.get('tvshow_type','') == "serie":
+            s.append(rec)
+            #s.append({"title":rec.title, "media":rec.media, "serie_season": rec.serie_season})
         else:
-            s.append({"title":rec.title, "media":rec.media, "serie_season": rec.serie_season})
+            pass
    
     m = sorted(m, key = lambda i: i['title'])
     s = sorted(s, key = lambda i: i['title'])

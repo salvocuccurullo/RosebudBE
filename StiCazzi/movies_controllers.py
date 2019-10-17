@@ -219,7 +219,7 @@ def deletemovie(request):
 
     if tvrs:
         vote_check = tvrs[0]
-        response_data['message'] = 'Cannot delete %s. It has been voted by some kaeroeso !' % (vote_check.tvshow.title)
+        response_data['message'] = 'Cannot delete %s. It has been voted by other users!' % (vote_check.tvshow.title)
         response_data['result'] = 'failure'
     else:
         show_to_delete = TvShow.objects.filter(id_tv_show=movie_id)

@@ -724,7 +724,7 @@ def geolocation(request):
                     notif_title = "%s shared his/her current location!" % users[0].username
                     message="%s %s (%s)" % (city, county, country)
                 elif float(distance) > 20:
-                    notif_title = "%s has moved to %s %s (%s)" % (users[0].username, city, county, country)
+                    notif_title = "%s moved to %s %s (%s)" % (users[0].username, city, county, country)
                     message="As the crow flies: %s km" % "{0:.2f}".format(float(distance))
 
                 #logger.debug(notif_title)
