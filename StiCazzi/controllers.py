@@ -686,28 +686,35 @@ def geolocation(request):
 
                 ### GeoLocation Info
                 geolocator = Nominatim()
-                location_info = geolocator.reverse([latitude, longitude])
+                location_info = ''
+
+                try:
+                    location_info = geolocator.reverse([latitude, longitude])
+                except Exception as e:
+                    logger.error("Error during location name retrieval: " + str(e))
+
                 city = 'Ghost Town'
                 country = 'Nowhere land'
                 county = ''
                 location_string = ''
-                try:
-                    #logger.debug(location_info.raw)
-                    city = location_info.raw['address'].get('city','')
-                    if not city:
-                        city = location_info.raw['address'].get('town','')
-                    if not city:
-                        city = location_info.raw['address'].get('village','Ghost Town')
-                    country = location_info.raw['address'].get('country','')
-                    county = location_info.raw['address'].get('county','')
-                    location_string = "%s %s %s" % (city, county, country)
-                    #logger.debug("%s %s %s" % (city, county, country))
-                    if county != city:
-                        county = "-%s-" % county
-                    else:
-                        county =''
-                except Exception as e:
-                    logger.error(e)
+                if location_info:
+                    try:
+                        #logger.debug(location_info.raw)
+                        city = location_info.raw['address'].get('city','')
+                        if not city:
+                            city = location_info.raw['address'].get('town','')
+                        if not city:
+                            city = location_info.raw['address'].get('village','Ghost Town')
+                        country = location_info.raw['address'].get('country','')
+                        county = location_info.raw['address'].get('county','')
+                        location_string = "%s %s %s" % (city, county, country)
+                        #logger.debug("%s %s %s" % (city, county, country))
+                        if county != city:
+                            county = "-%s-" % county
+                        else:
+                            county =''
+                    except Exception as e:
+                      logger.error(e)
                 ### End GeoLocation Info
 
                 logger.debug("Distance %s km." % "{0:.2f}".format(float(distance)))
