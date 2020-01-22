@@ -78,7 +78,7 @@ class Mp3(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['title'], name='title_idx'),
+            models.Index(fields=['title'], name='title_idx_mp3'),
         ]
 
 
