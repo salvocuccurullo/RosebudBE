@@ -1,4 +1,4 @@
-#iCarusi BE - Django 2 / Python 3 reloaded
+#Rosebud BE - Django 3 / Python 3 reloaded
 
 ```
 mkdir YourFolder
