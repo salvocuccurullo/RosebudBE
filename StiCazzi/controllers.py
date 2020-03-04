@@ -441,6 +441,7 @@ def login(request):
 
     response_data = {}
     response_data['result'] = 'success'
+    logged = "no"
     try:
         #backward compatibility
         username = request.POST.get('username', '')
@@ -454,7 +455,7 @@ def login(request):
                 password = i_data.get('password', '')
                 logger.debug("New login have been used")
             except ValueError:
-                ressponse_data['message'] = 'Invalid data'
+                response_data['message'] = 'Invalid data'
 
         if not username or not password:
             response_data['result'] = 'failure'
@@ -467,7 +468,6 @@ def login(request):
 
         out = ""
         extra_info = {}
-        logged = "no"
         rosebud_uid = uuid.uuid4()
         users = User.objects.filter(username=username)
 
