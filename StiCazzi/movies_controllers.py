@@ -392,7 +392,10 @@ def savemovienew(request):
             create_update_vote(current_user, current_tvshow, data_vote)
 
         # New feature: to allow not movie owner to upload the poster, set a link and set the season
+        # 2020-03-21 added type and media
 
+        tvshow.media = media
+        tvshow.tvshow_type = tvshow_type
         tvshow.serie_season = serie_season
         tvshow.miniseries = miniseries
         tvshow.save()

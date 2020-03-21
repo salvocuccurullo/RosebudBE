@@ -361,6 +361,7 @@ def authentication(fn):
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
                 result['new_token'] = new_token
+                logger.debug("New token created for user [%s]" % current_user.username)
             result['code'] = 200
             result['payload'] = fn(*args, **kwargs)
         else:
