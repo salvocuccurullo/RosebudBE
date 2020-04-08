@@ -473,9 +473,15 @@ def savemovienew(request):
                 )
                 tvsv.save()
 
+            # Workaround to be removed
+            show_type_string = tvshow_type
+            if show_type_string == "serie":
+              show_type_string = "series"
+            ###########################
+
             notification = Notification(
                 type="new_movie", \
-                title="%s added a new %s" % (username, tvshow_type), \
+                title="%s added a new %s" % (username, show_type_string), \
                 message="Title: %s" % title, username=username)
             notification.save()
 
@@ -492,7 +498,7 @@ def savemovienew(request):
             else:
                 notification = Notification(
                     type="new_movie", \
-                    title="%s added a new movie poster" % username, \
+                    title="%s added a new poster" % username, \
                     message="Title: %s" % title, username=username)
                 notification.save()
 
