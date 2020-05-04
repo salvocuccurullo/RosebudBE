@@ -43,7 +43,7 @@ def get_tvshows_new_opt(request):
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
-    #logger.debug("Current page: %s", current_page) 
+    #logger.debug("Current page: %s", current_page)
 
     if query and len(query) < 4:
         if int(current_page) == 1:
@@ -53,7 +53,7 @@ def get_tvshows_new_opt(request):
             return JsonResponse(response, status=404)
         else:
             query = ''
-        
+
     out_list = []
     movie_list = TvShow.objects.filter(
         Q(title__icontains=query) | Q(media__icontains=query)
@@ -243,6 +243,13 @@ def create_update_vote(current_user, tvshow, vote_dict):
                           episode=vote_dict["episode"], comment=vote_dict['comment'])
         tvsv.save()
 
+        comm = Comment(comment=vote_dict['comment'], vote=tvsv)
+        comm.save()
+
+        if vote_dict.get('like',''):
+            like = Like(reaction=vote_dict['like'], user=current_user)
+            like.save()
+
         if not vote_dict["nw"]:
             notification = Notification(
                 type="new_vote", \
@@ -278,6 +285,13 @@ def create_update_vote(current_user, tvshow, vote_dict):
             current_vote.season = vote_dict["season"]
             current_vote.comment = vote_dict["comment"]
             current_vote.save()
+
+            comm = Comment(comment=vote_dict['comment'], vote=tvsv)
+            comm.save()
+
+            if vote_dict.get('like',''):
+                like = Like(reaction=vote_dict['like'], user=current_user)
+                like.save()
 
             if finished:
                 notification = Notification(
