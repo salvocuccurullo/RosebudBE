@@ -127,7 +127,7 @@ class TvShowVote(models.Model):
 class Comment(models.Model):
     id_comment = models.AutoField(primary_key=True)
     vote = models.ForeignKey(TvShowVote, on_delete=models.CASCADE)
-    comment = models.CharField(max_length=1000, default='')
+    thecomment = models.CharField(max_length=1000, default='')
     created = models.DateTimeField(auto_now_add=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
 
