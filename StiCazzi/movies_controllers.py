@@ -13,7 +13,7 @@ from django.db.models import Q, F, Count, Avg, CharField
 from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
 
-from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue
+from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue, Commento, Like
 from StiCazzi.controllers import check_session, test_session
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
@@ -243,7 +243,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
                           episode=vote_dict["episode"], comment=vote_dict['comment'])
         tvsv.save()
 
-        comm = Comment(comment=vote_dict['comment'], vote=tvsv)
+        comm = Commento(comment=vote_dict['comment'], vote=tvsv)
         comm.save()
 
         if vote_dict.get('like',''):
@@ -286,7 +286,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
             current_vote.comment = vote_dict["comment"]
             current_vote.save()
 
-            comm = Comment(comment=vote_dict['comment'], vote=tvsv)
+            comm = Commento(comment=vote_dict['comment'], vote=current_vote)
             comm.save()
 
             if vote_dict.get('like',''):
