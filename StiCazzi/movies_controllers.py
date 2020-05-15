@@ -346,6 +346,7 @@ def savemovienew(request):
     season = request.POST.get('season', 1)
     episode = request.POST.get('episode', 1)
     comment = request.POST.get('comment', '')
+    like = request.POST.get('like', '')
     uploaded_file = request.FILES.get('pic', '')
     poster_name = ''
     upload_file_res = {}
@@ -397,7 +398,8 @@ def savemovienew(request):
                      'season': season,
                      'vote': vote,
                      'giveup': giveup,
-                     'comment': comment
+                     'comment': comment,
+                     'like': like
                     }
 
         tvshow = current_tvshow[0]

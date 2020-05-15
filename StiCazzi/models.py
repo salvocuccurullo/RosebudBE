@@ -134,6 +134,7 @@ class Commento(models.Model):
 class Like(models.Model):
     id_like = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    commento = models.ForeignKey(Commento, on_delete=models.CASCADE)
     reaction = models.CharField(max_length=50, default='')
     created = models.DateTimeField(auto_now_add=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
