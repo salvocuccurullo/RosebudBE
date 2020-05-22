@@ -87,7 +87,8 @@ def get_tvshows_new_opt(request):
         else:
             avg_vote_str = "0.0"
 
-        dragon = tvshow_votes.values('episode', 'season', 'comment', 'now_watching')\
+        dragon = tvshow_votes.values('id_vote,''episode', 'season', 'comment', 'now_watching')\
+                             .annotate(us_id_vote=F('id_vote'))\
                              .annotate(us_username=F('user__username'))\
                              .annotate(us_name=F('user__name'))\
                              .annotate(us_vote=Cast('vote', CharField()))\
