@@ -193,7 +193,6 @@ def setlike(request):
     response_data['result'] = 'success'
     try:
         i_data = json.loads(request.body)
-        logger.debug(i_data)
         username = i_data.get('username', '')
         kanazzi = i_data.get('kanazzi', '')
         id_vote = i_data.get('id_vote', '')
