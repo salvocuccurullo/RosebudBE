@@ -198,9 +198,9 @@ def setlike(request):
         id_vote = i_data.get('id_vote', '')
         reaction = i_data.get('reaction', '')
     except (TypeError, ValueError):
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Bad input format'
+        return JsonResponse(response_data, status=400)
 
     if not check_session(kanazzi, username, action='deletemovie', store=True):
         response_data['result'] = 'failure'
