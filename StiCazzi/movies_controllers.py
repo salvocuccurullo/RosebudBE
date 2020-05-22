@@ -185,6 +185,45 @@ def get_movies_ct(request):
 
 
 @ensure_csrf_cookie
+def setlike(request):
+    """ Set Like """
+
+    response_data = {}
+    response_data['result'] = 'success'
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        kanazzi = i_data.get('kanazzi', '')
+        id_vote = i_data.get('id_vote', '')
+        reaction = i_data.get('reaction', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    if not check_session(kanazzi, username, action='deletemovie', store=True):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Invalid Session'
+        return JsonResponse(response_data, status=401)
+
+    items = Like.objects.filter(id_vote=id_vote)
+    current_user = User.objects.filter(username=username)
+
+    if items:
+        like = items.first()
+        like.reaction = reaction
+        like.save()
+        response_data['message'] = 'Like updated for id_vote %s' % id_vote
+    else:
+        like = Like(id_vote=id_vote, reaction=reaction, user=current_user)
+        like.save()
+        response_data['message'] = 'Like created for id_vote %s' % id_vote
+
+    return JsonResponse(response_data)
+
+
+@ensure_csrf_cookie
 def deletemovie(request):
     """ Delete Tvshow """
 
