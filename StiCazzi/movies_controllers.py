@@ -13,7 +13,7 @@ from django.db.models import Q, F, Count, Avg, CharField
 from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
 
-from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue
+from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue, Like
 from StiCazzi.controllers import check_session, test_session
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def get_tvshows_new_opt(request):
     """ Get Tvshow New """
-    logger.debug("Get Tvshows news opt called")
+    logger.debug("Get Tvshows new opt called")
     response = {'result': 'success'}
 
     try:
@@ -43,7 +43,7 @@ def get_tvshows_new_opt(request):
         response['message'] = 'Invalid Session'
         return JsonResponse(response, status=401)
 
-    #logger.debug("Current page: %s", current_page) 
+    #logger.debug("Current page: %s", current_page)
 
     if query and len(query) < 4:
         if int(current_page) == 1:
@@ -53,7 +53,7 @@ def get_tvshows_new_opt(request):
             return JsonResponse(response, status=404)
         else:
             query = ''
-        
+
     out_list = []
     movie_list = TvShow.objects.filter(
         Q(title__icontains=query) | Q(media__icontains=query)
@@ -87,7 +87,8 @@ def get_tvshows_new_opt(request):
         else:
             avg_vote_str = "0.0"
 
-        dragon = tvshow_votes.values('episode', 'season', 'comment', 'now_watching')\
+        dragon = tvshow_votes.values('id_vote','episode', 'season', 'comment', 'now_watching')\
+                             .annotate(us_id_vote=F('id_vote'))\
                              .annotate(us_username=F('user__username'))\
                              .annotate(us_name=F('user__name'))\
                              .annotate(us_vote=Cast('vote', CharField()))\
@@ -184,6 +185,56 @@ def get_movies_ct(request):
 
 
 @ensure_csrf_cookie
+def setlike(request):
+    """ Set Like """
+
+    logger.debug("Like called")
+    response_data = {}
+    response_data['result'] = 'success'
+    try:
+        i_data = json.loads(request.body)
+        logger.debug(i_data)
+        username = i_data.get('username', '')
+        kanazzi = i_data.get('kanazzi', '')
+        id_vote = i_data.get('id_vote', '')
+        reaction = i_data.get('reaction', '')
+        action = i_data.get('action','fetch')
+    except (TypeError, ValueError):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Bad input format'
+        return JsonResponse(response_data, status=400)
+
+    if not check_session(kanazzi, username, action='deletemovie', store=True):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Invalid Session'
+        return JsonResponse(response_data, status=401)
+
+    current_user = User.objects.filter(username=username).first()
+
+    if action == "set":
+
+      items = Like.objects.filter(id_vote=id_vote, user=current_user)
+      vote = TvShowVote.objects.filter(id_vote=id_vote).first()
+
+      if items:
+          like = items.first()
+          if reaction == "O":
+            like.delete()
+          else:
+            like.reaction = reaction
+            like.save()
+          response_data['message'] = 'Like updated for id_vote %s' % id_vote
+      else:
+          like = Like(id_vote=vote, reaction=reaction, user=current_user)
+          like.save()
+          response_data['message'] = 'Like created for id_vote %s' % id_vote
+
+    response_data['payload'] = {'id_vote': id_vote, 'count': len(Like.objects.filter(id_vote=id_vote, reaction="*")), 'you': len(Like.objects.filter(id_vote=id_vote, reaction="*", user=current_user))}
+  
+    return JsonResponse(response_data)
+
+
+@ensure_csrf_cookie
 def deletemovie(request):
     """ Delete Tvshow """
 
@@ -243,6 +294,10 @@ def create_update_vote(current_user, tvshow, vote_dict):
                           episode=vote_dict["episode"], comment=vote_dict['comment'])
         tvsv.save()
 
+        if vote_dict.get('like',''):
+            like = Like(reaction=vote_dict['like'], user=current_user, id_vote=tvsv)
+            like.save()
+
         if not vote_dict["nw"]:
             notification = Notification(
                 type="new_vote", \
@@ -278,6 +333,14 @@ def create_update_vote(current_user, tvshow, vote_dict):
             current_vote.season = vote_dict["season"]
             current_vote.comment = vote_dict["comment"]
             current_vote.save()
+
+            if vote_dict.get('like',''):
+                like = Like(reaction=vote_dict['like'], user=current_user, id_vote=current_vote)
+                like.save()
+
+            if vote_dict.get('like',''):
+                like = Like(reaction=vote_dict['like'], user=current_user)
+                like.save()
 
             if finished:
                 notification = Notification(
@@ -332,6 +395,7 @@ def savemovienew(request):
     season = request.POST.get('season', 1)
     episode = request.POST.get('episode', 1)
     comment = request.POST.get('comment', '')
+    like = request.POST.get('like', '')
     uploaded_file = request.FILES.get('pic', '')
     poster_name = ''
     upload_file_res = {}
@@ -383,7 +447,8 @@ def savemovienew(request):
                      'season': season,
                      'vote': vote,
                      'giveup': giveup,
-                     'comment': comment
+                     'comment': comment,
+                     'like': like
                     }
 
         tvshow = current_tvshow[0]

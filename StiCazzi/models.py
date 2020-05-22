@@ -124,6 +124,13 @@ class TvShowVote(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
 
+class Like(models.Model):
+    id_like = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    id_vote = models.ForeignKey(TvShowVote, on_delete=models.CASCADE)
+    reaction = models.CharField(max_length=50, default='')
+    created = models.DateTimeField(auto_now_add=True, blank=True)
+    updated = models.DateTimeField(auto_now=True)
 
 class Session(models.Model):
     id_session = models.AutoField(primary_key=True)
