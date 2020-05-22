@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def get_tvshows_new_opt(request):
     """ Get Tvshow New """
-    logger.debug("Get Tvshows news opt called")
+    logger.debug("Get Tvshows new opt called")
     response = {'result': 'success'}
 
     try:
@@ -188,15 +188,17 @@ def get_movies_ct(request):
 def setlike(request):
     """ Set Like """
 
+    logger.debug("Like called")
     response_data = {}
     response_data['result'] = 'success'
-
     try:
         i_data = json.loads(request.body)
+        logger.debug(i_data)
         username = i_data.get('username', '')
         kanazzi = i_data.get('kanazzi', '')
         id_vote = i_data.get('id_vote', '')
         reaction = i_data.get('reaction', '')
+        action = i_data.get('action','fetch')
     except (TypeError, ValueError):
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
@@ -207,19 +209,28 @@ def setlike(request):
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
 
-    items = Like.objects.filter(id_vote=id_vote)
-    current_user = User.objects.filter(username=username)
+    current_user = User.objects.filter(username=username).first()
 
-    if items:
-        like = items.first()
-        like.reaction = reaction
-        like.save()
-        response_data['message'] = 'Like updated for id_vote %s' % id_vote
-    else:
-        like = Like(id_vote=id_vote, reaction=reaction, user=current_user)
-        like.save()
-        response_data['message'] = 'Like created for id_vote %s' % id_vote
+    if action == "set":
 
+      items = Like.objects.filter(id_vote=id_vote, user=current_user)
+      vote = TvShowVote.objects.filter(id_vote=id_vote).first()
+
+      if items:
+          like = items.first()
+          if reaction == "O":
+            like.delete()
+          else:
+            like.reaction = reaction
+            like.save()
+          response_data['message'] = 'Like updated for id_vote %s' % id_vote
+      else:
+          like = Like(id_vote=vote, reaction=reaction, user=current_user)
+          like.save()
+          response_data['message'] = 'Like created for id_vote %s' % id_vote
+
+    response_data['payload'] = {'id_vote': id_vote, 'count': len(Like.objects.filter(id_vote=id_vote, reaction="*")), 'you': len(Like.objects.filter(id_vote=id_vote, reaction="*", user=current_user))}
+  
     return JsonResponse(response_data)
 
 

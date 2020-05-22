@@ -40,7 +40,7 @@ urlpatterns = [
     url(r'^savemovienew$', movies_controllers.savemovienew),
     url(r'^moviesdt/$', movies_controllers.get_movies_datatable, name='movie'),
     url(r'^moviesct/$', movies_controllers.get_movies_ct, name='movie'),
-    url(r'^setlike/$', movies_controllers.setlike, name='movie'),
+    url(r'^setlike$', movies_controllers.setlike),
 
     url(r'^uploadcover$', covers_controllers.save_cover),
     url(r'^getcovers$', covers_controllers.get_covers),
