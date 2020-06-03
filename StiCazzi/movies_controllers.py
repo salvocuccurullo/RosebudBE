@@ -214,7 +214,7 @@ def setlike(request):
 
       items = Like.objects.filter(id_vote=id_vote, user=current_user)
       vote = TvShowVote.objects.filter(id_vote=id_vote).first()
-
+      tvshow = TvShow.objects.filter(id_tv_show=vote.tvshow_id).first()
       if items:
           like = items.first()
           if reaction == "O":
@@ -228,8 +228,20 @@ def setlike(request):
           like.save()
           response_data['message'] = 'Like created for id_vote %s' % id_vote
 
+      # Special usage for notification
+      # title -> tv_show_id
+      # message -> the guy who has wrote the comment
+      # username -> the guy who has clicked on like
+      if reaction != "O" and current_user.username != vote.user.username:
+        notification = Notification(
+                type="like", \
+                title="%s" % tvshow.id_tv_show, \
+                message="%s" % vote.user.username, \
+                username=current_user.username)
+        notification.save()
+
     response_data['payload'] = {'id_vote': id_vote, 'count': len(Like.objects.filter(id_vote=id_vote, reaction="*")), 'you': len(Like.objects.filter(id_vote=id_vote, reaction="*", user=current_user))}
-  
+ 
     return JsonResponse(response_data)
 
 
