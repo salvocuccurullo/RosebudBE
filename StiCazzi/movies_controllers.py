@@ -203,7 +203,7 @@ def setlike(request):
         response_data['message'] = 'Bad input format'
         return JsonResponse(response_data, status=400)
 
-    if not check_session(kanazzi, username, action='deletemovie', store=True):
+    if not check_session(kanazzi, username, action='setlike', store=True):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
