@@ -686,7 +686,7 @@ def geolocation(request):
                 distance = geodesic(old_loc, new_loc).kilometers
 
                 ### GeoLocation Info
-                geolocator = Nominatim()
+                geolocator = Nominatim(user_agent="rosebud-application")
                 location_info = ''
 
                 try:
