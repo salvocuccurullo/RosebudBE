@@ -357,7 +357,7 @@ def authentication(fn):
             logger.debug("Session time : %1.3f hours" % time_diff_hrs)
             if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
                 new_token = uuid.uuid4()
-                current_user.rosebud_uid = make_password(new_token)
+                current_user.rosebud_uid = make_password(str(new_token))
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
                 result['new_token'] = new_token
@@ -479,7 +479,7 @@ def login(request):
             if pwd_ok:
                 logged = "yes"
                 current_user = users.first()
-                current_user.rosebud_uid = make_password(rosebud_uid)
+                current_user.rosebud_uid = make_password(str(rosebud_uid))
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
                 extra_info['poweruser'] = current_user.poweruser
