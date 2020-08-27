@@ -281,7 +281,7 @@ def check_session_ng(request):
         logger.debug("Session time : %1.3f hours" % time_diff_hrs)
         if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
             new_token = uuid.uuid4()
-            current_user.rosebud_uid = make_password(new_token)
+            current_user.rosebud_uid = make_password(str(new_token))
             current_user.rosebud_uid_ts = datetime.now()
             current_user.save()
             result['new_token'] = new_token
