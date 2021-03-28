@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from StiCazzi.models import Notification
 from StiCazzi.controllers import check_session, check_google
 from StiCazzi.utils import safe_file_name
-from StiCazzi.env import MONGO_API_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
+from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,10 @@ def get_random_cover(request):
         return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
-    mongo_final_url = MONGO_API_URL + "/getRandomCover"
+    if second_collection:
+        mongo_final_url = MONGO_API_2ND_DB_URL + "/getRandomCover"
+    else:
+        mongo_final_url = MONGO_API_URL + "/getRandomCover"
     response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
