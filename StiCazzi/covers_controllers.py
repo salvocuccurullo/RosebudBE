@@ -33,6 +33,7 @@ def get_random_cover(request):
             i_data = json.loads(request.body)
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
+            second_collection = i_data.get('second_collection', '')
         except ValueError:
             response_data['result'] = 'failure'
             response_data['message'] = 'Bad input format'
