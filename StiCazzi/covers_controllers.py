@@ -26,6 +26,7 @@ def get_random_cover(request):
     # backward compatibility
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
+    second_collection = request.POST.get('second_collection', False)
     # end backward compatibility
 
     if not username:
@@ -324,6 +325,7 @@ def get_covers_stats(request):
     # backward compatibility - will be removed soon
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
+    second_collection = request.POST.get('second_collection', False)
     # end backward compatibility - will be removed soon
 
     if not username:
@@ -333,7 +335,6 @@ def get_covers_stats(request):
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
             second_collection = i_data.get('second_collection', '')
-            logger.info("Second Collection: %s" % second_collection)
         except ValueError:
             response_data['result'] = 'failure'
             response_data['message'] = 'Bad input format'
@@ -345,6 +346,8 @@ def get_covers_stats(request):
         return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
+
+    logger.debug("Second Collection: %s" % second_collection)
     if second_collection:
         mongo_final_url = MONGO_API_2ND_DB_URL + "/getStats"
     else:
