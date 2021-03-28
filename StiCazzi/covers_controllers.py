@@ -99,27 +99,27 @@ def spotify_auth(request):
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
         return JsonResponse(response_data, status=400)
-   
+
     #logger.debug("%s - %s" % (username, kanazzi))
     logger.debug("%s - %s - %s" % (album_url, search_type, query))
-    
+
     if not (album_url or (query and search_type)):
         response_data['result'] = 'failure'
         response_data['message'] = 'Unprocessable Entity: missing parameter'
         return JsonResponse(response_data, status=422)
-    
+
     if not username or not kanazzi or not check_session(kanazzi, username, action='spotifyAuthorization', store=False):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Session'
         return JsonResponse(response_data, status=401)
-    
+
     expected_base_url = ("https://open.spotify.com", "https://api.spotify.com")
 
     if album_url and not album_url.startswith(expected_base_url):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Spotify URL'
         return JsonResponse(response_data, status=400)
-    
+
     client_info = {
           "grant_type":    "authorization_code",
           "response_type":  "code",
@@ -136,10 +136,10 @@ def spotify_auth(request):
 
 def spotify(request):
     """ Get album info from spotify """
-   
+
     logger.debug("Spotify Album Called")
     response_data = {}
-    
+
     spotify_pre_auth = spotify_auth(request)
     if type(spotify_pre_auth) is JsonResponse:
         return spotify_pre_auth
@@ -169,10 +169,10 @@ def spotify(request):
 
 def spotify_search(request):
     """ Get album info from spotify """
-   
+
     logger.debug("Spotify Search Called")
     response_data = {}
-   
+
     spotify_pre_auth = spotify_auth(request)
     if type(spotify_pre_auth) is JsonResponse:
         return spotify_pre_auth
@@ -211,7 +211,7 @@ def get_covers(request):
 
     #backward compatibility - will be removed soon
     if not username:
-    
+
         try:
             i_data = json.loads(request.body)
             username = i_data.get('username', '')
@@ -321,7 +321,7 @@ def get_covers_stats(request):
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
     # end backward compatibility - will be removed soon
-    
+
     if not username:
 
         try:
@@ -329,7 +329,7 @@ def get_covers_stats(request):
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
             second_collection = i_data.get('second_collection', '')
-	    logger.info("Second Collection: %s" % second_collection)
+            logger.info("Second Collection: %s" % second_collection)
         except ValueError:
             response_data['result'] = 'failure'
             response_data['message'] = 'Bad input format'
@@ -341,10 +341,10 @@ def get_covers_stats(request):
         return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
-    if second_collection:
-	mongo_final_url = MONGO_API_2ND_DB_URL + "/getStats"
+    if second_collection and second_collection == "true":
+        mongo_final_url = MONGO_API_2ND_DB_URL + "/getStats"
     else:
-	mongo_final_url = MONGO_API_URL + "/getStats"
+        mongo_final_url = MONGO_API_URL + "/getStats"
     response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
