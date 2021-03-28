@@ -342,7 +342,7 @@ def get_covers_stats(request):
 
     headers = {'Content-Type': 'application/json'}
     if second_collection:
-	mongo_final_url = MONGO_API_URL + "/getStats"
+	mongo_final_url = MONGO_API_2ND_DB_URL + "/getStats"
     else:
 	mongo_final_url = MONGO_API_URL + "/getStats"
     response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
