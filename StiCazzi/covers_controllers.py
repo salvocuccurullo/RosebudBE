@@ -341,7 +341,7 @@ def get_covers_stats(request):
         return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
-    if second_collection and second_collection == "true":
+    if second_collection:
         mongo_final_url = MONGO_API_2ND_DB_URL + "/getStats"
     else:
         mongo_final_url = MONGO_API_URL + "/getStats"
