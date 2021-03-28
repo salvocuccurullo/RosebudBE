@@ -328,6 +328,8 @@ def get_covers_stats(request):
             i_data = json.loads(request.body)
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
+            second_collection = i_data.get('second_collection', '')
+	    logger.info("Second Collection: %s" % second_collection)
         except ValueError:
             response_data['result'] = 'failure'
             response_data['message'] = 'Bad input format'
@@ -339,7 +341,10 @@ def get_covers_stats(request):
         return JsonResponse(response_data, status=401)
 
     headers = {'Content-Type': 'application/json'}
-    mongo_final_url = MONGO_API_URL + "/getStats"
+    if second_collection:
+	mongo_final_url = MONGO_API_URL + "/getStats"
+    else:
+	mongo_final_url = MONGO_API_URL + "/getStats"
     response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
