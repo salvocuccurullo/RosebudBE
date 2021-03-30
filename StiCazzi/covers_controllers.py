@@ -510,13 +510,14 @@ def get_covers_by_search_ng(request):
 def init_validation(request):
     # backward compatibility - will be removed soon
     username = request.POST.get('username', '')
+    username2 = request.POST.get('username2', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
     second_collection = request.POST.get('second_collection', False)
     limit = '0'
     search = ''
     # end backward compatibility - will be removed soon
 
-    if not username:
+    if not username and not username2:
         try:
             i_data = json.loads(request.body)
             username = i_data.get('username', '')
