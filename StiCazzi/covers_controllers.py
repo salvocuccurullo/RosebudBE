@@ -39,7 +39,7 @@ def get_random_cover(request):
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
 
-
+'''
 def get_remote_covers(request):
     """ Get all covers not stored in the app """
     logger.debug("get_remote_covers called")
@@ -60,7 +60,7 @@ def get_remote_covers(request):
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
-
+'''
 
 def spotify_auth(request):
     logger.debug("Spotify Auth Called")
@@ -179,7 +179,7 @@ def spotify_search(request):
     response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
     return JsonResponse(response_body, status=response_code, safe=False)
 
-
+'''
 def get_covers(request):
     """ Get all covers from API """
     response_data = {}
@@ -220,7 +220,7 @@ def get_covers(request):
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
-
+'''
 
 def get_covers_ng(request):
     """ Get all covers from API """
@@ -291,6 +291,7 @@ def get_covers_stats(request):
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
 
+'''
 def get_covers_stats_2(request):
     """ Get covers statistics from API """
     logger.debug("get_covers_stats_2 called")
@@ -324,6 +325,7 @@ def get_covers_stats_2(request):
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
+'''
 
 def save_cover(request):
     """ Save a new cover """
@@ -348,10 +350,9 @@ def save_cover(request):
     #logger.debug("%s - %s",username,kanazzi)
     logger.debug("id cover: %s" % id_cover)
 
-    if not username or not kanazzi or not check_session(kanazzi, username, action='uploadcover', store=True):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
+    validation = init_validation(request)
+    if 'error' in validation:
+        return JsonResponse(validation['data'], status=validation['error'])
 
     logger.debug("Cover Upload: %s - %s - %s" % (title.encode('utf-8'), author.encode('utf-8'), str(year)))
 
@@ -394,7 +395,7 @@ def save_cover(request):
         payload.update({'vote': float(vote)})
 
     payload = json.dumps(payload)
-    mongo_final_url = MONGO_API_URL + "/createCover3"
+    mongo_final_url = validation['mongo_url'] + "/createCover3"
     response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers, data=payload)
 
     status_code = response.status_code
