@@ -517,7 +517,10 @@ def init_validation(request):
     search = ''
     # end backward compatibility - will be removed soon
 
-    if not username and not username2:
+    if not username and username2:
+        username = username2
+
+    if not username:
         try:
             i_data = json.loads(request.body)
             username = i_data.get('username', '')
