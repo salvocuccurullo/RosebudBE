@@ -23,34 +23,12 @@ def get_random_cover(request):
     logger.debug("get_random_cover called")
     response_data = {}
 
-    # backward compatibility
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '').strip()
-    second_collection = request.POST.get('second_collection', False)
-    # end backward compatibility
-
-    if not username:
-        try:
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            kanazzi = i_data.get('kanazzi', '')
-            second_collection = i_data.get('second_collection', '')
-        except ValueError:
-            response_data['result'] = 'failure'
-            response_data['message'] = 'Bad input format'
-            return JsonResponse(response_data, status=400)
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='getRandomCover', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
+    validation = init_validation(request)
+    if 'error' in validation:
+        return JsonResponse(validation['data'], status=validation['error'])
 
     headers = {'Content-Type': 'application/json'}
-    if second_collection:
-        mongo_final_url = MONGO_API_2ND_DB_URL + "/getRandomCover"
-    else:
-        mongo_final_url = MONGO_API_URL + "/getRandomCover"
-    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(validation['mongo_url'] + "/getRandomCover", auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
@@ -67,17 +45,12 @@ def get_remote_covers(request):
     logger.debug("get_remote_covers called")
     response_data = {}
 
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '').strip()
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='getRemoteCovers', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
+    validation = init_validation(request)
+    if 'error' in validation:
+        return JsonResponse(validation['data'], status=validation['error'])
 
     headers = {'Content-Type': 'application/json'}
-    mongo_final_url = MONGO_API_URL + "/getRemoteCovers"
-    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(validation['mongo_url'] + "/getRemoteCovers", auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
@@ -253,32 +226,12 @@ def get_covers_ng(request):
     """ Get all covers from API """
     response_data = {}
 
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '').strip()
-
-    #backward compatibility - will be removed soon
-    if not username:
-
-        try:
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            kanazzi = i_data.get('kanazzi', '')
-            limit = i_data.get('limit', '15')
-        except ValueError:
-            response_data['result'] = 'failure'
-            response_data['message'] = 'Bad input format'
-            return JsonResponse(response_data, status=400)
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='getCovers', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
-
-    logger.debug("Limit result to %s covers" % limit)
+    validation = init_validation(request)
+    if 'error' in validation:
+        return JsonResponse(validation['data'], status=validation['error'])
 
     headers = {'Content-Type': 'application/json'}
-    mongo_final_url = MONGO_API_URL + "/getLatestNg?limit=%s" % limit
-    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(validation['mongo_url'] + "/getLatestNg?limit=%s" % validation['limit'], auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
@@ -579,6 +532,7 @@ def init_validation(request):
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
     second_collection = request.POST.get('second_collection', False)
+    limit = '0'
     # end backward compatibility - will be removed soon
 
     if not username:
@@ -587,6 +541,7 @@ def init_validation(request):
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
             second_collection = i_data.get('second_collection', '')
+            limit = i_data.get('limit', '15')
         except ValueError:
             return {'error':400, 'data': {'result':'failure', 'message':'Bad input format'}}
 
@@ -598,4 +553,4 @@ def init_validation(request):
     else:
         mongo_final_url = MONGO_API_URL
 
-    return {'username':username, 'mongo_url': mongo_final_url}
+    return {'username':username, 'mongo_url': mongo_final_url, 'limit':limit}
