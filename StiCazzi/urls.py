@@ -51,7 +51,7 @@ urlpatterns = [
     url(r'^getcoversstats2$', covers_controllers.get_covers_stats_2),
     url(r'^spotify$', covers_controllers.spotify),
     url(r'^spotifysearch$', covers_controllers.spotify_search),
-    url(r'^localsearch$', covers_controllers.get_covers_by_search),
+    #url(r'^localsearch$', covers_controllers.get_covers_by_search),
     url(r'^localsearch2$', covers_controllers.get_covers_by_search_ng),
 
     url(r'^geolocation$', controllers.geolocation),
