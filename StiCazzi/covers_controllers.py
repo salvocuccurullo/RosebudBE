@@ -324,10 +324,10 @@ def get_covers_stats(request):
 
     validation = init_validation(request)
     if 'error' in validation:
-        return JsonResponse(validation.data, status=validation.error)
+        return JsonResponse(validation['data'], status=validation['error'])
 
     headers = {'Content-Type': 'application/json'}
-    response = requests.get(validation.mongo_url + "/getStats", auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
+    response = requests.get(validation['mongo_url'] + "/getStats", auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
     response_body = response.text
