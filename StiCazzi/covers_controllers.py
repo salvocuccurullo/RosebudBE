@@ -493,7 +493,7 @@ def get_covers_by_search_ng(request):
         return JsonResponse(validation['data'], status=validation['error'])
 
     headers = {'Content-Type': 'application/json'}
-    payload = {'search': validation['payload']}
+    payload = {'search': validation['search']}
     response = requests.get(validation['mongo_url'] + "/searchCoversNg?search=%(search)s&limit=%(limit)s" % validation, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers, data=payload)
 
     status_code = response.status_code
