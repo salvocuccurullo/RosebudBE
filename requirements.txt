@@ -9,3 +9,4 @@ requests[security]
 Padding
 geopy
 GitPython
+oauthlib
