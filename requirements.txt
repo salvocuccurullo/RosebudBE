@@ -10,3 +10,4 @@ Padding
 geopy
 GitPython
 oauthlib
+google-auth
