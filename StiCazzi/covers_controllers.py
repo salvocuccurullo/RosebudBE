@@ -525,7 +525,7 @@ def init_validation(request):
             i_data = json.loads(request.body)
             username = i_data.get('username', '')
             kanazzi = i_data.get('kanazzi', '')
-            second_collection = i_data.get('second_collection', '')
+            second_collection = i_data.get('second_collection', False)
             limit = i_data.get('limit', '15')
             search = i_data.get('search', '')
         except ValueError:
@@ -534,7 +534,7 @@ def init_validation(request):
     if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
         return {'error':401, 'data': {'result':'failure', 'message':'Invalid session'}}
 
-    if second_collection:
+    if second_collection and second_collection == "true":
         mongo_final_url = MONGO_API_2ND_DB_URL
     else:
         mongo_final_url = MONGO_API_URL
