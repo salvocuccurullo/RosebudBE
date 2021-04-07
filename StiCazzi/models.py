@@ -67,6 +67,13 @@ class User(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+class UserDevice(models.Model):
+    id_user_device = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    device_id = models.CharField(max_length=300, null=False, default='')
+    rosebud_id = models.CharField(max_length=300, null=False, default='')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
 class Mp3(models.Model):
     id_mp3 = models.AutoField(primary_key=True)

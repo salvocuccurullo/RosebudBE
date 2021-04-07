@@ -31,7 +31,7 @@ from django.core import serializers
 from django import get_version
 from django.contrib.auth import authenticate
 
-from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification
+from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification, UserDevice
 from StiCazzi.models import ConfigurationSerializer
 from StiCazzi.env import MONGO_API_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 from . import utils
@@ -287,7 +287,7 @@ def check_session_ng(request):
             result['new_token'] = new_token
     else:
         logger.debug("Auth NG failed!")
-    
+
     logger.debug("="*30)
     logger.debug(result)
     logger.debug("="*30)
@@ -420,7 +420,7 @@ def check_session(session_id, username, action='', store=False):
             return False
 
         if SESSION_DBG:
-            logger.debug("Session not expired : %.3f hours" % time_diff_hrs) 
+            logger.debug("Session not expired : %.3f hours" % time_diff_hrs)
 
     except Exception as exception:
         if SESSION_DBG:
@@ -447,6 +447,7 @@ def login(request):
         #backward compatibility
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
+        device_id = request.POST.get('device_uuid', '')
         #end backward compatibility
 
         if not username:
@@ -454,6 +455,7 @@ def login(request):
                 i_data = json.loads(request.body)
                 username = i_data.get('username', '')
                 password = i_data.get('password', '')
+                device_id = i_data.get('device_uuid', '')
                 logger.debug("New login have been used")
             except ValueError:
                 response_data['message'] = 'Invalid data'
@@ -482,6 +484,8 @@ def login(request):
                 current_user.rosebud_uid = make_password(str(rosebud_uid))
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
+                user_device = UserDevice(user=current_user, device_id=device_uuid, rosebud_id=str(rosebud_uid))
+                user_device.save()
                 extra_info['poweruser'] = current_user.poweruser
                 extra_info['geoloc_enabled'] = current_user.geoloc_enabled
 
@@ -603,7 +607,7 @@ def geolocation(request):
     logger.debug("GeoLocation called")
 
     response = {
-            'result':'success', 
+            'result':'success',
             'distance': 0,
             'location_string': ''
     }
@@ -1078,7 +1082,7 @@ def get_configs(request):
 
     username = request.POST.get('username', '')
     kanazzi = request.POST.get('kanazzi', '').strip()
-    
+
     #backward compatibility - will be removed soon
     if not username:
         try:
@@ -1147,8 +1151,7 @@ def comfortably_numb(request):
     #logger.debug(plain_text)
     #plain_text = Padding.removePadding(plain_text,blocksize=Padding.AES_blocksize,mode='CMS')
     logger.debug(plain_text)
-    
+
     response['payload'] = {"message":"welcome", 'username':username, 'logged':True}
 
     return JsonResponse(response)
-
