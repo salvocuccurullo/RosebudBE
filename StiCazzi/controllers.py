@@ -368,6 +368,10 @@ def authentication(fn):
                 current_user.rosebud_uid = str(new_token)
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
+                if user_device:
+                    ud = user_device.first()
+                    ud.rosebud_id = str(new_token)
+                    ud.save()
                 result['new_token'] = new_token
                 logger.debug("New token created for user [%s]" % current_user.username)
             result['code'] = 200
