@@ -281,7 +281,7 @@ def check_session_ng(request):
         logger.debug("Session time : %1.3f hours" % time_diff_hrs)
         if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
             new_token = uuid.uuid4()
-            current_user.rosebud_uid = make_password(str(new_token))
+            current_user.rosebud_uid = str(new_token)
             current_user.rosebud_uid_ts = datetime.now()
             current_user.save()
             result['new_token'] = new_token
@@ -327,6 +327,12 @@ def authentication(fn):
             result['code'] = 404
             return JsonResponse(result, status=result['code'])
 
+        user_device=UserDevice.objects.filter(user=current_user, device_id=device_id)
+        if user_device:
+            rosebud_uid_stored = user_device.first().device_id
+        else:
+            rosebud_uid_stored = current_user.rosebud_uid
+
         #logger.debug("="*30)
         #logger.debug(rosebud_uid)
         #logger.debug("="*30)
@@ -335,7 +341,7 @@ def authentication(fn):
             current_user.app_version = app_version
             current_user.save()
 
-        if check_password(rosebud_uid, current_user.rosebud_uid):
+        if check_password(rosebud_uid, rosebud_uid_stored):
             logger.debug("Authentication Successful [%s] [%s]" % (request.path, username))
             result['success'] = True
 
@@ -357,7 +363,7 @@ def authentication(fn):
             logger.debug("Session time : %1.3f hours" % time_diff_hrs)
             if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
                 new_token = uuid.uuid4()
-                current_user.rosebud_uid = make_password(str(new_token))
+                current_user.rosebud_uid = str(new_token)
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
                 result['new_token'] = new_token
@@ -481,11 +487,18 @@ def login(request):
             if pwd_ok:
                 logged = "yes"
                 current_user = users.first()
-                current_user.rosebud_uid = make_password(str(rosebud_uid))
+                current_user.rosebud_uid = str(rosebud_uid)
                 current_user.rosebud_uid_ts = datetime.now()
                 current_user.save()
-                user_device = UserDevice(user=current_user, device_id=device_uuid, rosebud_id=str(rosebud_uid))
-                user_device.save()
+
+                user_device = UserDevice.objects.filter(user=current_user, device_id=device_id)
+                if user_device:
+                    ud = user_device.first()
+                    ud.rosebud_id = str(rosebud_uid)
+                    ud.save()
+                else:
+                    user_device = UserDevice(user=current_user, device_id=device_id, rosebud_id=str(rosebud_uid))
+                    user_device.save()
                 extra_info['poweruser'] = current_user.poweruser
                 extra_info['geoloc_enabled'] = current_user.geoloc_enabled
 
