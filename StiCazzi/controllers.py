@@ -306,6 +306,7 @@ def authentication(fn):
         kanazzi = request.POST.get('kanazzi', '').strip()
         rosebud_uid = request.POST.get('rosebud_uid', '')
         app_version = request.POST.get('app_version', '')
+        device_id = request.POST.get('device_uuid', '')
         #end backward compatibility - will be removed soon
 
         if not username:
@@ -314,6 +315,7 @@ def authentication(fn):
                 username = i_data.get('username', '')
                 kanazzi = i_data.get('kanazzi', '')
                 rosebud_uid = i_data.get('rosebud_uid', '')
+                device_id = i_data.get('device_uuid', '')
                 app_version = i_data.get('app_version', '')
                 logger.debug("Authentication [%s] [%s]" % (request.path, username))
             except ValueError:
@@ -329,7 +331,7 @@ def authentication(fn):
 
         user_device=UserDevice.objects.filter(user=current_user, device_id=device_id)
         if user_device:
-            rosebud_uid_stored = user_device.first().device_id
+            rosebud_uid_stored = user_device.first().rosebud_id
         else:
             rosebud_uid_stored = current_user.rosebud_uid
 
@@ -341,7 +343,7 @@ def authentication(fn):
             current_user.app_version = app_version
             current_user.save()
 
-        if check_password(rosebud_uid, rosebud_uid_stored):
+        if rosebud_uid == rosebud_uid_stored:
             logger.debug("Authentication Successful [%s] [%s]" % (request.path, username))
             result['success'] = True
 
