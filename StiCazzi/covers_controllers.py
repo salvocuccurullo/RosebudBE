@@ -534,7 +534,7 @@ def init_validation(request):
     if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
         return {'error':401, 'data': {'result':'failure', 'message':'Invalid session'}}
 
-    if second_collection and second_collection == "true":
+    if second_collection or second_collection == "true":
         mongo_final_url = MONGO_API_2ND_DB_URL
     else:
         mongo_final_url = MONGO_API_URL
