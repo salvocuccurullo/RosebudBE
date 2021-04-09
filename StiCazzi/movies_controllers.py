@@ -39,11 +39,6 @@ def get_tvshows_new_opt(request):
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    # if not check_session(kanazzi, username, action='gettvshows3', store=True):
-    #     response['result'] = 'failure'
-    #     response['message'] = 'Invalid Session'
-    #     return JsonResponse(response, status=401)
-
     #logger.debug("Current page: %s", current_page)
 
     if query and len(query) < 4:
@@ -158,7 +153,7 @@ def get_tvshows_new_opt(request):
                            'total_show': movie_list.count()
                           }
 
-    return JsonResponse(response)
+    return response
 
 
 def get_movies_ct(request):
@@ -185,7 +180,7 @@ def get_movies_ct(request):
     return JsonResponse(response)
 
 
-@ensure_csrf_cookie
+@authentication
 def setlike(request):
     """ Set Like """
 
@@ -203,11 +198,6 @@ def setlike(request):
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
         return JsonResponse(response_data, status=400)
-
-    if not check_session(kanazzi, username, action='setlike', store=True):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
 
     current_user = User.objects.filter(username=username).first()
 
@@ -243,10 +233,10 @@ def setlike(request):
 
     response_data['payload'] = {'id_vote': id_vote, 'count': len(Like.objects.filter(id_vote=id_vote, reaction="*")), 'you': len(Like.objects.filter(id_vote=id_vote, reaction="*", user=current_user))}
 
-    return JsonResponse(response_data)
+    return response_data
 
 
-@ensure_csrf_cookie
+@authentication
 def deletemovie(request):
     """ Delete Tvshow """
 
@@ -270,12 +260,6 @@ def deletemovie(request):
             response['message'] = 'Bad input format'
             return JsonResponse(response, status=400)
 
-
-    if not check_session(kanazzi, username, action='deletemovie', store=True):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
-
     current_user = User.objects.filter(username=username)
     # Check existing votes
     tvrs = TvShowVote.objects.filter(tvshow=movie_id).exclude(user=current_user[0])
@@ -294,7 +278,7 @@ def deletemovie(request):
             response_data['result'] = 'failure'
             response_data['message'] = 'Cannot delete tvshow with id=' + movie_id + ". It does not exist!"
 
-    return JsonResponse(response_data)
+    return response_data
 
 
 def create_update_vote(current_user, tvshow, vote_dict):
@@ -380,7 +364,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
         notification.save()
 
 
-@ensure_csrf_cookie
+@authentication
 def savemovienew(request):
     """ Save Movie New """
 
@@ -437,11 +421,6 @@ def savemovienew(request):
     miniseries = False
     if miniseries_sw == "on":
         miniseries = True
-
-    if not check_session(kanazzi, username, action='savemovienew', store=True):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
 
     if not title or not media or not tvshow_type:
         response_data['result'] = 'failure'
@@ -607,9 +586,9 @@ def savemovienew(request):
 
     response_data.update({"upload_result": upload_file_res})
 
-    return JsonResponse(response_data)
+    return response_data
 
-
+'''
 def get_movies_datatable(request):
     """ Get Tvshow for js datatable """
     movies_list = Movie.objects.all().exclude(cinema="")
@@ -630,8 +609,9 @@ def get_movies_datatable(request):
     response_data['data'] = out
 
     return JsonResponse(response_data)
+'''
 
-
+@authenticate
 def get_catalogue(request):
     """ Get Media Catalogue """
     response = {'result':'success'}
@@ -647,11 +627,6 @@ def get_catalogue(request):
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    if not check_session(kanazzi, username, action='get_catalogue', store=True):
-        response['result'] = 'failure'
-        response['message'] = 'Invalid Session'
-        return JsonResponse(response, status=401)
-
     if not cat_type:
         media_cat = Catalogue.objects.all()
     else:
@@ -659,4 +634,4 @@ def get_catalogue(request):
 
     response['payload'] = [model_to_dict(rec) for rec in media_cat]
 
-    return JsonResponse(response)
+    return response

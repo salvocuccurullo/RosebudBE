@@ -269,7 +269,7 @@ def upload_cover(request, safe_fname, cover_type="poster"):
 
     return response_data
 
-
+@authentication
 def get_covers_stats(request):
     """ Get covers statistics from API """
     logger.debug("get_covers_stats called")
@@ -286,10 +286,12 @@ def get_covers_stats(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
+        #return JsonResponse(response_body, safe=False)
+        return response_body
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
+    return response_body
+    #return JsonResponse(response_body, status=status_code, safe=False)
 
 '''
 def get_covers_stats_2(request):
@@ -506,7 +508,7 @@ def get_covers_by_search_ng(request):
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
 
-@authentication
+
 def init_validation(request):
     # backward compatibility - will be removed soon
     username = request.POST.get('username', '')
