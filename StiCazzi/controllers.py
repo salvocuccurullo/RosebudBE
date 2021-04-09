@@ -477,9 +477,14 @@ def login(request):
             response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
             return JsonResponse(response_data, status=401)
 
-        decryption_suite = AES.new(os.environ['OPENSHIFT_DUMMY_KEY'], AES.MODE_ECB, '')
-        plain_text = decryption_suite.decrypt(base64.b64decode(password))
-        #logger.debug(password)
+        plain_text = ''
+        try:
+            decryption_suite = AES.new(os.environ['OPENSHIFT_DUMMY_KEY'], AES.MODE_ECB, '')
+            plain_text = decryption_suite.decrypt(base64.b64decode(password))
+            plain_text = plain_text.decode('utf-8').strip()
+            #logger.debug(password)
+        except:
+            pass
 
         out = ""
         extra_info = {}
@@ -487,10 +492,11 @@ def login(request):
         users = User.objects.filter(username=username)
 
         if users:
-            plain_text = plain_text.decode('utf-8').strip()
+
             pwd_ok = check_password(plain_text, users.first().password)
+            pwd_ok_1 = check_password(password, users.first().password)
             out = "User found!"
-            if pwd_ok:
+            if pwd_ok or pwd_ok_1:
                 logged = "yes"
                 current_user = users.first()
                 current_user.rosebud_uid = str(rosebud_uid)

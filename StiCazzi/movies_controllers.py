@@ -1,5 +1,5 @@
 """
- Django2 Movies Controller
+Django2 Movies Controller
 """
 
 import json
@@ -14,11 +14,12 @@ from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
 
 from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue, Like
-from StiCazzi.controllers import check_session, test_session
+from StiCazzi.controllers import check_session, test_session, authentication
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
 logger = logging.getLogger(__name__)
 
+@authentication
 def get_tvshows_new_opt(request):
     """ Get Tvshow New """
     logger.debug("Get Tvshows new opt called")
@@ -38,10 +39,10 @@ def get_tvshows_new_opt(request):
         response['message'] = 'Bad input format'
         return JsonResponse(response, status=400)
 
-    if not check_session(kanazzi, username, action='gettvshows3', store=True):
-        response['result'] = 'failure'
-        response['message'] = 'Invalid Session'
-        return JsonResponse(response, status=401)
+    # if not check_session(kanazzi, username, action='gettvshows3', store=True):
+    #     response['result'] = 'failure'
+    #     response['message'] = 'Invalid Session'
+    #     return JsonResponse(response, status=401)
 
     #logger.debug("Current page: %s", current_page)
 
@@ -241,7 +242,7 @@ def setlike(request):
         notification.save()
 
     response_data['payload'] = {'id_vote': id_vote, 'count': len(Like.objects.filter(id_vote=id_vote, reaction="*")), 'you': len(Like.objects.filter(id_vote=id_vote, reaction="*", user=current_user))}
- 
+
     return JsonResponse(response_data)
 
 

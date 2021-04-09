@@ -12,7 +12,7 @@ from requests.auth import HTTPBasicAuth
 from django.http import JsonResponse
 
 from StiCazzi.models import Notification
-from StiCazzi.controllers import check_session, check_google
+from StiCazzi.controllers import check_session, check_google, authentication
 from StiCazzi.utils import safe_file_name
 from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 
@@ -506,7 +506,7 @@ def get_covers_by_search_ng(request):
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return JsonResponse(response_body, status=status_code, safe=False)
 
-
+@authentication
 def init_validation(request):
     # backward compatibility - will be removed soon
     username = request.POST.get('username', '')
@@ -531,8 +531,8 @@ def init_validation(request):
         except ValueError:
             return {'error':400, 'data': {'result':'failure', 'message':'Bad input format'}}
 
-    if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
-        return {'error':401, 'data': {'result':'failure', 'message':'Invalid session'}}
+    # if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
+    #     return {'error':401, 'data': {'result':'failure', 'message':'Invalid session'}}
 
     if second_collection == True or second_collection == "true":
         mongo_final_url = MONGO_API_2ND_DB_URL
