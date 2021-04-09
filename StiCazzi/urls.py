@@ -38,7 +38,7 @@ urlpatterns = [
     url(r'^getTvShows3$', movies_controllers.get_tvshows_new_opt),
     url(r'^deletemovie$', movies_controllers.deletemovie),
     url(r'^savemovienew$', movies_controllers.savemovienew),
-    url(r'^moviesdt/$', movies_controllers.get_movies_datatable, name='movie'),
+    #url(r'^moviesdt/$', movies_controllers.get_movies_datatable, name='movie'),
     url(r'^moviesct/$', movies_controllers.get_movies_ct, name='movie'),
     url(r'^setlike$', movies_controllers.setlike),
 
