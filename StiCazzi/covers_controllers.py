@@ -287,7 +287,7 @@ def get_covers_stats(request):
 
     if str(status_code) == "200":
         #return JsonResponse(response_body, safe=False)
-        return response_body
+        return response.text
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
     return response_body

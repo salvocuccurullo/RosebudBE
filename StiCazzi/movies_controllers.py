@@ -611,7 +611,7 @@ def get_movies_datatable(request):
     return JsonResponse(response_data)
 '''
 
-@authenticate
+@authentication
 def get_catalogue(request):
     """ Get Media Catalogue """
     response = {'result':'success'}
