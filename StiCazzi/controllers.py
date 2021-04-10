@@ -623,7 +623,7 @@ def django_login(request):
     #token_check = check_google(firebase_id_token)
     return auth(username, password, request)
 
-
+@authentication
 def geolocation(request):
     """
     Controller:
@@ -661,8 +661,9 @@ def geolocation(request):
         except ValueError as e:
             response['result'] = 'failure'
             response['message'] = 'Bad input format'
+            response['status_code'] = 400
             logger.error(e)
-            return JsonResponse(response, status=400)
+            return response
 
     logger.debug("Action: %s" % action)
     logger.debug("Notification On: %s" % notification_on)
@@ -671,15 +672,6 @@ def geolocation(request):
         notification_on = True
     else:
         notification_on = False
-
-    if not check_session(kanazzi, username, action='geolocation', store=True):
-        response['result'] = 'failure'
-        response['message'] = 'Invalid Session'
-        return JsonResponse(response, status=401)
-
-    if not action or action not in ('GET', 'SET', 'DELETE'):
-        response = {'result':'failure'}
-        return JsonResponse(response, status=400)
 
     users = User.objects.filter(username=username)
     loc = Location.objects.filter(user=users[0])
@@ -784,9 +776,9 @@ def geolocation(request):
             response['result'] = 'failure'
             ret_status = 400
 
-    return JsonResponse(response, status=ret_status)
+    return response
 
-
+@authentication
 def geolocation2(request):
     """
     Controller:
@@ -806,22 +798,14 @@ def geolocation2(request):
     except ValueError:
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
+        response['status_code'] = 400
+        return response
 
     # logger.debug("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
 
-    if not check_session(kanazzi, username, action='geolocation2', store=True):
-        response['result'] = 'failure'
-        response['message'] = 'Invalid Session'
-        return JsonResponse(response, status=401)
-
-    if not action or action not in ('GET', 'SET', 'DELETE'):
-        response = {'result':'failure'}
-        return JsonResponse(response, status=400)
-
     users = User.objects.filter(username=username)
     loc = Location.objects.filter(user=users[0])
-    status_code = 200
+    response['status_code'] = 200
 
     if action == 'DELETE':
         response['message'] = 'GPS coordinates not available for user %s, deletion not needed.' % username
@@ -854,9 +838,9 @@ def geolocation2(request):
                 location.save()
             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
         else:
-            status_code = 400
+            response['status_code'] = 400
 
-    return JsonResponse(response, status=status_code)
+    return response
 
 def set_fb_token(request):
     """
