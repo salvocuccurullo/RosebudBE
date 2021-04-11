@@ -144,7 +144,7 @@ def spotify(request):
     response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
     return JsonResponse(response_body, status=response_code, safe=False)
 
-
+@authentication
 def spotify_search(request):
     """ Get album info from spotify """
 
@@ -177,7 +177,8 @@ def spotify_search(request):
             response = res.text
             response_code = res.status_code
     response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
-    return JsonResponse(response_body, status=response_code, safe=False)
+    #return JsonResponse(response_body, status=response_code, safe=False)
+    return response_body
 
 '''
 def get_covers(request):

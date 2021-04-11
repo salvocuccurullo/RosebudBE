@@ -50,45 +50,6 @@ def get_demo_json(request):
 
     return JsonResponse(response_data)
 
-def get_random_song(request):
-    """
-    Controller:
-    """
-    response_data = {}
-    response_data['result'] = 'success'
-
-    try:
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        kanazzi = i_data.get('kanazzi', '')
-    except ValueError:
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
-
-    # CHECK SESSION - SOFT VERSION - NO SAVE ON DB
-    if not check_session(kanazzi, username, action='getRandomSong', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
-    # END CHECK SESSION
-
-    song_rs = Song.objects.all()
-    random_index = randint(0, len(song_rs) - 1)
-    song = song_rs[random_index]
-
-    if song:
-        lyrics_list = Lyric.objects.all().filter(id_song_id=song.id_song)
-        final_list = [{'id':rec.id_lyric, 'text':rec.lyric} for rec in lyrics_list]
-        out = {'title':song.title, 'author':song.author, 'spotify': song.spotify, 'youtube': song.youtube, 'deezer': song.deezer, 'lyrics':final_list}
-        response_data['message'] = out
-    else:
-        response_data['message'] = 'song not found'
-        return JsonResponse(response_data)
-
-    return JsonResponse(response_data)
-
-
 def get_songs(request):
     """
     Controller:
@@ -383,6 +344,37 @@ def authentication(fn):
         return JsonResponse(result, status=result['code'])
 
     return wrapper_fn
+
+@authentication
+def get_random_song(request):
+    """
+    Controller:
+    """
+    response_data = {}
+    response_data['result'] = 'success'
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        kanazzi = i_data.get('kanazzi', '')
+    except ValueError:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+
+    song_rs = Song.objects.all()
+    random_index = randint(0, len(song_rs) - 1)
+    song = song_rs[random_index]
+
+    if song:
+        lyrics_list = Lyric.objects.all().filter(id_song_id=song.id_song)
+        final_list = [{'id':rec.id_lyric, 'text':rec.lyric} for rec in lyrics_list]
+        out = {'title':song.title, 'author':song.author, 'spotify': song.spotify, 'youtube': song.youtube, 'deezer': song.deezer, 'lyrics':final_list}
+        response_data['message'] = out
+    else:
+        response_data['message'] = 'song not found'
+
+    return response_data
 
 @authentication
 def get_last_commit(request):
