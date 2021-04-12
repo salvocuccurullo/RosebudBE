@@ -293,8 +293,10 @@ def authentication(fn):
         user_device=UserDevice.objects.filter(user=current_user, device_id=device_id)
         if user_device:
             rosebud_uid_stored = user_device.first().rosebud_id
+            uid_ts = user_device.first().updated
         else:
             rosebud_uid_stored = current_user.rosebud_uid
+            uid_ts = current_user.rosebud_uid_ts
 
         #logger.debug("="*30)
         #logger.debug(rosebud_uid)
@@ -309,23 +311,13 @@ def authentication(fn):
             result['success'] = True
 
             #Check if token is expired
-            #now = datetime.now().replace(tzinfo=None)
             now = datetime.utcnow()
-            #uid_ts = current_user.rosebud_uid_ts #old
-            uid_ts = user_device.first().updated #new
-            #logger.debug(" ======= BEFORE ====== ")
-            #logger.debug("Now: %s" % now)
-            #logger.debug("Uid ts: %s" % uid_ts)
+            now = now.replace(tzinfo=None)
             uid_ts = uid_ts.replace(tzinfo=None)
-            now = now.replace(tzinfo=None)
-            #logger.debug(" ======= AFTER ====== ")
-            #logger.debug("Now: %s" % now)
-            #logger.debug("Uid ts: %s" % uid_ts)
-            now = now.replace(tzinfo=None)
             time_diff = now - uid_ts
             time_diff_hrs = time_diff.total_seconds() / 3600
             logger.debug("Session time : %1.3f hours" % time_diff_hrs)
-            if time_diff_hrs > 3:  # Expired after two hours (actually one becasue aws timezone)
+            if time_diff_hrs > 3 and request.path == "/refreshtoken":  # Expired after two hours (actually one becasue aws timezone)
                 new_token = uuid.uuid4()
                 current_user.rosebud_uid = str(new_token)
                 current_user.rosebud_uid_ts = datetime.now()
@@ -334,8 +326,8 @@ def authentication(fn):
                     ud = user_device.first()
                     ud.rosebud_id = str(new_token)
                     ud.save()
-                result['new_token'] = new_token
-                logger.debug("New token created for user [%s]" % current_user.username)
+                    result['new_token'] = new_token
+                    logger.debug("New token created for user [%s]" % current_user.username)
             result['code'] = 200
             result['payload'] = fn(*args, **kwargs)
         else:
@@ -345,6 +337,11 @@ def authentication(fn):
         return JsonResponse(result, status=result['code'])
 
     return wrapper_fn
+
+@authentication
+def refresh_token(request):
+    response = {}
+    return response
 
 @authentication
 def get_random_song(request):
