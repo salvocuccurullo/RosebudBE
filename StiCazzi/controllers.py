@@ -311,7 +311,8 @@ def authentication(fn):
             #Check if token is expired
             #now = datetime.now().replace(tzinfo=None)
             now = datetime.utcnow()
-            uid_ts = current_user.rosebud_uid_ts
+            #uid_ts = current_user.rosebud_uid_ts #old
+            uid_ts = user_device.first().updated #new
             #logger.debug(" ======= BEFORE ====== ")
             #logger.debug("Now: %s" % now)
             #logger.debug("Uid ts: %s" % uid_ts)
