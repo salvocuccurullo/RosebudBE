@@ -379,6 +379,11 @@ def authentication(fn):
     return wrapper_fn
 
 @authentication
+def refresh_token(request):
+    response = {}
+    return response
+
+@authentication
 def get_last_commit(request):
     git_folder = '/home/ubuntu/Work/StiCazziD2'
     repo = git.Repo(".")
