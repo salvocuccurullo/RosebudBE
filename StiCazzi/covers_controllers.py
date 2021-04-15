@@ -226,7 +226,7 @@ def get_covers_stats(request):
         return json.loads(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return return json.loads(response_body)
+    return json.loads(response_body)
 
 
 def save_cover(request):
