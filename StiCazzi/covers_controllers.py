@@ -18,7 +18,7 @@ from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MO
 
 logger = logging.getLogger(__name__)
 
-@def authentication
+@authentication
 def get_random_cover(request):
     """ Get a random cover from API """
     logger.debug("get_random_cover called")
