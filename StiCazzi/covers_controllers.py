@@ -55,7 +55,8 @@ def spotify_auth(request):
     except ValueError:
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
-        return JsonResponse(response_data, status=400)
+        response_data['status_code'] = 400
+        return response_data
 
     #logger.debug("%s - %s" % (username, kanazzi))
     logger.debug("%s - %s - %s" % (album_url, search_type, query))
@@ -63,19 +64,16 @@ def spotify_auth(request):
     if not (album_url or (query and search_type)):
         response_data['result'] = 'failure'
         response_data['message'] = 'Unprocessable Entity: missing parameter'
-        return JsonResponse(response_data, status=422)
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='spotifyAuthorization', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
+        response_data['status_code'] = 422
+        return response_data
 
     expected_base_url = ("https://open.spotify.com", "https://api.spotify.com")
 
     if album_url and not album_url.startswith(expected_base_url):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Spotify URL'
-        return JsonResponse(response_data, status=400)
+        response_data['status_code'] = 400
+        return response_data
 
     client_info = {
           "grant_type":    "authorization_code",
@@ -98,8 +96,8 @@ def spotify(request):
     response_data = {}
 
     spotify_pre_auth = spotify_auth(request)
-    if type(spotify_pre_auth) is JsonResponse:
-        return spotify_pre_auth
+#    if type(spotify_pre_auth) is JsonResponse:
+#        return spotify_pre_auth
 
     response = spotify_pre_auth.get('result','')
     album_url = spotify_pre_auth.get('album_url','')
@@ -151,7 +149,7 @@ def spotify_search(request):
                 album = {"name": track['album']['name'], "author":track['artists'][0]['name'], "url":track['album']['href'], "tracks_num": track['album']['total_tracks'], 'year': track['album']['release_date'][:4]}
                 if album not in data_out:
                     data_out.append(album)
-            return JsonResponse({"result":"success", "payload":data_out}, status=res.status_code, safe=False)
+            return {"result":"success", "payload":data_out, "status_code":res.status_code}
         else:
             response = res.text
             response_code = res.status_code
