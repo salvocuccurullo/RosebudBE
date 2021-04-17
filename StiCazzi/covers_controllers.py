@@ -89,6 +89,7 @@ def spotify_auth(request):
     return {"result": res.text, "status_code": res.status_code, "search_type": search_type, "album_url": album_url, "query": query}
 
 
+@authentication
 def spotify(request):
     """ Get album info from spotify """
 
@@ -114,12 +115,12 @@ def spotify(request):
         if res.status_code == 200:
             album = json.loads(res.text)
             logger.debug("Found on Spotify the album: %(name)s" % album)
-            return JsonResponse(res.text, status=res.status_code, safe=False)
+            return json.loads(res.text)
         else:
             response = res.text
             response_code = res.status_code
     response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
-    return JsonResponse(response_body, status=response_code, safe=False)
+    return response_body
 
 @authentication
 def spotify_search(request):
