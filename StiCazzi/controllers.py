@@ -262,27 +262,19 @@ def authentication(fn):
         result = {"success":False, "new_token":"", "code": 401}
         request = args[0]
 
-        #backward compatibility - will be removed soon
-        username = request.POST.get('username', '')
-        kanazzi = request.POST.get('kanazzi', '').strip()
-        rosebud_uid = request.POST.get('rosebud_uid', '')
-        app_version = request.POST.get('app_version', '')
-        device_id = request.POST.get('device_uuid', '')
-        #end backward compatibility - will be removed soon
-
-        if not username:
-            try:
-                i_data = json.loads(request.body)
-                username = i_data.get('username', '')
-                kanazzi = i_data.get('kanazzi', '')
-                rosebud_uid = i_data.get('rosebud_uid', '')
-                device_id = i_data.get('device_uuid', '')
-                app_version = i_data.get('app_version', '')
-                logger.debug("Authentication [%s] [%s]" % (request.path, username))
-            except ValueError:
-                result['message'] = 'Invalid data'
-                result['code'] = 400
-                return JsonResponse(result, status=result['code'])
+        try:
+          i_data = json.loads(request.body)
+          username = i_data.get('username', '')
+          rosebud_uid = i_data.get('rosebud_uid', '')
+          device_id = i_data.get('device_uuid', '')
+          app_version = i_data.get('app_version', '')
+          device_version = i_data.get('device_version', '')
+          device_platform = i_data.get('device_platform', '')
+          logger.debug("Authentication [%s] [%s]" % (request.path, username))
+        except ValueError:
+            result['message'] = 'Invalid data'
+            result['code'] = 400
+            return JsonResponse(result, status=result['code'])
 
         users = User.objects.filter(username=username)
         current_user = users.first()
@@ -325,6 +317,8 @@ def authentication(fn):
                 if user_device:
                     ud = user_device.first()
                     ud.rosebud_id = str(new_token)
+                    ud.device_version = device_version
+                    ud.device_platform = device_platform
                     ud.save()
                     result['new_token'] = new_token
                     logger.debug("New token created for user [%s]" % current_user.username)
@@ -446,35 +440,23 @@ def login(request):
     response_data['result'] = 'success'
     logged = "no"
     try:
-        #backward compatibility
-        username = request.POST.get('username', '')
-        password = request.POST.get('password', '')
-        device_id = request.POST.get('device_uuid', '')
-        #end backward compatibility
 
-        if not username:
-            try:
-                i_data = json.loads(request.body)
-                username = i_data.get('username', '')
-                password = i_data.get('password', '')
-                device_id = i_data.get('device_uuid', '')
-                logger.debug("New login have been used")
-            except ValueError:
-                response_data['message'] = 'Invalid data'
+        try:
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            password = i_data.get('password', '')
+            device_id = i_data.get('device_uuid', '')
+            device_version = i_data.get('device_version', '')
+            device_platform = i_data.get('device_platform', '')
+            logger.debug("New login have been used")
+        except ValueError:
+            response_data['message'] = 'Invalid data'
 
         if not username or not password:
             response_data['result'] = 'failure'
             response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
             return JsonResponse(response_data, status=401)
 
-        plain_text = ''
-        try:
-            decryption_suite = AES.new(os.environ['OPENSHIFT_DUMMY_KEY'], AES.MODE_ECB, '')
-            plain_text = decryption_suite.decrypt(base64.b64decode(password))
-            plain_text = plain_text.decode('utf-8').strip()
-            #logger.debug(password)
-        except:
-            pass
 
         out = ""
         extra_info = {}
@@ -482,24 +464,30 @@ def login(request):
         users = User.objects.filter(username=username)
 
         if users:
-
-            pwd_ok = check_password(plain_text, users.first().password)
-            pwd_ok_1 = check_password(password, users.first().password)
+            pwd_ok = check_password(password, users.first().password)
             out = "User found!"
-            if pwd_ok or pwd_ok_1:
+            if pwd_ok:
                 logged = "yes"
                 current_user = users.first()
+                # This two line are not needed anymore TBRemove
                 current_user.rosebud_uid = str(rosebud_uid)
                 current_user.rosebud_uid_ts = datetime.now()
+                # End this two line are not needed anymore TBRemove
                 current_user.save()
 
                 user_device = UserDevice.objects.filter(user=current_user, device_id=device_id)
                 if user_device:
                     ud = user_device.first()
                     ud.rosebud_id = str(rosebud_uid)
+                    ud.device_version = device_version
+                    ud.device_platform = device_platform
                     ud.save()
                 else:
-                    user_device = UserDevice(user=current_user, device_id=device_id, rosebud_id=str(rosebud_uid))
+                    user_device = UserDevice(user=current_user,
+                        device_id=device_id,
+                        rosebud_id=str(rosebud_uid),
+                        device_version=device_version,
+                        device_platform=device_platform)
                     user_device.save()
                 extra_info['poweruser'] = current_user.poweruser
                 extra_info['geoloc_enabled'] = current_user.geoloc_enabled

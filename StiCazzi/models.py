@@ -72,6 +72,8 @@ class UserDevice(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     device_id = models.CharField(max_length=300, null=False, default='')
     rosebud_id = models.CharField(max_length=300, null=False, default='')
+    device_version = models.CharField(max_length=300, null=False, default='')
+    device_platform = models.CharField(max_length=300, null=False, default='')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
