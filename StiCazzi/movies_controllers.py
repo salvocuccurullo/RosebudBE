@@ -14,7 +14,7 @@ from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
 
 from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue, Like
-from StiCazzi.controllers import check_session, test_session, authentication
+from StiCazzi.controllers import authentication
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
 logger = logging.getLogger(__name__)

@@ -12,7 +12,7 @@ from requests.auth import HTTPBasicAuth
 from django.http import JsonResponse
 
 from StiCazzi.models import Notification
-from StiCazzi.controllers import check_session, check_google, authentication
+from StiCazzi.controllers import authentication
 from StiCazzi.utils import safe_file_name
 from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 
