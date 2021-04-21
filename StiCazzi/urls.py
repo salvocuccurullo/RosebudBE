@@ -17,7 +17,7 @@
 
 from django.conf.urls import url, include
 from django.contrib import admin
-from StiCazzi import views, controllers, movies_controllers, covers_controllers
+from StiCazzi import views, controllers, movies_controllers, covers_controllers, misc_controllers
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
