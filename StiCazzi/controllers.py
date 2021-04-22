@@ -528,6 +528,7 @@ def geolocation(request):
     else:
         if latitude and longitude:            #SET COORD
             distance = 0
+            location_string = ''
             if loc:
 
                 old_loc = (loc[0].latitude, loc[0].longitude)
@@ -546,7 +547,6 @@ def geolocation(request):
                 city = 'Ghost Town'
                 country = 'Nowhere land'
                 county = ''
-                location_string = ''
                 if location_info:
                     try:
                         #logger.debug(location_info.raw)
@@ -622,7 +622,6 @@ def geolocation2(request):
         latitude = i_data.get('latitude', '')
         photo = i_data.get('photo', '')
         firebase_id_token = i_data.get('firebase_id_token', '')
-        kanazzi = i_data.get('kanazzi', '')
     except ValueError:
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
