@@ -47,16 +47,29 @@ def authentication(fn):
         result = {"success":False, "new_token":"", "code": 401}
         request = args[0]
 
-        try:
-          i_data = json.loads(request.body)
-          username = i_data.get('username', '')
-          rosebud_uid = i_data.get('rosebud_uid', '')
-          device_id = i_data.get('device_uuid', '')
-          app_version = i_data.get('app_version', '')
-          device_version = i_data.get('device_version', '')
-          device_platform = i_data.get('device_platform', '')
-          logger.debug("Authentication [%s] [%s]" % (request.path, username))
-        except ValueError:
+        if request.content_type == "application/json":
+            try:
+                i_data = json.loads(request.body)
+                username = i_data.get('username', '')
+                rosebud_uid = i_data.get('rosebud_uid', '')
+                device_id = i_data.get('device_uuid', '')
+                app_version = i_data.get('app_version', '')
+                device_version = i_data.get('device_version', '')
+                device_platform = i_data.get('device_platform', '')
+                logger.debug("Authentication [%s] [%s]" % (request.path, username))
+            except ValueError:
+                result['message'] = 'Invalid data'
+                result['code'] = 400
+                return JsonResponse(result, status=result['code'])
+        elif request.content_type == "multipart/form-data":
+            username = request.POST.get('username', '')
+            rosebud_uid = request.POST.get('rosebud_uid', '')
+            device_id = request.POST.get('device_uuid', '')
+            app_version = request.POST.get('app_version', '')
+            device_version = request.POST.get('device_version', '')
+            device_platform = request.POST.get('device_platform', '')
+            logger.debug("Authentication [%s] [%s]" % (request.path, username))
+        else:
             result['message'] = 'Invalid data'
             result['code'] = 400
             return JsonResponse(result, status=result['code'])
@@ -136,7 +149,6 @@ def get_random_song(request):
     try:
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
-        kanazzi = i_data.get('kanazzi', '')
     except ValueError:
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -267,13 +279,12 @@ def geolocation(request):
     ret_status = 200
 
     # TO BE REMOVED
-    username = request.POST.get('username', '')
-    longitude = request.POST.get('longitude', '')
-    latitude = request.POST.get('latitude', '')
-    photo = request.POST.get('photo', '')
-    action = request.POST.get('action', '')
-    notification_on = request.POST.get('notification_on', False)
-    kanazzi = request.POST.get('kanazzi', '').strip()
+    # username = request.POST.get('username', '')
+    # longitude = request.POST.get('longitude', '')
+    # latitude = request.POST.get('latitude', '')
+    # photo = request.POST.get('photo', '')
+    # action = request.POST.get('action', '')
+    # notification_on = request.POST.get('notification_on', False)
 
     if not username:
         try:
@@ -285,7 +296,6 @@ def geolocation(request):
             photo = i_data.get('photo', '')
             action = i_data.get('action', '')
             notification_on = i_data.get('notification_on', False)
-            kanazzi = i_data.get('kanazzi', '').strip()
         except ValueError as e:
             response['result'] = 'failure'
             response['message'] = 'Bad input format'

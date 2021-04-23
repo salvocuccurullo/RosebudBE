@@ -371,6 +371,7 @@ def savemovienew(request):
     response_data = {}
     response_data['result'] = 'success'
 
+    username = request.POST.get('username', '')
     id_movie = request.POST.get('id', '')
     title = request.POST.get('title', '')
     media = request.POST.get('media', '')

@@ -228,6 +228,7 @@ def get_covers_stats(request):
     return json.loads(response_body)
 
 
+@authentication
 def save_cover(request):
     """ Save a new cover """
     logger.debug("save_cover called")
@@ -253,7 +254,7 @@ def save_cover(request):
 
     validation = init_validation(request)
     if 'error' in validation:
-        return JsonResponse(validation['data'], status=validation['error'])
+        return validation
 
     logger.debug("Cover Upload: %s - %s - %s" % (title.encode('utf-8'), author.encode('utf-8'), str(year)))
 
@@ -271,7 +272,7 @@ def save_cover(request):
         upload_res = upload_file_res.get('result', 'failure')
         if upload_res == 'failure' and cover_name != "" and id_cover != "":
             response_data = upload_file_res
-            return JsonResponse(response_data)
+            return response_data
 
     headers = {'Content-Type': 'application/json'}
     payload = {"name": title, "author": author, "year": year, "username": username}
@@ -314,9 +315,9 @@ def save_cover(request):
             notif.save()
     else:
         response_body = {"result": "failure", "message": json.loads(response.text)['message'], "status_code": str(status_code)}
-        return JsonResponse(response_body, status=status_code, safe=False)
+        return response_body
 
-    return JsonResponse(response_body, safe=False)
+    return response_body
 
 
 def handle_uploaded_file(up_file, safe_fname, cover_type="poster"):
