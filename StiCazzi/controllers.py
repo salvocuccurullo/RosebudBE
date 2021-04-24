@@ -62,7 +62,7 @@ def authentication(fn):
                 result['code'] = 400
                 return JsonResponse(result, status=result['code'])
         elif request.content_type == "multipart/form-data":
-            username = request.POST.get('username', '')
+            username = request.POST.get('username', request.POST.get('username2', ''))
             rosebud_uid = request.POST.get('rosebud_uid', '')
             device_id = request.POST.get('device_uuid', '')
             app_version = request.POST.get('app_version', '')
