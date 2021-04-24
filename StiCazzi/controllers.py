@@ -278,30 +278,21 @@ def geolocation(request):
     }
     ret_status = 200
 
-    # TO BE REMOVED
-    # username = request.POST.get('username', '')
-    # longitude = request.POST.get('longitude', '')
-    # latitude = request.POST.get('latitude', '')
-    # photo = request.POST.get('photo', '')
-    # action = request.POST.get('action', '')
-    # notification_on = request.POST.get('notification_on', False)
-
-    if not username:
-        try:
-            logger.debug("New post method used")
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            longitude = i_data.get('longitude', '')
-            latitude = i_data.get('latitude', '')
-            photo = i_data.get('photo', '')
-            action = i_data.get('action', '')
-            notification_on = i_data.get('notification_on', False)
-        except ValueError as e:
-            response['result'] = 'failure'
-            response['message'] = 'Bad input format'
-            response['status_code'] = 400
-            logger.error(e)
-            return response
+    try:
+        logger.debug("New post method used")
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        longitude = i_data.get('longitude', '')
+        latitude = i_data.get('latitude', '')
+        photo = i_data.get('photo', '')
+        action = i_data.get('action', '')
+        notification_on = i_data.get('notification_on', False)
+    except ValueError as e:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        logger.error(e)
+        return response
 
     logger.debug("Action: %s" % action)
     logger.debug("Notification On: %s" % notification_on)
