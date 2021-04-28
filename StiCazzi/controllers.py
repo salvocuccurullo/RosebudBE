@@ -484,14 +484,18 @@ def set_fb_token2(request):
     i_data = json.loads(request.body)
     n = SimpleNamespace(**i_data)
     users = User.objects.filter(username=n.username)
-    if users:
-        user = users.first()
+    user = users.first()
+    user_device = UserDevice.objects.filter(user=user, device_id=n.device_uuid)
+    ud = user_device.first()
+    if user and user_device:
         user.app_version = n.app_version
         if n.token:
             user.fcm_token = n.token
+            ud.fcm_token = n.token
         if n.firebase_id_token:
             user.firebase_id_token = n.firebase_id_token
         user.save()
+        ud.save()
 
     return response
 

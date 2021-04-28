@@ -75,6 +75,7 @@ class UserDevice(models.Model):
     device_version = models.CharField(max_length=300, null=False, default='')
     device_platform = models.CharField(max_length=300, null=False, default='')
     app_version = models.CharField(max_length=300, null=False, default='')
+    fcm_token = models.CharField(max_length=300, null=False, default='')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
