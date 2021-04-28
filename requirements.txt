@@ -1,7 +1,7 @@
 django>=3.0.1
 djangorestframework
 mysqlclient
-mod_wsgi
+#mod_wsgi
 django-cors-headers
 pycrypto>=2.6.1
 firebase-admin

@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.auth import authenticate
 from django.forms.models import model_to_dict
-from StiCazzi.controllers import get_demo_json, get_lyrics_by_song
+from StiCazzi.misc_controllers import get_lyrics_by_song
 from StiCazzi.models import Song, Lyric, TvShow
 
 def auth(request):

@@ -12,12 +12,13 @@ from requests.auth import HTTPBasicAuth
 from django.http import JsonResponse
 
 from StiCazzi.models import Notification
-from StiCazzi.controllers import check_session, check_google
+from StiCazzi.controllers import authentication
 from StiCazzi.utils import safe_file_name
 from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 
 logger = logging.getLogger(__name__)
 
+@authentication
 def get_random_cover(request):
     """ Get a random cover from API """
     logger.debug("get_random_cover called")
@@ -34,33 +35,11 @@ def get_random_cover(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
+        return json.loads(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
+    return json.loads(response_body)
 
-'''
-def get_remote_covers(request):
-    """ Get all covers not stored in the app """
-    logger.debug("get_remote_covers called")
-    response_data = {}
-
-    validation = init_validation(request)
-    if 'error' in validation:
-        return JsonResponse(validation['data'], status=validation['error'])
-
-    headers = {'Content-Type': 'application/json'}
-    response = requests.get(validation['mongo_url'] + "/getRemoteCovers", auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
-
-    status_code = response.status_code
-    response_body = response.text
-
-    if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
-
-    response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
-'''
 
 def spotify_auth(request):
     logger.debug("Spotify Auth Called")
@@ -76,7 +55,8 @@ def spotify_auth(request):
     except ValueError:
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
-        return JsonResponse(response_data, status=400)
+        response_data['status_code'] = 400
+        return response_data
 
     #logger.debug("%s - %s" % (username, kanazzi))
     logger.debug("%s - %s - %s" % (album_url, search_type, query))
@@ -84,19 +64,16 @@ def spotify_auth(request):
     if not (album_url or (query and search_type)):
         response_data['result'] = 'failure'
         response_data['message'] = 'Unprocessable Entity: missing parameter'
-        return JsonResponse(response_data, status=422)
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='spotifyAuthorization', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
+        response_data['status_code'] = 422
+        return response_data
 
     expected_base_url = ("https://open.spotify.com", "https://api.spotify.com")
 
     if album_url and not album_url.startswith(expected_base_url):
         response_data['result'] = 'failure'
         response_data['message'] = 'Invalid Spotify URL'
-        return JsonResponse(response_data, status=400)
+        response_data['status_code'] = 400
+        return response_data
 
     client_info = {
           "grant_type":    "authorization_code",
@@ -112,6 +89,7 @@ def spotify_auth(request):
     return {"result": res.text, "status_code": res.status_code, "search_type": search_type, "album_url": album_url, "query": query}
 
 
+@authentication
 def spotify(request):
     """ Get album info from spotify """
 
@@ -119,8 +97,8 @@ def spotify(request):
     response_data = {}
 
     spotify_pre_auth = spotify_auth(request)
-    if type(spotify_pre_auth) is JsonResponse:
-        return spotify_pre_auth
+#    if type(spotify_pre_auth) is JsonResponse:
+#        return spotify_pre_auth
 
     response = spotify_pre_auth.get('result','')
     album_url = spotify_pre_auth.get('album_url','')
@@ -137,14 +115,14 @@ def spotify(request):
         if res.status_code == 200:
             album = json.loads(res.text)
             logger.debug("Found on Spotify the album: %(name)s" % album)
-            return JsonResponse(res.text, status=res.status_code, safe=False)
+            return json.loads(res.text)
         else:
             response = res.text
             response_code = res.status_code
     response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
-    return JsonResponse(response_body, status=response_code, safe=False)
+    return response_body
 
-
+@authentication
 def spotify_search(request):
     """ Get album info from spotify """
 
@@ -172,56 +150,14 @@ def spotify_search(request):
                 album = {"name": track['album']['name'], "author":track['artists'][0]['name'], "url":track['album']['href'], "tracks_num": track['album']['total_tracks'], 'year': track['album']['release_date'][:4]}
                 if album not in data_out:
                     data_out.append(album)
-            return JsonResponse({"result":"success", "payload":data_out}, status=res.status_code, safe=False)
+            return {"result":"success", "payload":data_out, "status_code":res.status_code}
         else:
             response = res.text
             response_code = res.status_code
     response_body = {"result": "failure", "message": "Spotify album failed. Check the url or the connections", "status_code": response_code}
-    return JsonResponse(response_body, status=response_code, safe=False)
+    return response_body
 
-'''
-def get_covers(request):
-    """ Get all covers from API """
-    response_data = {}
-
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '').strip()
-
-    #backward compatibility - will be removed soon
-    if not username:
-
-        try:
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            kanazzi = i_data.get('kanazzi', '')
-            limit = i_data.get('limit', '15')
-        except ValueError:
-            response_data['result'] = 'failure'
-            response_data['message'] = 'Bad input format'
-            return JsonResponse(response_data, status=400)
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='getCovers', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
-
-    #logger.debug(kanazzi)
-
-    headers = {'Content-Type': 'application/json'}
-    #mongo_final_url = MONGO_API_URL + "/getAllCovers"
-    mongo_final_url = MONGO_API_URL + "/getLatest?limit=%s" % limit
-    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
-
-    status_code = response.status_code
-    response_body = response.text
-
-    if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
-
-    response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
-'''
-
+@authentication
 def get_covers_ng(request):
     """ Get all covers from API """
     response_data = {}
@@ -237,10 +173,10 @@ def get_covers_ng(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
+        return json.loads(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
+    return json.loads(response_body)
 
 
 def upload_cover(request, safe_fname, cover_type="poster"):
@@ -269,7 +205,7 @@ def upload_cover(request, safe_fname, cover_type="poster"):
 
     return response_data
 
-
+@authentication
 def get_covers_stats(request):
     """ Get covers statistics from API """
     logger.debug("get_covers_stats called")
@@ -286,47 +222,13 @@ def get_covers_stats(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
+        return json.loads(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
+    return json.loads(response_body)
 
-'''
-def get_covers_stats_2(request):
-    """ Get covers statistics from API """
-    logger.debug("get_covers_stats_2 called")
-    response_data = {}
 
-    try:
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        firebase_id_token = i_data.get('firebase_id_token', '')
-    except ValueError:
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
-
-    token_check = check_google(firebase_id_token)
-
-    if not username or not token_check['result']:
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session: %s' % token_check['info']
-        return JsonResponse(response_data, status=401)
-
-    headers = {'Content-Type': 'application/json'}
-    mongo_final_url = MONGO_API_URL + "/getStats"
-    response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
-
-    status_code = response.status_code
-    response_body = response.text
-
-    if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
-
-    response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
-'''
-
+@authentication
 def save_cover(request):
     """ Save a new cover """
     logger.debug("save_cover called")
@@ -352,7 +254,7 @@ def save_cover(request):
 
     validation = init_validation(request)
     if 'error' in validation:
-        return JsonResponse(validation['data'], status=validation['error'])
+        return validation
 
     logger.debug("Cover Upload: %s - %s - %s" % (title.encode('utf-8'), author.encode('utf-8'), str(year)))
 
@@ -370,7 +272,7 @@ def save_cover(request):
         upload_res = upload_file_res.get('result', 'failure')
         if upload_res == 'failure' and cover_name != "" and id_cover != "":
             response_data = upload_file_res
-            return JsonResponse(response_data)
+            return response_data
 
     headers = {'Content-Type': 'application/json'}
     payload = {"name": title, "author": author, "year": year, "username": username}
@@ -413,9 +315,9 @@ def save_cover(request):
             notif.save()
     else:
         response_body = {"result": "failure", "message": json.loads(response.text)['message'], "status_code": str(status_code)}
-        return JsonResponse(response_body, status=status_code, safe=False)
+        return response_body
 
-    return JsonResponse(response_body, safe=False)
+    return response_body
 
 
 def handle_uploaded_file(up_file, safe_fname, cover_type="poster"):
@@ -441,49 +343,8 @@ def handle_uploaded_file(up_file, safe_fname, cover_type="poster"):
 
     return True
 
-'''
-def get_covers_by_search(request):
-    """ Search covers from API """
-    logger.debug("Entering search covers by query")
-    response_data = {}
 
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '').strip()
-
-    #backward compatibility - will be removed soon
-    if not username:
-
-        try:
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            kanazzi = i_data.get('kanazzi', '')
-            search = i_data.get('search', '')
-        except ValueError:
-            response_data['result'] = 'failure'
-            response_data['message'] = 'Bad input format'
-            return JsonResponse(response_data, status=400)
-
-    if not username or not kanazzi or not check_session(kanazzi, username, action='searchCovers', store=False):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Invalid Session'
-        return JsonResponse(response_data, status=401)
-    logger.debug("Searching covers by query: %s" % search)
-
-    headers = {'Content-Type': 'application/json'}
-    payload = {'search': search}
-    mongo_final_url = MONGO_API_URL + "/searchCovers?search=%s" % search
-    response = requests.post(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers, data=payload)
-
-    status_code = response.status_code
-    response_body = response.text
-
-    if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
-
-    response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
-'''
-
+@authentication
 def get_covers_by_search_ng(request):
     """ Search covers from API """
     logger.debug("Entering search covers by query")
@@ -501,10 +362,10 @@ def get_covers_by_search_ng(request):
     response_body = response.text
 
     if str(status_code) == "200":
-        return JsonResponse(response_body, safe=False)
+        return json.loads(response_body)
 
     response_body = {"result": "failure", "message": response.text, "status_code": status_code}
-    return JsonResponse(response_body, status=status_code, safe=False)
+    return json.loads(response_body)
 
 
 def init_validation(request):
@@ -531,8 +392,8 @@ def init_validation(request):
         except ValueError:
             return {'error':400, 'data': {'result':'failure', 'message':'Bad input format'}}
 
-    if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
-        return {'error':401, 'data': {'result':'failure', 'message':'Invalid session'}}
+    # if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
+    #     return {'error':401, 'data': {'result':'failure', 'message':'Invalid session'}}
 
     if second_collection == True or second_collection == "true":
         mongo_final_url = MONGO_API_2ND_DB_URL
