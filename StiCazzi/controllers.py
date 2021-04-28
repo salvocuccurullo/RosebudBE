@@ -80,6 +80,7 @@ def authentication(fn):
             result['code'] = 404
             return JsonResponse(result, status=result['code'])
 
+        uid_ts = None
         user_device=UserDevice.objects.filter(user=current_user, device_id=device_id)
         if user_device:
             rosebud_uid_stored = user_device.first().rosebud_id
@@ -135,6 +136,16 @@ def authentication(fn):
 @authentication
 def refresh_token(request):
     response = {}
+    return response
+
+@authentication
+def get_last_commit(request):
+    git_folder = '/home/ubuntu/Work/StiCazziD2'
+    repo = git.Repo(".")
+    if repo:
+        response = {'revision': repo.head.commit.name_rev, "message": repo.head.commit.summary}
+    else:
+        response = {}
     return response
 
 
