@@ -138,6 +138,7 @@ def refresh_token(request):
     response = {}
     return response
 
+
 @authentication
 def get_last_commit(request):
     git_folder = '/home/ubuntu/Work/StiCazziD2'
@@ -178,17 +179,6 @@ def get_random_song(request):
         response_data['message'] = 'song not found'
 
     return response_data
-
-
-@authentication
-def get_last_commit(request):
-    git_folder = '/home/ubuntu/Work/StiCazziD2'
-    repo = git.Repo(".")
-    if repo:
-        response = {'revision': repo.head.commit.name_rev, "message": repo.head.commit.summary}
-    else:
-        response = {}
-    return response
 
 
 def login(request):
