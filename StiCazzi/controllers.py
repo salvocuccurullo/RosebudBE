@@ -56,6 +56,7 @@ def authentication(fn):
                 app_version = i_data.get('app_version', '')
                 device_version = i_data.get('device_version', '')
                 device_platform = i_data.get('device_platform', '')
+                fcm_token = i_data.get('fcm_token', '')
                 logger.debug("Authentication [%s] [%s]" % (request.path, username))
             except ValueError:
                 result['message'] = 'Invalid data'
@@ -108,7 +109,7 @@ def authentication(fn):
             time_diff = now - uid_ts
             time_diff_hrs = time_diff.total_seconds() / 3600
             logger.debug("Session time : %1.3f hours" % time_diff_hrs)
-            if time_diff_hrs > 3 and request.path == "/refreshtoken":  # Expired after two hours (actually one becasue aws timezone)
+            if time_diff_hrs > 1 and request.path == "/refreshtoken":
                 new_token = uuid.uuid4()
                 current_user.rosebud_uid = str(new_token)
                 current_user.rosebud_uid_ts = datetime.now()
@@ -119,6 +120,8 @@ def authentication(fn):
                     ud.device_version = device_version
                     ud.device_platform = device_platform
                     ud.app_version = app_version
+                    if fcm_token:
+                        ud.fcm_token = fcm_token
                     ud.save()
                     result['new_token'] = new_token
                     logger.debug("New token created for user [%s]" % current_user.username)
