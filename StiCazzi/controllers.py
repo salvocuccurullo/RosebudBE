@@ -30,6 +30,8 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core import serializers
 from django import get_version
 from django.contrib.auth import authenticate
+from django.utils import timezone
+
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification, UserDevice
 from StiCazzi.models import ConfigurationSerializer
@@ -103,8 +105,9 @@ def authentication(fn):
             result['success'] = True
 
             #Check if token is expired
-            now = datetime.utcnow()
-            now = now.replace(tzinfo=None)
+            #now = datetime.utcnow()
+            #now = now.replace(tzinfo=None)
+            now = timezone.now()
             uid_ts = uid_ts.replace(tzinfo=None)
             time_diff = now - uid_ts
             time_diff_hrs = time_diff.total_seconds() / 3600
@@ -112,7 +115,7 @@ def authentication(fn):
             if time_diff_hrs > 1 and request.path == "/refreshtoken":
                 new_token = uuid.uuid4()
                 current_user.rosebud_uid = str(new_token)
-                current_user.rosebud_uid_ts = datetime.now()
+                current_user.rosebud_uid_ts = timezone.now()
                 current_user.save()
                 if user_device:
                     ud = user_device.first()
@@ -225,7 +228,7 @@ def login(request):
                 current_user = users.first()
                 # This two line are not needed anymore TBRemove
                 current_user.rosebud_uid = str(rosebud_uid)
-                current_user.rosebud_uid_ts = datetime.now()
+                current_user.rosebud_uid_ts = timezone.now()
                 # End this two line are not needed anymore TBRemove
                 current_user.save()
 
