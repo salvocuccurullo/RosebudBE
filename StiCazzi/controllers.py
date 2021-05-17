@@ -108,7 +108,7 @@ def authentication(fn):
             #now = datetime.utcnow()
             #now = now.replace(tzinfo=None)
             now = timezone.now()
-            uid_ts = uid_ts.replace(tzinfo=None)
+            #uid_ts = uid_ts.replace(tzinfo=None)
             time_diff = now - uid_ts
             time_diff_hrs = time_diff.total_seconds() / 3600
             logger.debug("Session time : %1.3f hours" % time_diff_hrs)
