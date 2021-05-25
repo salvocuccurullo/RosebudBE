@@ -88,17 +88,10 @@ def authentication(fn):
         if user_device:
             rosebud_uid_stored = user_device.first().rosebud_id
             uid_ts = user_device.first().updated
-        else:
-            rosebud_uid_stored = current_user.rosebud_uid
-            uid_ts = current_user.rosebud_uid_ts
 
         #logger.debug("="*30)
         #logger.debug(rosebud_uid)
         #logger.debug("="*30)
-
-        if app_version and app_version != current_user.app_version:
-            current_user.app_version = app_version
-            current_user.save()
 
         if rosebud_uid == rosebud_uid_stored:
             logger.debug("Authentication Successful [%s] [%s]" % (request.path, username))
@@ -114,8 +107,6 @@ def authentication(fn):
             logger.debug("Session time : %1.3f hours" % time_diff_hrs)
             if time_diff_hrs > 1 and request.path == "/refreshtoken":
                 new_token = uuid.uuid4()
-                current_user.rosebud_uid = str(new_token)
-                current_user.rosebud_uid_ts = timezone.now()
                 current_user.save()
                 if user_device:
                     ud = user_device.first()
@@ -226,10 +217,6 @@ def login(request):
             if pwd_ok:
                 logged = "yes"
                 current_user = users.first()
-                # This two line are not needed anymore TBRemove
-                current_user.rosebud_uid = str(rosebud_uid)
-                current_user.rosebud_uid_ts = timezone.now()
-                # End this two line are not needed anymore TBRemove
                 current_user.save()
 
                 user_device = UserDevice.objects.filter(user=current_user, device_id=device_id)
@@ -493,9 +480,6 @@ def set_fb_token2(request):
     users = User.objects.filter(username=n.username)
     user = users.first()
     if user:
-        user.app_version = n.app_version
-        if n.token:
-            user.fcm_token = n.token
         if n.firebase_id_token:
             user.firebase_id_token = n.firebase_id_token
         user.save()
