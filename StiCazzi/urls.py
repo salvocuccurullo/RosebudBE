@@ -54,7 +54,6 @@ urlpatterns = [
 
     url(r'^login$', controllers.login),
     url(r'^setFBToken2$', controllers.set_fb_token2),
-    url(r'^checkFBToken$', controllers.check_fb_token),
     url(r'^refreshtoken$', controllers.refresh_token),
 
     url(r'^version', controllers.version),

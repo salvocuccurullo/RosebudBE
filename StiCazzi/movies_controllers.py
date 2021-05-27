@@ -28,7 +28,6 @@ def get_tvshows_new_opt(request):
     try:
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
-        firebase_id_token = i_data.get('firebase_id_token', '')
         kanazzi = i_data.get('kanazzi', '')
         query = i_data.get('query', '')
         limit = i_data.get('limit', 15)
@@ -261,6 +260,11 @@ def deletemovie(request):
             return JsonResponse(response, status=400)
 
     current_user = User.objects.filter(username=username)
+    if not current_user.poweruser:
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Your user is not authorized to delete tv shows'
+        return response_data
+
     # Check existing votes
     tvrs = TvShowVote.objects.filter(tvshow=movie_id).exclude(user=current_user[0])
 
@@ -620,7 +624,6 @@ def get_catalogue(request):
     try:
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
-        firebase_id_token = i_data.get('firebase_id_token', '')
         cat_type = i_data.get('cat_type', '')
         kanazzi = i_data.get('kanazzi', '')
     except (TypeError, ValueError):

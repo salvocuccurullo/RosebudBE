@@ -417,14 +417,11 @@ def geolocation2(request):
         longitude = i_data.get('longitude', '')
         latitude = i_data.get('latitude', '')
         photo = i_data.get('photo', '')
-        firebase_id_token = i_data.get('firebase_id_token', '')
     except ValueError:
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
         response['status_code'] = 400
         return response
-
-    # logger.debug("Checking firebase id token.... Result: " + str(check_fb_token_local(firebase_id_token)))
 
     users = User.objects.filter(username=username)
     loc = Location.objects.filter(user=users[0])
@@ -477,96 +474,9 @@ def set_fb_token2(request):
 
     i_data = json.loads(request.body)
     n = SimpleNamespace(**i_data)
-    users = User.objects.filter(username=n.username)
-    user = users.first()
-    if user:
-        if n.firebase_id_token:
-            user.firebase_id_token = n.firebase_id_token
-        user.save()
 
     return response
 
-
-def check_fb_token(request):
-    """
-    Controller:
-    """
-
-    response = {"result":"success", "message":""}
-
-    try:
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        if SESSION_DBG:
-            logger.debug('Starting session check for user %s', username)
-
-
-        #Google Initializazion
-        google_account_file = os.environ.get('GOOGLE_JSON', '')
-        if not google_account_file:
-            raise ValueError('Google JSON account file not found.')
-
-        if not firebase_admin._apps:
-            cred = credentials.Certificate(google_account_file)
-            default_app = firebase_admin.initialize_app(cred)
-
-        #Retrieving id_token from DB
-        users = User.objects.filter(username=username)
-        if not users:
-            raise ValueError('User not found.')
-        user = users[0]
-        id_token = user.firebase_id_token
-        if not id_token:
-            raise ValueError('idToken is empty!')
-
-        #Verifying id token
-        decoded_token = auth.verify_id_token(id_token)
-
-        response["message"] = "Firebase idToken successulfy verified"
-        response["payload"] = {"firebase_id_token":id_token}
-
-    except Exception as exception:
-        logger.debug(exception)
-        if 'Token expired' in str(exception):
-            response = {"result":"failure", "message":"token expired"}
-            return JsonResponse(response, status=401)
-
-        response = {"result":"failure", "message":str(exception)}
-        return JsonResponse(response, status=500)
-
-
-    return JsonResponse(response, status=200)
-
-
-def check_fb_token_local(id_token):
-    """
-    Controller:
-    """
-
-    response = False
-
-    try:
-        if SESSION_DBG:
-            logger.debug('Starting firebase id token check...')
-
-        #Google Initializazion
-        google_account_file = os.environ.get('GOOGLE_JSON', '')
-        if not google_account_file:
-            raise ValueError('Google JSON account file not found.')
-
-        if not firebase_admin._apps:
-            cred = credentials.Certificate(google_account_file)
-            default_app = firebase_admin.initialize_app(cred)
-
-        #Verifying id token
-        decoded_token = auth.verify_id_token(id_token)
-
-        response = True
-
-    except Exception as exception:
-        logger.debug(str(exception))
-
-    return response
 
 # def check_google(token):
 #     """

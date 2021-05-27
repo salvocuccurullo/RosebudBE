@@ -56,8 +56,6 @@ class User(models.Model):
     name = models.CharField(max_length=300)
     surname = models.CharField(max_length=150)
     birth_date = models.DateField()
-    firebase_id_token = models.CharField(max_length=1024, null=False, default='')
-    firebase_uid = models.CharField(max_length=300, null=False, default='')
     poweruser = models.BooleanField(default=False)
     geoloc_enabled = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
