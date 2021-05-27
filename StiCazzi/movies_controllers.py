@@ -260,7 +260,7 @@ def deletemovie(request):
             return JsonResponse(response, status=400)
 
     current_user = User.objects.filter(username=username)
-    if not current_user.poweruser:
+    if current_user and not current_user.first().poweruser:
         response_data['result'] = 'failure'
         response_data['message'] = 'Your user is not authorized to delete tv shows'
         return response_data
