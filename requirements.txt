@@ -11,3 +11,4 @@ geopy
 GitPython
 oauthlib
 google-auth
+django-dbbackup
