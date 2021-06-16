@@ -12,3 +12,4 @@ GitPython
 oauthlib
 google-auth
 django-dbbackup
+django-storages[boto3]
