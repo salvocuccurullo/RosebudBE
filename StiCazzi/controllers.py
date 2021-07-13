@@ -352,7 +352,7 @@ def geolocation(request):
                             city = location_info.raw['address'].get('village','Ghost Town')
                         country = location_info.raw['address'].get('country','')
                         county = location_info.raw['address'].get('county','')
-                        location_string = "%s %s %s" % (city, county, country)
+                        location_string = "%s %s (%s)" % (city, county, country)
                         #logger.debug("%s %s %s" % (city, county, country))
                         if county != city:
                             county = "-%s-" % county
