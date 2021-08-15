@@ -159,9 +159,9 @@ def get_random_song(request):
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
     except ValueError:
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        response['status_code'] = 400
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Bad input format'
+        response_data['status_code'] = 400
 
     song_rs = Song.objects.all()
     random_index = randint(0, len(song_rs) - 1)
@@ -281,6 +281,7 @@ def geolocation(request):
         photo = i_data.get('photo', '')
         action = i_data.get('action', '')
         notification_on = i_data.get('notification_on', False)
+        is_home = i_data.get('is_home', False)
     except ValueError as e:
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -366,6 +367,9 @@ def geolocation(request):
 
                 loc[0].latitude = latitude
                 loc[0].longitude = longitude
+                if is_home:
+                    loc[0].home_latitude = latitude
+                    loc[0].home_longitude = longitude
                 if photo:
                     loc[0].photo = photo
                 loc[0].save()
@@ -390,7 +394,10 @@ def geolocation(request):
                     notification.save()
 
             else:
-                location = Location(user=users[0], latitude=latitude, longitude=longitude, photo=photo)
+                if is_home:
+                    location = Location(user=users[0], latitude=latitude, longitude=longitude, photo=photo)
+                else:
+                    location = Location(user=users[0], latitude=latitude, longitude=longitude, home_latitude=latitude, home_longitude=longitude, photo=photo)
                 location.save()
             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
             response['distance'] = "{0:.2f}".format(float(distance))
