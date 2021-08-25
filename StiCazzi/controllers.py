@@ -338,7 +338,10 @@ def geolocation(request):
                 home_loc = (loc[0].home_latitude, loc[0].home_longitude)
                 new_loc = (latitude, longitude)
                 distance = geodesic(old_loc, new_loc).kilometers
-                distance_home = geodesic(home_loc, new_loc).kilometers
+                if loc[0].home_latitude == 0 and loc[0].home_longitude == 0:
+                    distance_home = 0
+                else:
+                    distance_home = geodesic(home_loc, new_loc).kilometers
 
                 ### GeoLocation Info
                 geolocator = Nominatim(user_agent="rosebud-application")
@@ -377,7 +380,7 @@ def geolocation(request):
 
                 loc[0].latitude = latitude
                 loc[0].longitude = longitude
-                if not is_home:
+                if is_home:
                     loc[0].home_latitude = latitude
                     loc[0].home_longitude = longitude
                 if photo:
@@ -404,7 +407,7 @@ def geolocation(request):
                     notification.save()
 
             else:
-                if is_home:
+                if not is_home:
                     location = Location(user=users[0], latitude=latitude, longitude=longitude, photo=photo)
                 else:
                     location = Location(user=users[0], latitude=latitude, longitude=longitude, home_latitude=latitude, home_longitude=longitude, photo=photo)
