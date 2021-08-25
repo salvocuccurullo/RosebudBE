@@ -268,6 +268,7 @@ def geolocation(request):
     response = {
             'result':'success',
             'distance': 0,
+            'distance_home': 0,
             'location_string': ''
     }
     ret_status = 200
@@ -297,6 +298,11 @@ def geolocation(request):
     else:
         notification_on = False
 
+    if is_home == "true":
+        is_home = True
+    else:
+        is_home = False
+
     users = User.objects.filter(username=username)
     loc = Location.objects.filter(user=users[0])
 
@@ -324,12 +330,15 @@ def geolocation(request):
     else:
         if latitude and longitude:            #SET COORD
             distance = 0
+            distance_home = 0
             location_string = ''
             if loc:
 
                 old_loc = (loc[0].latitude, loc[0].longitude)
+                home_loc = (loc[0].home_latitude, loc[0].home_longitude)
                 new_loc = (latitude, longitude)
                 distance = geodesic(old_loc, new_loc).kilometers
+                distance_home = geodesic(home_loc, new_loc).kilometers
 
                 ### GeoLocation Info
                 geolocator = Nominatim(user_agent="rosebud-application")
@@ -364,10 +373,11 @@ def geolocation(request):
                 ### End GeoLocation Info
 
                 logger.debug("Distance %s km." % "{0:.2f}".format(float(distance)))
+                logger.debug("Distance from home %s km." % "{0:.2f}".format(float(distance_home)))
 
                 loc[0].latitude = latitude
                 loc[0].longitude = longitude
-                if is_home:
+                if not is_home:
                     loc[0].home_latitude = latitude
                     loc[0].home_longitude = longitude
                 if photo:
@@ -401,6 +411,7 @@ def geolocation(request):
                 location.save()
             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
             response['distance'] = "{0:.2f}".format(float(distance))
+            response['distance_home'] = "{0:.2f}".format(float(distance_home))
             response['location_string'] = location_string
         else:
             response['result'] = 'failure'
