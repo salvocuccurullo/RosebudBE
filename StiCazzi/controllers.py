@@ -80,7 +80,7 @@ def authentication(fn):
         users = User.objects.filter(username=username)
         current_user = users.first()
         if not current_user:
-            result['code'] = 404
+            result['code'] = 401
             return JsonResponse(result, status=result['code'])
 
         uid_ts = None
