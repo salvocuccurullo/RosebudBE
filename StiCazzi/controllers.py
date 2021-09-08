@@ -84,6 +84,7 @@ def authentication(fn):
             return JsonResponse(result, status=result['code'])
 
         uid_ts = None
+        rosebud_uid_stored = ''
         user_device=UserDevice.objects.filter(user=current_user, device_id=device_id)
         if user_device:
             rosebud_uid_stored = user_device.first().rosebud_id

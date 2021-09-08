@@ -242,22 +242,14 @@ def deletemovie(request):
     response_data = {}
     response_data['result'] = 'success'
 
-    # backward compatibility
-    movie_id = request.POST.get('id', '')
-    username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '')
-    # end backward compatibility
-
-    if not username:
-        try:
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            kanazzi = i_data.get('kanazzi', '')
-            movie_id = i_data.get('id', '')
-        except (TypeError, ValueError):
-            response['result'] = 'failure'
-            response['message'] = 'Bad input format'
-            return JsonResponse(response, status=400)
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        movie_id = i_data.get('id', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
 
     current_user = User.objects.filter(username=username)
     if current_user and not current_user.first().poweruser:
