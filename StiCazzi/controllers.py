@@ -71,6 +71,7 @@ def authentication(fn):
             app_version = request.POST.get('app_version', '')
             device_version = request.POST.get('device_version', '')
             device_platform = request.POST.get('device_platform', '')
+            fcm_token = request.POST.get('fcm_token', '')
             logger.debug("Authentication [%s] [%s]" % (request.path, username))
         else:
             result['message'] = 'Invalid data'
@@ -197,6 +198,7 @@ def login(request):
             device_version = i_data.get('device_version', '')
             device_platform = i_data.get('device_platform', '')
             app_version = i_data.get('app_version', '')
+            fcm_token = i_data.get('fcm_token', '')
             logger.debug("New login have been used")
         except ValueError:
             response_data['message'] = 'Invalid data'
@@ -227,6 +229,8 @@ def login(request):
                     ud.device_version = device_version
                     ud.device_platform = device_platform
                     ud.app_version = app_version
+                    if fcm_token:
+                        ud.fcm_token = fcm_token
                     ud.save()
                 else:
                     user_device = UserDevice(user=current_user,
@@ -234,7 +238,8 @@ def login(request):
                         rosebud_id=str(rosebud_uid),
                         device_version=device_version,
                         device_platform=device_platform,
-                        app_version=app_version)
+                        app_version=app_version,
+                        fcm_token=fcm_token)
                     user_device.save()
                 extra_info['poweruser'] = current_user.poweruser
                 extra_info['geoloc_enabled'] = current_user.geoloc_enabled
