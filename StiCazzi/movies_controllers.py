@@ -352,9 +352,14 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
     # logger.debug(vote_dict)
     if vote_dict["nw"] and str(vote_dict["episode"]) == "1":
+        # Workaround to be removed
+        show_type_string = tvshow[0].tvshow_type
+        if show_type_string == "serie":
+            show_type_string = "series"
+        ###########################
         notification = Notification(
             type="new_nw", \
-            title="%s started to watch a %s..." % (current_user.username, tvshow[0].tvshow_type), \
+            title="%s is watching %s..." % (current_user.username, show_type_string), \
             message="Title: %s - S%s E%s " \
             % (tvshow[0].title, tvshow[0].serie_season, vote_dict["episode"]), username=current_user.username)
         notification.save()

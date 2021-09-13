@@ -248,6 +248,13 @@ def login(request):
             out = "User not found!"
             logged = "no"
 
+        notification = Notification(
+            type="login", \
+            title="%s" % username, \
+            message="Result: %s" % logged, \
+            username=username)
+        notification.save()
+
         logger.debug("login result for user " + username + " : " + out)
         response_data['payload'] = {"message":out, 'username':users.first().username, 'logged':logged, 'rosebud_uid': rosebud_uid, 'extra_info': extra_info}
 
