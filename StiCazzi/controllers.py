@@ -199,7 +199,7 @@ def login(request):
             device_platform = i_data.get('device_platform', '')
             app_version = i_data.get('app_version', '')
             fcm_token = i_data.get('fcm_token', '')
-            logger.debug("New login have been used")
+            #logger.debug("New login have been used")
         except ValueError:
             response_data['message'] = 'Invalid data'
 
@@ -208,6 +208,8 @@ def login(request):
             response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
             return JsonResponse(response_data, status=401)
 
+        if fcm_token is None:
+            fcm_token = ""
 
         out = ""
         extra_info = {}
@@ -256,12 +258,19 @@ def login(request):
         notification.save()
 
         logger.debug("login result for user " + username + " : " + out)
-        response_data['payload'] = {"message":out, 'username':users.first().username, 'logged':logged, 'rosebud_uid': rosebud_uid, 'extra_info': extra_info}
+        response_data['payload'] = {"message":out, 'username':username, 'logged':logged, 'rosebud_uid': rosebud_uid, 'extra_info': extra_info}
 
     except Exception as eee:
         response_data['result'] = 'failure'
         response_data['payload'] = {}
         logger.debug(eee)
+        notification = Notification(
+            type="login", \
+            title="$s" % username, \
+            message="Result: %s" % str(eee), \
+            username=username)
+        notification.save()
+
 
     if logged == "no":
         response_data['payload'] = {"message": "Not valid credentials", 'logged':'no'}
