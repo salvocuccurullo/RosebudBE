@@ -413,10 +413,7 @@ def geolocation(request):
                     notification.save()
 
             else:
-                if not is_home:
-                    location = Location(user=users[0], latitude=latitude, longitude=longitude, photo=photo)
-                else:
-                    location = Location(user=users[0], latitude=latitude, longitude=longitude, home_latitude=latitude, home_longitude=longitude, photo=photo)
+                location = Location(user=users[0], latitude=latitude, longitude=longitude, home_latitude=latitude, home_longitude=longitude, photo=photo)
                 location.save()
             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
             response['distance'] = "{0:.2f}".format(float(distance))
