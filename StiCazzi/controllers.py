@@ -420,13 +420,13 @@ def geolocation(request):
 
                 #logger.debug(notif_title)
 
-                if notification_on or float(distance) > 20:
-                    notification = Notification(
-                        type="new_location", \
-                        title=notif_title, \
-                        message=message, \
-                        username=users[0].username)
-                    notification.save()
+                # if notification_on or float(distance) > 20:
+                #     notification = Notification(
+                #         type="new_location", \
+                #         title=notif_title, \
+                #         message=message, \
+                #         username=users[0].username)
+                #     notification.save()
 
             else:
                 location = Location(user=users[0], latitude=latitude, longitude=longitude, home_latitude=latitude, home_longitude=longitude, photo=photo)
