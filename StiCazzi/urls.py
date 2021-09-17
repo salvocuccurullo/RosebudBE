@@ -59,4 +59,34 @@ urlpatterns = [
     url(r'^version', controllers.version),
     url(r'^commit', controllers.get_last_commit),
 
+# new endpoint
+
+    url(r'^api/randomSong$', controllers.get_random_song, name='index'),
+    url(r'^api/getconfigs2$', controllers.get_configs_new),
+
+    url(r'^api/getTvShows3$', movies_controllers.get_tvshows_new_opt),
+    url(r'^api/deletemovie$', movies_controllers.deletemovie),
+    url(r'^api/savemovienew$', movies_controllers.savemovienew),
+    url(r'^api/moviesct/$', movies_controllers.get_movies_ct, name='movie'),
+    url(r'^api/setlike$', movies_controllers.setlike),
+
+    url(r'^api/uploadcover$', covers_controllers.save_cover),
+    url(r'^api/getcovers2$', covers_controllers.get_covers_ng),
+    url(r'^api/getrandomcover$', covers_controllers.get_random_cover),
+    url(r'^api/getcoversstats$', covers_controllers.get_covers_stats),
+    url(r'^api/spotify$', covers_controllers.spotify),
+    url(r'^api/spotifysearch$', covers_controllers.spotify_search),
+    url(r'^api/localsearch2$', covers_controllers.get_covers_by_search_ng),
+
+    url(r'^api/geolocation$', controllers.geolocation),
+    url(r'^api/geolocation2$', controllers.geolocation2),
+    url(r'^api/getcatalogue$', movies_controllers.get_catalogue),
+
+    url(r'^api/login$', controllers.login),
+    url(r'^api/setFBToken2$', controllers.set_fb_token2),
+    url(r'^api/refreshtoken$', controllers.refresh_token),
+
+    url(r'^api/version', controllers.version),
+    url(r'^api/commit', controllers.get_last_commit),
+
 ]
