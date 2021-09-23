@@ -6,6 +6,7 @@ import os
 import urllib
 import json
 import logging
+import urllib.parse
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -142,6 +143,7 @@ def spotify_search(request):
         auth_data = json.loads(response)
         access_token = auth_data['access_token']
         headers = {"Authorization": "Bearer %s" % access_token}
+        query = urllib.parse.quote(query)
         res = requests.get("https://api.spotify.com/v1/search?q=%s&type=%s" % (query, search_type), headers=headers)
         if res.status_code == 200:
             result = json.loads(res.text)
