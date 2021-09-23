@@ -107,7 +107,7 @@ def authentication(fn):
             time_diff = now - uid_ts
             time_diff_hrs = time_diff.total_seconds() / 3600
             logger.debug("Session time : %1.3f hours" % time_diff_hrs)
-            if time_diff_hrs > 1 and request.path == "/refreshtoken":
+            if time_diff_hrs > 1 and request.path in ("/refreshtoken", "/api/refreshtoken"):
                 new_token = uuid.uuid4()
                 current_user.save()
                 if user_device:
@@ -615,7 +615,7 @@ def version(request):
 
     if mongoapi_version:
         mongo_api_release = mongoapi_version['payload'].get('version','N/A')
-        mongo_driver_version=  mongoapi_version['payload'].get('mongo_db_driver','N/A')
+        mongo_driver_version =  mongoapi_version['payload'].get('mongo_db_driver','N/A')
 
     response['django'] = current_version
     response['mongo'] = mongo_api_release
