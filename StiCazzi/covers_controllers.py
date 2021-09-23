@@ -143,7 +143,6 @@ def spotify_search(request):
         auth_data = json.loads(response)
         access_token = auth_data['access_token']
         headers = {"Authorization": "Bearer %s" % access_token}
-        query = urllib.parse.quote(query)
         res = requests.get("https://api.spotify.com/v1/search?q=%s&type=%s" % (query, search_type), headers=headers)
         if res.status_code == 200:
             result = json.loads(res.text)
@@ -358,6 +357,7 @@ def get_covers_by_search_ng(request):
 
     headers = {'Content-Type': 'application/json'}
     payload = {'search': validation['search']}
+    validation['search'] = urllib.parse.quote(validation['search'])
     response = requests.get(validation['mongo_url'] + "/searchCoversNg?search=%(search)s&limit=%(limit)s" % validation, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers, data=payload)
 
     status_code = response.status_code
