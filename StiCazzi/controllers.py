@@ -615,7 +615,7 @@ def version(request):
 
     if mongoapi_version:
         mongo_api_release = mongoapi_version['payload'].get('version','N/A')
-        mongo_driver_version=  mongoapi_version['payload'].get('mongo_driver_version','N/A')
+        mongo_driver_version=  mongoapi_version['payload'].get('mongo_db_driver','N/A')
 
     response['django'] = current_version
     response['mongo'] = mongo_api_release
