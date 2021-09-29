@@ -13,3 +13,4 @@ oauthlib
 google-auth
 django-dbbackup
 django-storages[boto3]
+azure-storage-blob
