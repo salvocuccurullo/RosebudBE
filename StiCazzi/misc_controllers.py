@@ -7,7 +7,6 @@ import uuid
 from random import randint
 from datetime import datetime
 import datetime as dttt
-from Crypto.Cipher import AES
 import Padding
 import requests
 from requests.auth import HTTPBasicAuth
