@@ -94,7 +94,7 @@ def authentication(fn):
         #logger.debug(rosebud_uid)
         #logger.debug("="*30)
 
-        if rosebud_uid == rosebud_uid_stored:
+        if rosebud_uid and rosebud_uid_stored and rosebud_uid == rosebud_uid_stored:
             logger.debug("Authentication Successful [%s] [%s]" % (request.path, username))
             result['success'] = True
 
