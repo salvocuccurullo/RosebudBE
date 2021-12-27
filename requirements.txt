@@ -1,7 +1,7 @@
 django>=3.0.1,<4.0
 djangorestframework
 mysqlclient
-django-cors-header
+django-cors-headers
 firebase-admin
 requests[security]
 Padding
