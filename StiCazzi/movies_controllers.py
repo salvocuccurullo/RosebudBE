@@ -636,3 +636,26 @@ def get_catalogue(request):
     response['payload'] = [model_to_dict(rec) for rec in media_cat]
 
     return response
+
+@authentication
+def get_user_stats(request):
+    """ Get User Statistics """
+
+    response_data = {}
+    response_data['result'] = 'success'
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+    except (TypeError, ValueError):
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Bad input format'
+        return JsonResponse(response_data, status=400)
+
+    current_user = User.objects.filter(username=username).first()
+    movies_created = TvShow.objects.filter(user=current_user)
+    movies_voted = TvShowVote.objects.filter(user=current_user, now_watching=False)
+    user_since = current_user.created.year
+
+    response_data.update({"movies_created": movies_created, "movies_voted": movies_voted, "user_since": user_since})
+
+    return response_data

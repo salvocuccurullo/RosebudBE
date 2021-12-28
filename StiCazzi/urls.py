@@ -69,6 +69,7 @@ urlpatterns = [
     url(r'^api/savemovienew$', movies_controllers.savemovienew),
     url(r'^api/moviesct/$', movies_controllers.get_movies_ct, name='movie'),
     url(r'^api/setlike$', movies_controllers.setlike),
+    url(r'^api/ustats', movies_controllers.get_user_stats),
 
     url(r'^api/uploadcover$', covers_controllers.save_cover),
     url(r'^api/getcovers2$', covers_controllers.get_covers_ng),
