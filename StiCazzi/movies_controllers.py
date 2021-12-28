@@ -656,6 +656,6 @@ def get_user_stats(request):
     movies_voted = TvShowVote.objects.filter(user=current_user, now_watching=False)
     user_since = current_user.created.year
 
-    response_data.update({"movies_created": movies_created, "movies_voted": movies_voted, "user_since": user_since})
+    response_data['payload']= {"movies_created": movies_created, "movies_voted": movies_voted, "user_since": user_since}
 
     return response_data
