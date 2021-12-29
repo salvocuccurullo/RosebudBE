@@ -9,7 +9,7 @@ import logging
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.db.models import Q, F, Count, Avg, CharField
+from django.db.models import Q, F, Count, Avg, CharField, Subquery
 from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
 
@@ -655,7 +655,15 @@ def get_user_stats(request):
     movies_created = TvShow.objects.filter(user=current_user)
     movies_voted = TvShowVote.objects.filter(user=current_user, now_watching=False)
     user_since = current_user.created.year
+    likes_in = Like.objects.filter(id_vote__in=Subquery(movies_voted.values('id_vote')))
+    likes_out = Like.objects.filter(user=current_user)
 
-    response_data['payload']= {"movies_created": len(movies_created), "movies_voted": len(movies_voted), "user_since": user_since}
+    response_data['payload']= {
+                    "movies_created": len(movies_created),
+                    "movies_voted": len(movies_voted),
+                    "user_since": user_since,
+                    "likes_in": len(likes_in),
+                    "likes_out": len(likes_out)
+                    }
 
     return response_data
