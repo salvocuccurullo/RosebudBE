@@ -247,9 +247,9 @@ def deletemovie(request):
         username = i_data.get('username', '')
         movie_id = i_data.get('id', '')
     except (TypeError, ValueError):
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
+        response_data['result'] = 'failure'
+        response_data['message'] = 'Bad input format'
+        return JsonResponse(response_data, status=400)
 
     current_user = User.objects.filter(username=username)
     if current_user and not current_user.first().poweruser:
@@ -377,7 +377,7 @@ def savemovienew(request):
     title = request.POST.get('title', '')
     media = request.POST.get('media', '')
     link = request.POST.get('link', '')
-    vote = request.POST.get('vote', '')
+    vote = request.POST.get('vote', request.POST.get('vote_num', 0))
     type = request.POST.get('type', 'brand_new')
     tvshow_type = request.POST.get('tvshow_type', 'movie')
     serie_season = request.POST.get('serie_season', 1)
@@ -429,123 +429,35 @@ def savemovienew(request):
         response_data['message'] = 'Missing required data: check title, media and type'
         return JsonResponse(response_data)
 
-    current_tvshow = TvShow.objects.filter(id_tv_show=id_movie)
-    current_user = User.objects.filter(username=username)[0]
+    try:
+        current_tvshow = TvShow.objects.filter(id_tv_show=id_movie)
+        current_user = User.objects.filter(username=username)[0]
 
-    # Movie exists and the current user is not the owner
-    if current_tvshow and username != current_tvshow[0].user.username:
-        logger.debug("User not owner of the movie is voting...")
-        data_vote = {'nw': now_watch,
-                     'episode': episode,
-                     'season': season,
-                     'vote': vote,
-                     'giveup': giveup,
-                     'comment': comment,
-                     'like': like
-                    }
+        # Movie exists and the current user is not the owner
+        if current_tvshow and username != current_tvshow[0].user.username:
+            logger.debug("User not owner of the movie is voting...")
+            data_vote = {'nw': now_watch,
+                        'episode': episode,
+                        'season': season,
+                        'vote': vote,
+                        'giveup': giveup,
+                        'comment': comment,
+                        'like': like
+                        }
 
-        tvshow = current_tvshow[0]
-
-        if not later:
-            create_update_vote(current_user, current_tvshow, data_vote)
-
-        # New feature: to allow not movie owner to upload the poster, set a link and set the season
-        # 2020-03-21 added type and media
-
-        tvshow.media = media
-        tvshow.tvshow_type = tvshow_type
-        tvshow.serie_season = serie_season
-        tvshow.miniseries = miniseries
-        tvshow.save()
-
-        if uploaded_file:
-            upload_file_res = upload_cover(request, poster_name)
-
-        upload_res = upload_file_res.get('result', 'failure')
-        if upload_res == 'failure':
-            poster_name = ''
-        else:
-            tvshow.poster = poster_name
-
-        if link:
-            tvshow.link = link
-
-        if upload_res != 'failure' or (tvshow.link == "" and link):
-            tvshow.save()
-
-            notification = Notification(
-                type="new_movie", \
-                title="%s uploaded a new poster/link" \
-                % username, message="Title: %s" % title, username=username)
-            notification.save()
-
-        # End New feature
-
-    else:
-        if not current_tvshow:  # Movie does not exist
-
-            if uploaded_file:
-                upload_file_res = upload_cover(request, poster_name)
-
-            upload_res = upload_file_res.get('result', 'failure')
-            if upload_res == 'failure':
-                poster_name = ''
-
-            logger.debug("Adding tvshow... Title: %s", title)
-
-            tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
-                            type=type, tvshow_type=tvshow_type,
-                            director=director, year=year,
-                            poster=poster_name, serie_season=serie_season, miniseries=miniseries)
-            tvshow.save()
-
-            if tvshow_type == 'serie' and int(clone_season) > 1 and int(clone_season) < 10:
-                logger.debug("Cloning serie %s started..." % tvshow.title)
-                start = int(tvshow.serie_season) + 1
-                stop = start + int(clone_season)
-                for i in range(start, stop):
-                    tvshow_clone = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
-                            type=type, tvshow_type=tvshow_type,
-                            director=director, year=year, miniseries=miniseries,
-                            poster='', serie_season=i)
-                    logger.debug("Saving season %s" % str(tvshow_clone.serie_season))
-                    tvshow_clone.save()
-                logger.debug("Cloning serie %s finished." % tvshow_clone.title)
+            tvshow = current_tvshow[0]
 
             if not later:
+                create_update_vote(current_user, current_tvshow, data_vote)
 
-                if not episode:
-                    episode = 1
+            # New feature: to allow not movie owner to upload the poster, set a link and set the season
+            # 2020-03-21 added type and media
 
-                if not season:
-                    season = 1
-
-                tvsv = TvShowVote(
-                    vote=vote,
-                    user=current_user,
-                    tvshow=tvshow,
-                    now_watching=now_watch,
-                    season=season,
-                    episode=episode,
-                    comment=comment
-                )
-                tvsv.save()
-
-            # Workaround to be removed
-            show_type_string = tvshow_type
-            if show_type_string == "serie":
-              show_type_string = "series"
-            ###########################
-
-            notification = Notification(
-                type="new_movie", \
-                title="%s added a new %s" % (username, show_type_string), \
-                message="Title: %s" % title, username=username)
-            notification.save()
-
-            response_data['message'] = 'TvShow/Movie %s saved!' % title
-
-        else:  # Movie exists and the owner is modifyng it
+            tvshow.media = media
+            tvshow.tvshow_type = tvshow_type
+            tvshow.serie_season = serie_season
+            tvshow.miniseries = miniseries
+            tvshow.save()
 
             if uploaded_file:
                 upload_file_res = upload_cover(request, poster_name)
@@ -554,39 +466,132 @@ def savemovienew(request):
             if upload_res == 'failure':
                 poster_name = ''
             else:
+                tvshow.poster = poster_name
+
+            if link:
+                tvshow.link = link
+
+            if upload_res != 'failure' or (tvshow.link == "" and link):
+                tvshow.save()
+
                 notification = Notification(
                     type="new_movie", \
-                    title="%s added a new poster" % username, \
+                    title="%s uploaded a new poster/link" \
+                    % username, message="Title: %s" % title, username=username)
+                notification.save()
+
+            # End New feature
+
+        else:
+            if not current_tvshow:  # Movie does not exist
+
+                if uploaded_file:
+                    upload_file_res = upload_cover(request, poster_name)
+
+                upload_res = upload_file_res.get('result', 'failure')
+                if upload_res == 'failure':
+                    poster_name = ''
+
+                logger.debug("Adding tvshow... Title: %s", title)
+
+                tvshow = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
+                                type=type, tvshow_type=tvshow_type,
+                                director=director, year=year,
+                                poster=poster_name, serie_season=serie_season, miniseries=miniseries)
+                tvshow.save()
+
+                if tvshow_type == 'serie' and int(clone_season) > 1 and int(clone_season) < 10:
+                    logger.debug("Cloning serie %s started..." % tvshow.title)
+                    start = int(tvshow.serie_season) + 1
+                    stop = start + int(clone_season)
+                    for i in range(start, stop):
+                        tvshow_clone = TvShow(title=title, media=media, link=link, vote=vote, user=current_user,
+                                type=type, tvshow_type=tvshow_type,
+                                director=director, year=year, miniseries=miniseries,
+                                poster='', serie_season=i)
+                        logger.debug("Saving season %s" % str(tvshow_clone.serie_season))
+                        tvshow_clone.save()
+                    logger.debug("Cloning serie %s finished." % tvshow_clone.title)
+
+                if not later:
+
+                    if not episode:
+                        episode = 1
+
+                    if not season:
+                        season = 1
+
+                    tvsv = TvShowVote(
+                        vote=vote,
+                        user=current_user,
+                        tvshow=tvshow,
+                        now_watching=now_watch,
+                        season=season,
+                        episode=episode,
+                        comment=comment
+                    )
+                    tvsv.save()
+
+                # Workaround to be removed
+                show_type_string = tvshow_type
+                if show_type_string == "serie":
+                    show_type_string = "series"
+                ###########################
+
+                notification = Notification(
+                    type="new_movie", \
+                    title="%s added a new %s" % (username, show_type_string), \
                     message="Title: %s" % title, username=username)
                 notification.save()
 
-            logger.debug("Updating tvshow... Title: %s", title)
-            tvshow = current_tvshow[0]
-            tvshow.title = title
-            tvshow.media = media
-            tvshow.link = link
-            tvshow.vote = vote
-            tvshow.type = type
-            tvshow.serie_season = serie_season
-            tvshow.tvshow_type = tvshow_type
-            tvshow.miniseries = miniseries
-            tvshow.director = director
-            tvshow.year = year
-            if poster_name:
-                tvshow.poster = poster_name
-            tvshow.save()
+                response_data['message'] = 'TvShow/Movie %s saved!' % title
 
-            data_vote = {'nw': now_watch,
-                         'episode': episode,
-                         'season': season,
-                         'vote': vote,
-                         'giveup': giveup,
-                         'comment': comment
-                        }
-            if not later:
-                create_update_vote(current_user, current_tvshow, data_vote)
+            else:  # Movie exists and the owner is modifyng it
 
-    response_data.update({"upload_result": upload_file_res})
+                if uploaded_file:
+                    upload_file_res = upload_cover(request, poster_name)
+
+                upload_res = upload_file_res.get('result', 'failure')
+                if upload_res == 'failure':
+                    poster_name = ''
+                else:
+                    notification = Notification(
+                        type="new_movie", \
+                        title="%s added a new poster" % username, \
+                        message="Title: %s" % title, username=username)
+                    notification.save()
+
+                logger.debug("Updating tvshow... Title: %s", title)
+                tvshow = current_tvshow[0]
+                tvshow.title = title
+                tvshow.media = media
+                tvshow.link = link
+                tvshow.vote = vote
+                tvshow.type = type
+                tvshow.serie_season = serie_season
+                tvshow.tvshow_type = tvshow_type
+                tvshow.miniseries = miniseries
+                tvshow.director = director
+                tvshow.year = year
+                if poster_name:
+                    tvshow.poster = poster_name
+                tvshow.save()
+
+                data_vote = {'nw': now_watch,
+                            'episode': episode,
+                            'season': season,
+                            'vote': vote,
+                            'giveup': giveup,
+                            'comment': comment
+                            }
+                if not later:
+                    create_update_vote(current_user, current_tvshow, data_vote)
+
+        response_data.update({"upload_result": upload_file_res})
+
+    except Exception as mm:
+        response_data['result'] = 'failure'
+        response_data.update({"message": str(mm)})
 
     return response_data
 
