@@ -374,13 +374,13 @@ def savemovienew(request):
 
     username = request.POST.get('username', '')
     id_movie = request.POST.get('id', '')
-    title = request.POST.get('title', '')
-    media = request.POST.get('media', '')
-    link = request.POST.get('link', '')
-    vote = request.POST.get('vote', request.POST.get('vote_num', 0))
+    title = request.POST.get('title', request.POST.get('title3', ''))
+    media = request.POST.get('media', request.POST.get('mediaRadio', ''))
+    link = request.POST.get('link', request.POST.get('link3', ''))
+    vote = request.POST.get('vote', request.POST.get('vote_num', request.POST.get('vote_num3', 0)))
     type = request.POST.get('type', 'brand_new')
-    tvshow_type = request.POST.get('tvshow_type', 'movie')
-    serie_season = request.POST.get('serie_season', 1)
+    tvshow_type = request.POST.get('tvshow_type', request.POST.get('itemTypeRadio', 'movie'))
+    serie_season = request.POST.get('serie_season', request.POST.get('series_season3', 1))
     miniseries_sw = request.POST.get('miniseries', False)
     clone_season = request.POST.get('clone_season', 1)
     director = request.POST.get('director', '')
@@ -394,7 +394,7 @@ def savemovienew(request):
     episode = request.POST.get('episode', 1)
     comment = request.POST.get('comment', '')
     like = request.POST.get('like', '')
-    uploaded_file = request.FILES.get('pic', '')
+    uploaded_file = request.FILES.get('pic', request.FILES.get('pic3', ''))
     poster_name = ''
     upload_file_res = {}
 
@@ -423,6 +423,10 @@ def savemovienew(request):
     miniseries = False
     if miniseries_sw == "on":
         miniseries = True
+
+    if tvshow_type == "miniseries":
+        miniseries = True
+        tvshow_type = 'serie'
 
     if not title or not media or not tvshow_type:
         response_data['result'] = 'failure'

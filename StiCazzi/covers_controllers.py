@@ -188,7 +188,7 @@ def upload_cover(request, safe_fname, cover_type="poster"):
     response_data = {'result': 'success'}
 
     if request.method == 'POST':
-        cover_file = request.FILES.get('pic', '')
+        cover_file = request.FILES.get('pic', request.FILES.get('pic3', ''))
         if cover_file:
             logger.debug("File Name: " + str(cover_file.name))            # Gives name
             logger.debug("Content Type:" + str(cover_file.content_type))  # Gives Content type text/html etc
