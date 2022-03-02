@@ -9,6 +9,6 @@ geopy
 GitPython
 oauthlib
 google-auth
-django-dbbackup
+django-dbbackup>=4.0
 django-storages[boto3]
 azure-storage-blob
