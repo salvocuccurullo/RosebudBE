@@ -15,7 +15,8 @@
         2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from django.conf.urls import url, include
+#from django.conf.urls import url, include      # removed after 4.0 migration
+from django.urls import re_path as url          # added after 4.0 migration
 from django.contrib import admin
 from StiCazzi import views, controllers, movies_controllers, covers_controllers, misc_controllers
 
