@@ -52,7 +52,7 @@ def get_tvshows_new_opt(request):
     out_list = []
     movie_list = TvShow.objects.filter(
         Q(title__icontains=query) | Q(media__icontains=query)
-    ).order_by('-created')
+    ).order_by('-updated')
 
     lower_bound = limit * (current_page - 1)
     upper_bound = current_page * limit
