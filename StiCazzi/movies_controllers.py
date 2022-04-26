@@ -539,7 +539,7 @@ def savemovienew(request):
                 # Workaround to be removed
                 show_type_string = tvshow_type
                 if show_type_string == "serie":
-                    show_type_string = "series"
+                    show_type_string = "series - season %s" % serie_season
                 ###########################
 
                 notification = Notification(
