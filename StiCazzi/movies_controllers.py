@@ -30,7 +30,7 @@ def get_tvshows_new_opt(request):
         username = i_data.get('username', '')
         kanazzi = i_data.get('kanazzi', '')
         query = i_data.get('query', '')
-        limit = i_data.get('limit', 15)
+        limit = i_data.get('limit', 40)
         current_page = i_data.get('current_page', 1)
         lazy_load = i_data.get('lazy_load', True)
     except (TypeError, ValueError):
