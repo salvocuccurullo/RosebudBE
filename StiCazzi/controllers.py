@@ -247,6 +247,7 @@ def login(request):
 
         else:
             out = "User not found!"
+            logger.debug("User not found info ===> %s -- %s -- %s -- %s -- %s" % (username, password, app_version, device_version, utils.get_client_ip(request)))
             logged = "no"
 
         notification = Notification(
