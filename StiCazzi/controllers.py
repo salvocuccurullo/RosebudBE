@@ -188,6 +188,7 @@ def fblogin(request):
 
         try:
             i_data = json.loads(request.body)
+            username = i_data.get('username', '')
             name = i_data.get('fbname', '')
             email = i_data.get('fbemail', '')
             device_id = i_data.get('device_uuid', '')
