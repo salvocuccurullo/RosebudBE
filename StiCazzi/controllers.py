@@ -188,8 +188,8 @@ def fblogin(request):
 
         try:
             i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            email = i_data.get('email', '')
+            name = i_data.get('fbname', '')
+            email = i_data.get('fbemail', '')
             device_id = i_data.get('device_uuid', '')
             device_version = i_data.get('device_version', '')
             device_platform = i_data.get('device_platform', '')
@@ -201,7 +201,7 @@ def fblogin(request):
 
         notification = Notification(
             type="login", \
-            title="FB -> %s" % username, \
+            title="FB -> %s" % name, \
             message="%s" % email, \
             username=username)
         notification.save()
@@ -212,7 +212,7 @@ def fblogin(request):
         logger.debug(eee)
         notification = Notification(
             type="login", \
-            title="Failure login %s" % username, \
+            title="Failure login %s" % name, \
             message="%s" % str(eee), \
             username=username)
         notification.save()
