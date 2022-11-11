@@ -213,7 +213,7 @@ def fblogin(request):
         notification = Notification(
             type="login", \
             title="Failure login %s" % username, \
-            message="Result: %s" % str(eee), \
+            message="%s" % str(eee), \
             username=username)
         notification.save()
 
