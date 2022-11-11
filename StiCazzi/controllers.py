@@ -30,6 +30,7 @@ from django.core import serializers
 from django import get_version
 from django.contrib.auth import authenticate
 from django.utils import timezone
+from django.conf import settings
 
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification, UserDevice
@@ -139,7 +140,6 @@ def refresh_token(request):
 
 @authentication
 def get_last_commit(request):
-    git_folder = '/home/ubuntu/Work/StiCazziD2'
     repo = git.Repo(".")
     if repo:
         response = {'revision': repo.head.commit.name_rev, "message": repo.head.commit.summary}
@@ -659,6 +659,7 @@ def version(request):
         mongo_api_release = mongoapi_version['payload'].get('version','N/A')
         mongo_driver_version =  mongoapi_version['payload'].get('mongo_db_driver','N/A')
 
+    response['backend_version'] = getattr(settings, "APP_VERSION", "N/A")
     response['django'] = current_version
     response['mongo'] = mongo_api_release
     response['mongo_driver'] = mongo_driver_version
