@@ -54,6 +54,7 @@ urlpatterns = [
     url(r'^getcatalogue$', movies_controllers.get_catalogue),
 
     url(r'^login$', controllers.login),
+    url(r'^fblogin$', controllers.fblogin),
     url(r'^setFBToken2$', controllers.set_fb_token2),
     url(r'^refreshtoken$', controllers.refresh_token),
 

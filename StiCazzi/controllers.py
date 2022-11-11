@@ -179,6 +179,47 @@ def get_random_song(request):
     return response_data
 
 
+def fblogin(request):
+
+    response_data = {}
+    response_data['result'] = 'success'
+
+    try:
+
+        try:
+            i_data = json.loads(request.body)
+            username = i_data.get('username', '')
+            email = i_data.get('email', '')
+            device_id = i_data.get('device_uuid', '')
+            device_version = i_data.get('device_version', '')
+            device_platform = i_data.get('device_platform', '')
+            app_version = i_data.get('app_version', '')
+            fcm_token = i_data.get('fcm_token', '')
+            #logger.debug("New login have been used")
+        except ValueError:
+            response_data['message'] = 'Invalid data'
+
+        notification = Notification(
+            type="login", \
+            title="FB -> %s" % username, \
+            message="%s" % email, \
+            username=username)
+        notification.save()
+
+    except Exception as eee:
+        response_data['result'] = 'failure'
+        response_data['payload'] = {}
+        logger.debug(eee)
+        notification = Notification(
+            type="login", \
+            title="Failure login %s" % username, \
+            message="Result: %s" % str(eee), \
+            username=username)
+        notification.save()
+
+    return JsonResponse(response_data)
+
+
 def login(request):
     """
     Controller:
@@ -266,7 +307,7 @@ def login(request):
         logger.debug(eee)
         notification = Notification(
             type="login", \
-            title="$s" % username, \
+            title="Failure login %s" % username, \
             message="Result: %s" % str(eee), \
             username=username)
         notification.save()
