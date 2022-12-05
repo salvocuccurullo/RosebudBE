@@ -83,6 +83,7 @@ urlpatterns = [
     url(r'^api/geolocation$', controllers.geolocation),
     url(r'^api/geolocation2$', controllers.geolocation2),
     url(r'^api/getcatalogue$', movies_controllers.get_catalogue),
+    url(r'^api/getmediastats$', movies_controllers.getMediaStats),
 
     url(r'^api/login$', controllers.login),
     url(r'^api/fblogin$', controllers.fblogin),

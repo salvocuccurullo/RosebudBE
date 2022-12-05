@@ -678,3 +678,14 @@ def get_user_stats(request):
                     }
 
     return response_data
+
+@authentication
+def getMediaStats(request):
+    """ get Media stats """
+    response = {}
+
+    media_stats = TvShow.objects.all().values('media').annotate(total=Count('media')).order_by('-total')
+    media_stats = [rec for rec in media_stats]
+    response['payload'] = media_stats
+
+    return response
