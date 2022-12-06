@@ -36,7 +36,7 @@ urlpatterns = [
     url(r'^getconfigs2$', controllers.get_configs_new),
 
     url(r'^getTvShows3$', movies_controllers.get_tvshows_new_opt),
-    url(r'^deletemovie$', movies_controllers.deletemovie),
+    #url(r'^deletemovie$', movies_controllers.deletemovie),
     url(r'^savemovienew$', movies_controllers.savemovienew),
     url(r'^moviesct/$', movies_controllers.get_movies_ct, name='movie'),
     url(r'^setlike$', movies_controllers.setlike),
@@ -66,7 +66,7 @@ urlpatterns = [
     url(r'^api/getconfigs2$', controllers.get_configs_new),
 
     url(r'^api/getTvShows3$', movies_controllers.get_tvshows_new_opt),
-    url(r'^api/deletemovie$', movies_controllers.deletemovie),
+    #url(r'^api/deletemovie$', movies_controllers.deletemovie),
     url(r'^api/savemovienew$', movies_controllers.savemovienew),
     url(r'^api/moviesct/$', movies_controllers.get_movies_ct, name='movie'),
     url(r'^api/setlike$', movies_controllers.setlike),

@@ -235,46 +235,46 @@ def setlike(request):
     return response_data
 
 
-@authentication
-def deletemovie(request):
-    """ Delete Tvshow """
+# @authentication
+# def deletemovie(request):
+#     """ Delete Tvshow """
 
-    response_data = {}
-    response_data['result'] = 'success'
+#     response_data = {}
+#     response_data['result'] = 'success'
 
-    try:
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        movie_id = i_data.get('id', '')
-    except (TypeError, ValueError):
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Bad input format'
-        return JsonResponse(response_data, status=400)
+#     try:
+#         i_data = json.loads(request.body)
+#         username = i_data.get('username', '')
+#         movie_id = i_data.get('id', '')
+#     except (TypeError, ValueError):
+#         response_data['result'] = 'failure'
+#         response_data['message'] = 'Bad input format'
+#         return JsonResponse(response_data, status=400)
 
-    current_user = User.objects.filter(username=username)
-    if current_user and not current_user.first().poweruser:
-        response_data['result'] = 'failure'
-        response_data['message'] = 'Your user is not authorized to delete tv shows'
-        return response_data
+#     current_user = User.objects.filter(username=username)
+#     if current_user and not current_user.first().poweruser:
+#         response_data['result'] = 'failure'
+#         response_data['message'] = 'Your user is not authorized to delete tv shows'
+#         return response_data
 
-    # Check existing votes
-    tvrs = TvShowVote.objects.filter(tvshow=movie_id).exclude(user=current_user[0])
+#     # Check existing votes
+#     tvrs = TvShowVote.objects.filter(tvshow=movie_id).exclude(user=current_user[0])
 
-    if tvrs:
-        vote_check = tvrs[0]
-        response_data['message'] = 'Cannot delete %s. It has been voted by other users!' % (vote_check.tvshow.title)
-        response_data['result'] = 'failure'
-    else:
-        show_to_delete = TvShow.objects.filter(id_tv_show=movie_id)
-        if show_to_delete:
-            tvshow = show_to_delete[0]
-            tvshow.delete()
-            response_data['message'] = 'Tvshow with id=' + movie_id + " deleted succcessfully."
-        else:
-            response_data['result'] = 'failure'
-            response_data['message'] = 'Cannot delete tvshow with id=' + movie_id + ". It does not exist!"
+#     if tvrs:
+#         vote_check = tvrs[0]
+#         response_data['message'] = 'Cannot delete %s. It has been voted by other users!' % (vote_check.tvshow.title)
+#         response_data['result'] = 'failure'
+#     else:
+#         show_to_delete = TvShow.objects.filter(id_tv_show=movie_id)
+#         if show_to_delete:
+#             tvshow = show_to_delete[0]
+#             tvshow.delete()
+#             response_data['message'] = 'Tvshow with id=' + movie_id + " deleted succcessfully."
+#         else:
+#             response_data['result'] = 'failure'
+#             response_data['message'] = 'Cannot delete tvshow with id=' + movie_id + ". It does not exist!"
 
-    return response_data
+#     return response_data
 
 
 def create_update_vote(current_user, tvshow, vote_dict):
