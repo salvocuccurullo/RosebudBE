@@ -686,6 +686,10 @@ def getMediaStats(request):
 
     media_stats = TvShow.objects.all().values('media').annotate(total=Count('media')).order_by('-total')
     media_stats = [rec for rec in media_stats]
-    response['payload'] = media_stats
+    response['media'] = media_stats
+    response['total_media'] = len(TvShow.objects.all())
+    response['media_count'] = len(media_stats)
+    response['max_count'] = media_stats[0]['total']
+    response['min_count'] = media_stats[len(media_stats)-1]['total']
 
     return response
