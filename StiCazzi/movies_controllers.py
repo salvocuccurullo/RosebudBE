@@ -482,8 +482,10 @@ def savemovienew(request):
 
                 notification = Notification(
                     type="new_movie", \
-                    title="%s uploaded a new poster/link" \
-                    % username, message="Title: %s" % title, username=username)
+                    title="%s uploaded a new poster/link" % username, \
+                    message="Title: %s" % title, \
+                    image_url=poster_name, \
+                    username=username)
                 notification.save()
 
             # End New feature
@@ -547,7 +549,7 @@ def savemovienew(request):
                 notification = Notification(
                     type="new_movie", \
                     title="%s added a new %s" % (username, show_type_string), \
-                    message="Title: %s" % title, username=username)
+                    message="Title: %s" % title, image_url=poster_name, username=username)
                 notification.save()
 
                 response_data['message'] = 'TvShow/Movie %s saved!' % title
