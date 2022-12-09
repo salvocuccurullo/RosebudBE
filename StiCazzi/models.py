@@ -155,6 +155,7 @@ class Notification(models.Model):
     type = models.CharField(max_length=100, null=False)
     title = models.CharField(max_length=300, null=False)
     message = models.CharField(max_length=300, null=False)
+    image_url = models.CharField(max_length=500, default="")
     username = models.CharField(max_length=100, null=False)
     sent = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
