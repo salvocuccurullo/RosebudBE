@@ -276,6 +276,14 @@ def setlike(request):
 
 #     return response_data
 
+def translator_little_helper(input):
+    output = ''
+    if input == "serie":
+        output = "series"
+    else:
+        output = input
+
+    return output
 
 def create_update_vote(current_user, tvshow, vote_dict):
     """ Create Update vote """
@@ -293,9 +301,9 @@ def create_update_vote(current_user, tvshow, vote_dict):
         if not vote_dict["nw"]:
             notification = Notification(
                 type="new_vote", \
-                title="%s voted for a %s..." % (current_user.username, tvshow[0].tvshow_type), \
-                message="Title: %s - Vote: %s " \
-                % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
+                title="%s voted for a %s..." % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                message="%s - Vote: %s " % (tvshow[0].title, vote_dict["vote"]), \
+                username=current_user.username)
             notification.save()
     else:
         current_vote = tvsv[0]
@@ -304,8 +312,9 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
             notification = Notification(
                 type="give_up", \
-                title="%s gave up to follow a %s" % (current_user.username, tvshow[0].tvshow_type), \
-                message="%s" % tvshow[0].title, username=current_user.username)
+                title="%s stopped to watch a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                message="%s" % tvshow[0].title, \
+                username=current_user.username)
             notification.save()
 
         else:
@@ -337,31 +346,29 @@ def create_update_vote(current_user, tvshow, vote_dict):
             if finished:
                 notification = Notification(
                     type="new_vote", \
-                    title="%s voted for a %s..." % (current_user.username, tvshow[0].tvshow_type), \
-                    message="Title: %s - Vote: %s " \
-                    % (tvshow[0].title, vote_dict["vote"]), username=current_user.username)
+                    title="%s voted for a %s..." % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                    message="%s - Vote: %s " % (tvshow[0].title, vote_dict["vote"]), \
+                    username=current_user.username)
                 notification.save()
 
             if first_comment:
                 notification = Notification(
                     type="new_comment", \
-                    title="%s commented %s..." % (current_user.username, tvshow[0].tvshow_type), \
-                    message="Title: %s - %s... " \
+                    title="%s commented a %s" % (current_user.username,  translator_little_helper(tvshow[0].tvshow_type)), \
+                    message="%s - %s... " \
                     % (tvshow[0].title, vote_dict["comment"][:30]), username=current_user.username)
                 notification.save()
 
     # logger.debug(vote_dict)
     if vote_dict["nw"] and str(vote_dict["episode"]) == "1":
-        # Workaround to be removed
-        show_type_string = tvshow[0].tvshow_type
         episode_description = ''
-        if show_type_string == "serie":
+        if tvshow[0].tvshow_type == "serie":
             show_type_string = "series"
             episode_description = ' - (S%s E%s) ' % (tvshow[0].serie_season, vote_dict["episode"])
         ###########################
         notification = Notification(
             type="new_nw", \
-            title="%s is watching %s..." % (current_user.username, show_type_string), \
+            title="%s is watching a %s..." % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
             message="%s %s" \
             % (tvshow[0].title, episode_description), username=current_user.username)
         notification.save()
@@ -483,7 +490,7 @@ def savemovienew(request):
                 notification = Notification(
                     type="new_movie", \
                     title="%s uploaded a new poster/link" % username, \
-                    message="Title: %s" % title, \
+                    message="%s" % title, \
                     image_url=poster_name, \
                     username=username)
                 notification.save()
@@ -540,16 +547,16 @@ def savemovienew(request):
                     )
                     tvsv.save()
 
-                # Workaround to be removed
-                show_type_string = tvshow_type
-                if show_type_string == "serie":
-                    show_type_string = "series - season %s" % serie_season
-                ###########################
+                season_desc = ''
+                if tvshow_type == "serie":
+                    season_desc = "(S%s)" % serie_season
 
                 notification = Notification(
                     type="new_movie", \
-                    title="%s added a new %s" % (username, show_type_string), \
-                    message="Title: %s" % title, image_url=poster_name, username=username)
+                    title="%s added a new %s" % (username, translator_little_helper(tvshow_type)), \
+                    message="%s %s" % (title, season_desc) \
+                    image_url=poster_name, \
+                    username=username)
                 notification.save()
 
                 response_data['message'] = 'TvShow/Movie %s saved!' % title
@@ -566,7 +573,8 @@ def savemovienew(request):
                     notification = Notification(
                         type="new_movie", \
                         title="%s added a new poster" % username, \
-                        message="Title: %s" % title, username=username)
+                        message="%s" % title, \
+                        username=username)
                     notification.save()
 
                 logger.debug("Updating tvshow... Title: %s", title)
