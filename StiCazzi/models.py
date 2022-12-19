@@ -61,6 +61,11 @@ class User(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id_user', 'username', 'name']
+
 class UserDevice(models.Model):
     id_user_device = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -109,6 +114,13 @@ class TvShow(models.Model):
             models.Index(fields=['title'], name='title_idx'),
         ]
 
+class TvShowSerializer(serializers.ModelSerializer):
+    user = UserSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = TvShow
+        fields = ['id_tv_show', 'title', 'media', 'tvshow_type', 'serie_season', 'miniseries', 'link', 'poster', 'user']
+
 
 class Minchiate(models.Model):
     id_minchiata = models.AutoField(primary_key=True)
@@ -128,6 +140,13 @@ class TvShowVote(models.Model):
     comment = models.CharField(max_length=500, default='')
     created = models.DateTimeField(auto_now_add=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
+
+class TvShowVoteSerializer(serializers.ModelSerializer):
+    user = UserSerializer(many=False, read_only=True)
+    class Meta:
+        model = TvShowVote
+        fields = ['id_vote', 'vote', 'user', 'now_watching', 'season', 'episode', 'comment']
+
 
 class Like(models.Model):
     id_like = models.AutoField(primary_key=True)

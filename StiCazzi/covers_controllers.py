@@ -371,35 +371,14 @@ def get_covers_by_search_ng(request):
 
 
 def init_validation(request):
-    # backward compatibility - will be removed soon
-    username = request.POST.get('username', '')
-    username2 = request.POST.get('username2', '')
-    kanazzi = request.POST.get('kanazzi', '').strip()
-    second_collection = request.POST.get('second_collection', False)
+    #second_collection = request.POST.get('second_collection', False)
     limit = '0'
     search = ''
-    # end backward compatibility - will be removed soon
 
-    if not username and username2:
-        username = username2
+    # if second_collection == True or second_collection == "true":
+    #     mongo_final_url = MONGO_API_2ND_DB_URL
+    # else:
+    #     mongo_final_url = MONGO_API_URL
 
-    if not username:
-        try:
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            kanazzi = i_data.get('kanazzi', '')
-            second_collection = i_data.get('second_collection', False)
-            limit = i_data.get('limit', '15')
-            search = i_data.get('search', '')
-        except ValueError:
-            return {'error':400, 'data': {'result':'failure', 'message':'Bad input format'}}
-
-    # if not username or not check_session(kanazzi, username, action='getCoversStats', store=False):
-    #     return {'error':401, 'data': {'result':'failure', 'message':'Invalid session'}}
-
-    if second_collection == True or second_collection == "true":
-        mongo_final_url = MONGO_API_2ND_DB_URL
-    else:
-        mongo_final_url = MONGO_API_URL
-
-    return {'username':username, 'mongo_url': mongo_final_url, 'limit':limit, 'search':search}
+    # decommission 2 mongo api
+    return {'mongo_url': MONGO_API_2ND_DB_URL, 'limit':limit, 'search':search}

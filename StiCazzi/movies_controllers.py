@@ -12,8 +12,10 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Q, F, Count, Avg, CharField, Subquery
 from django.db.models.functions import Cast
 from django.forms.models import model_to_dict
+from django.core.serializers import serialize
 
 from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catalogue, Like
+from StiCazzi.models import TvShowSerializer, UserSerializer, TvShowVoteSerializer
 from StiCazzi.controllers import authentication
 from StiCazzi.covers_controllers import upload_cover
 from StiCazzi.utils import safe_file_name
@@ -154,6 +156,31 @@ def get_tvshows_new_opt(request):
 
     return response
 
+@authentication
+def getShow(request):
+    """ Get Tvshow New """
+    logger.debug("Get Show")
+    response = {'result': 'success', 'payload': []}
+
+    try:
+        i_data = json.loads(request.body)
+        show_id = i_data.get('show_id', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    if show_id:
+        votes = TvShowVote.objects.all().filter(tvshow_id=show_id)
+        out = [TvShowVoteSerializer(instance=vote).data for vote in votes]
+
+        show = TvShow.objects.all().filter(id_tv_show=show_id).first()
+        show_serializer = TvShowSerializer(instance=show)
+
+        if show:
+            response['payload'] = {'show_id': show_id, 'show': show_serializer.data, 'votes': out}
+
+    return response
 
 def get_movies_ct(request):
     """ Get Tvshow CT """
