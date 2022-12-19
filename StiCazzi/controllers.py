@@ -35,7 +35,7 @@ from django.conf import settings
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification, UserDevice
 from StiCazzi.models import ConfigurationSerializer
-from StiCazzi.env import MONGO_API_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
+from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 from . import utils
 
 SESSION_DBG = False
@@ -630,7 +630,7 @@ def get_mongoapi_version():
     response_data = {}
 
     headers = {'Content-Type': 'application/json'}
-    mongo_final_url = MONGO_API_URL + "/getVersion"
+    mongo_final_url = MONGO_API_2ND_DB_URL + "/getVersion"
     response = requests.get(mongo_final_url, auth=HTTPBasicAuth(MONGO_API_USER, MONGO_API_PWD), verify=MONGO_SERVER_CERTIFICATE, headers=headers)
 
     status_code = response.status_code
