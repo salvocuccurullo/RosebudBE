@@ -337,8 +337,8 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
             notification = Notification(
                 type="new_vote", \
-                title="_%s_ voted for a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
-                message="*%s* - Vote: *%s* " % (tvshow[0].title, vote_dict["vote"]), \
+                title="<i>%s</i> voted for a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                message="<b>%s</b> - Vote: <b>%s</b> " % (tvshow[0].title, vote_dict["vote"]), \
                 platform="telegram", \
                 username=current_user.username)
             notification.save()
@@ -357,8 +357,8 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
             notification = Notification(
                 type="give_up", \
-                title="_%s_ stopped to watch a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
-                message="*%s*" % tvshow[0].title, \
+                title="<i>%s</i> stopped to watch a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                message="<b>%s</b>" % tvshow[0].title, \
                 platform="telegram", \
                 username=current_user.username)
             notification.save()
@@ -400,8 +400,8 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
                 notification = Notification(
                     type="new_vote", \
-                    title="_%s_ voted for a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
-                    message="*%s* - Vote: *%s* " % (tvshow[0].title, vote_dict["vote"]), \
+                    title="<i>%s</i> voted for a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                    message="<b>%s</b> - Vote: <b>%s</b> " % (tvshow[0].title, vote_dict["vote"]), \
                     platform="telegram", \
                     username=current_user.username)
                 notification.save()
@@ -417,8 +417,8 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
                 notification = Notification(
                     type="new_comment", \
-                    title="_%s_ commented a %s" % (current_user.username,  translator_little_helper(tvshow[0].tvshow_type)), \
-                    message="*%s* \n ||%s|| " % (tvshow[0].title, vote_dict["comment"]), \
+                    title="<i>%s</i> commented a %s" % (current_user.username,  translator_little_helper(tvshow[0].tvshow_type)), \
+                    message='<b>%s</b> \n <tg-spoiler>%s</tg-spoiler>' % (tvshow[0].title, vote_dict["comment"]), \
                     platform="telegram", \
                     username=current_user.username)
                 notification.save()
@@ -440,8 +440,8 @@ def create_update_vote(current_user, tvshow, vote_dict):
 
         notification = Notification(
             type="new_nw", \
-            title="_%s_ is watching a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
-            message="*%s* %s" % (tvshow[0].title, episode_description), \
+            title="<i>%s</i> is watching a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+            message="<b>%s</b> %s" % (tvshow[0].title, episode_description), \
             platform="telegram", \
             username=current_user.username)
         notification.save()
@@ -571,8 +571,8 @@ def savemovienew(request):
 
                 notification = Notification(
                     type="new_movie", \
-                    title="_%s_ uploaded a new poster/link" % username, \
-                    message="*%s*" % title, \
+                    title="<i>%s</i> uploaded a new poster/link" % username, \
+                    message="<b>%s</b>" % title, \
                     image_url=poster_name, \
                     platform="telegram", \
                     username=username)
@@ -645,8 +645,8 @@ def savemovienew(request):
 
                 notification = Notification(
                     type="new_movie", \
-                    title="_%s_ added a new %s" % (username, translator_little_helper(tvshow_type)), \
-                    message="*%s* %s" % (title, season_desc), \
+                    title="<i>%s</i> added a new %s" % (username, translator_little_helper(tvshow_type)), \
+                    message="<b>%s</b> %s" % (title, season_desc), \
                     image_url=poster_name, \
                     platform="telegram", \
                     username=username)
@@ -673,8 +673,8 @@ def savemovienew(request):
 
                     notification = Notification(
                         type="new_movie", \
-                        title="_%s_ added a new poster" % username, \
-                        message="*%s*" % title, \
+                        title="<i>%s</i> added a new poster" % username, \
+                        message="<b>%s</b>" % title, \
                         platform="telegram", \
                         username=username)
                     notification.save()
