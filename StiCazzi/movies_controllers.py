@@ -18,8 +18,51 @@ from StiCazzi.models import Movie, TvShow, User, TvShowVote, Notification, Catal
 from StiCazzi.models import TvShowSerializer, UserSerializer, TvShowVoteSerializer
 from StiCazzi.controllers import authentication
 from StiCazzi.covers_controllers import upload_cover
-from StiCazzi.utils import safe_file_name
+from StiCazzi.utils import safe_file_name, send_notification
 logger = logging.getLogger(__name__)
+
+@authentication
+def get_tvshows_list(request):
+    """ Get Tvshow New """
+    logger.debug("Get Tvshows new opt called")
+    response = {'result': 'success'}
+
+    try:
+        i_data = json.loads(request.body)
+        username = i_data.get('username', '')
+        query = i_data.get('query', '')
+        limit = i_data.get('limit', 40)
+        current_page = i_data.get('current_page', 1)
+        lazy_load = i_data.get('lazy_load', True)
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        return JsonResponse(response, status=400)
+
+    lower_bound = limit * (current_page - 1)
+    upper_bound = current_page * limit
+
+    shows = TvShow.objects.all().filter(
+        Q(title__icontains=query) | Q(media__icontains=query)
+    ).order_by('-updated')[lower_bound:upper_bound]
+    out = [TvShowSerializer(instance=show).data for show in shows]
+
+    tvshow_stat = dict(\
+                  TvShow.objects\
+                      .filter(
+                          Q(title__icontains=query) | Q(media__icontains=query)
+                      )\
+                      .values("tvshow_type")\
+                      .annotate(count=Count('tvshow_type'))\
+                      .values_list("tvshow_type", "count")
+                  )
+    tvshow_stat = {'movie': tvshow_stat.get('movie', 0), 'serie': tvshow_stat.get('serie', 0)}
+
+    response['payload'] = {}
+    response['payload']['tvshows'] = out
+    response['payload']['stats'] = tvshow_stat
+
+    return response
 
 @authentication
 def get_tvshows_new_opt(request):
@@ -30,7 +73,6 @@ def get_tvshows_new_opt(request):
     try:
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
-        kanazzi = i_data.get('kanazzi', '')
         query = i_data.get('query', '')
         limit = i_data.get('limit', 40)
         current_page = i_data.get('current_page', 1)
@@ -216,7 +258,6 @@ def setlike(request):
     try:
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
-        kanazzi = i_data.get('kanazzi', '')
         id_vote = i_data.get('id_vote', '')
         reaction = i_data.get('reaction', '')
         action = i_data.get('action','fetch')
@@ -250,13 +291,12 @@ def setlike(request):
       # message -> the guy who has wrote the comment
       # username -> the guy who has clicked on like
       if reaction != "O" and current_user.username != vote.user.username:
-        notification = Notification(
+        send_notification(
                 type="like", \
                 title="%s" % tvshow.id_tv_show, \
                 message="%s" % vote.user.username, \
                 platform="mobile", \
                 username=current_user.username)
-        notification.save()
 
     response_data['payload'] = {'id_vote': id_vote, 'count': len(Like.objects.filter(id_vote=id_vote, reaction="*")), 'you': len(Like.objects.filter(id_vote=id_vote, reaction="*", user=current_user))}
 
@@ -327,41 +367,37 @@ def create_update_vote(current_user, tvshow, vote_dict):
             like.save()
 
         if not vote_dict["nw"]:
-            notification = Notification(
+            send_notification(
                 type="new_vote", \
                 title="%s voted for a %s..." % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
                 message="%s - Vote: %s " % (tvshow[0].title, vote_dict["vote"]), \
                 platform="mobile", \
                 username=current_user.username)
-            notification.save()
 
-            notification = Notification(
+            send_notification(
                 type="new_vote", \
                 title="<i>%s</i> voted for a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
                 message="<b>%s</b> - Vote: <b>%s</b> " % (tvshow[0].title, vote_dict["vote"]), \
                 platform="telegram", \
                 username=current_user.username)
-            notification.save()
     else:
         current_vote = tvsv[0]
         if vote_dict['giveup']:
             current_vote.delete()
 
-            notification = Notification(
+            send_notification(
                 type="give_up", \
                 title="%s stopped to watch a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
                 message="%s" % tvshow[0].title, \
                 platform="mobile", \
                 username=current_user.username)
-            notification.save()
 
-            notification = Notification(
+            send_notification(
                 type="give_up", \
                 title="<i>%s</i> stopped to watch a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
                 message="<b>%s</b>" % tvshow[0].title, \
                 platform="telegram", \
                 username=current_user.username)
-            notification.save()
 
         else:
 
@@ -390,38 +426,34 @@ def create_update_vote(current_user, tvshow, vote_dict):
                 like.save()
 
             if finished:
-                notification = Notification(
+                send_notification(
                     type="new_vote", \
                     title="%s voted for a %s..." % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
                     message="%s - Vote: %s " % (tvshow[0].title, vote_dict["vote"]), \
                     platform="mobile", \
                     username=current_user.username)
-                notification.save()
 
-                notification = Notification(
+                send_notification(
                     type="new_vote", \
                     title="<i>%s</i> voted for a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
                     message="<b>%s</b> - Vote: <b>%s</b> " % (tvshow[0].title, vote_dict["vote"]), \
                     platform="telegram", \
                     username=current_user.username)
-                notification.save()
 
             if first_comment:
-                notification = Notification(
+                send_notification(
                     type="new_comment", \
                     title="%s commented a %s" % (current_user.username,  translator_little_helper(tvshow[0].tvshow_type)), \
                     message="%s - %s... " % (tvshow[0].title, vote_dict["comment"][:30]), \
                     platform="mobile", \
                     username=current_user.username)
-                notification.save()
 
-                notification = Notification(
+                send_notification(
                     type="new_comment", \
                     title="<i>%s</i> commented a %s" % (current_user.username,  translator_little_helper(tvshow[0].tvshow_type)), \
                     message='<b>%s</b> \n <tg-spoiler>%s</tg-spoiler>' % (tvshow[0].title, vote_dict["comment"]), \
                     platform="telegram", \
                     username=current_user.username)
-                notification.save()
 
     # logger.debug(vote_dict)
     if vote_dict["nw"] and str(vote_dict["episode"]) == "1":
@@ -430,22 +462,19 @@ def create_update_vote(current_user, tvshow, vote_dict):
             show_type_string = "series"
             episode_description = ' - (S%s E%s) ' % (tvshow[0].serie_season, vote_dict["episode"])
         ###########################
-        notification = Notification(
+        send_notification(
             type="new_nw", \
             title="%s is watching a %s..." % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
             message="%s %s" % (tvshow[0].title, episode_description), \
             platform="mobile", \
             username=current_user.username)
-        notification.save()
 
-        notification = Notification(
+        send_notification(
             type="new_nw", \
             title="<i>%s</i> is watching a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
             message="<b>%s</b> %s" % (tvshow[0].title, episode_description), \
             platform="telegram", \
             username=current_user.username)
-        notification.save()
-
 
 @authentication
 def savemovienew(request):
@@ -468,7 +497,6 @@ def savemovienew(request):
     director = request.POST.get('director', '')
     year = request.POST.get('year', '')
     username = request.POST.get('username', '')
-    kanazzi = request.POST.get('kanazzi', '')
     now_watch_sw = request.POST.get('nw', request.POST.get('nw3', False))
     giveup_sw = request.POST.get('giveup', False)
     later_sw = request.POST.get('later', request.POST.get('later3', False))
@@ -560,23 +588,21 @@ def savemovienew(request):
             if upload_res != 'failure' or (tvshow.link == "" and link):
                 tvshow.save()
 
-                notification = Notification(
+                send_notification(
                     type="new_movie", \
                     title="%s uploaded a new poster/link" % username, \
                     message="%s" % title, \
                     image_url=poster_name, \
                     platform="mobile", \
                     username=username)
-                notification.save()
 
-                notification = Notification(
+                send_notification(
                     type="new_movie", \
                     title="<i>%s</i> uploaded a new poster/link" % username, \
                     message="<b>%s</b>" % title, \
                     image_url=poster_name, \
                     platform="telegram", \
                     username=username)
-                notification.save()
 
             # End New feature
 
@@ -634,23 +660,21 @@ def savemovienew(request):
                 if tvshow_type == "serie":
                     season_desc = "(S%s)" % serie_season
 
-                notification = Notification(
+                send_notification(
                     type="new_movie", \
                     title="%s added a new %s" % (username, translator_little_helper(tvshow_type)), \
                     message="%s %s" % (title, season_desc), \
                     image_url=poster_name, \
                     platform="mobile", \
                     username=username)
-                notification.save()
 
-                notification = Notification(
+                send_notification(
                     type="new_movie", \
                     title="<i>%s</i> added a new %s" % (username, translator_little_helper(tvshow_type)), \
                     message="<b>%s</b> %s" % (title, season_desc), \
                     image_url=poster_name, \
                     platform="telegram", \
                     username=username)
-                notification.save()
 
                 response_data['message'] = 'TvShow/Movie %s saved!' % title
 
@@ -663,21 +687,19 @@ def savemovienew(request):
                 if upload_res == 'failure':
                     poster_name = ''
                 else:
-                    notification = Notification(
+                    send_notification(
                         type="new_movie", \
                         title="%s added a new poster" % username, \
                         message="%s" % title, \
                         platform="mobile", \
                         username=username)
-                    notification.save()
 
-                    notification = Notification(
+                    send_notification(
                         type="new_movie", \
                         title="<i>%s</i> added a new poster" % username, \
                         message="<b>%s</b>" % title, \
                         platform="telegram", \
                         username=username)
-                    notification.save()
 
                 logger.debug("Updating tvshow... Title: %s", title)
                 tvshow = current_tvshow[0]
@@ -745,7 +767,6 @@ def get_catalogue(request):
         i_data = json.loads(request.body)
         username = i_data.get('username', '')
         cat_type = i_data.get('cat_type', '')
-        kanazzi = i_data.get('kanazzi', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'

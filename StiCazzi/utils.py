@@ -5,6 +5,7 @@
 import json
 import decimal
 import hashlib
+from StiCazzi.models import Notification
 
 def get_client_ip(request):
     try:
@@ -55,3 +56,13 @@ def safe_file_name(name, file_type):
     final_fname += "." + ext
 
     return final_fname
+
+def send_notification(type, title, message, username, image_url='', platform='mobile'):
+    notification = Notification(
+        type=type, \
+        title=title, \
+        message=message, \
+        platform=platform, \
+        image_url=image_url, \
+        username=username)
+    notification.save()
