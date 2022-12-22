@@ -12,3 +12,4 @@ google-auth
 django-dbbackup==4.0.0b0
 django-storages[boto3]
 azure-storage-blob
+python-telegram-bot
