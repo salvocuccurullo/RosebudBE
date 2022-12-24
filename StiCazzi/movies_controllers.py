@@ -45,7 +45,12 @@ def get_tvshows_list(request):
     shows = TvShow.objects.all().filter(
         Q(title__icontains=query) | Q(media__icontains=query)
     ).order_by('-updated')[lower_bound:upper_bound]
+
     out = [TvShowSerializer(instance=show).data for show in shows]
+
+    votes = [TvShowVote.objects.all().filter(tvshow_id=show.id_tv_show) for show in shows]
+    logger.debug(votes)
+    votes_out = [TvShowVoteSerializer(instance=vote).data for vote in votes]
 
     tvshow_stat = dict(\
                   TvShow.objects\
@@ -59,7 +64,7 @@ def get_tvshows_list(request):
     tvshow_stat = {'movie': tvshow_stat.get('movie', 0), 'serie': tvshow_stat.get('serie', 0)}
 
     response['payload'] = {}
-    response['payload']['tvshows'] = out
+    response['payload']['tvshows'] = votes_out
     response['payload']['stats'] = tvshow_stat
 
     return response
@@ -691,6 +696,7 @@ def savemovienew(request):
                         type="new_movie", \
                         title="%s added a new poster" % username, \
                         message="%s" % title, \
+                        image_url=poster_name, \
                         platform="mobile", \
                         username=username)
 
@@ -698,6 +704,7 @@ def savemovienew(request):
                         type="new_movie", \
                         title="<i>%s</i> added a new poster" % username, \
                         message="<b>%s</b>" % title, \
+                        image_url=poster_name, \
                         platform="telegram", \
                         username=username)
 
