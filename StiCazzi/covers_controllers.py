@@ -164,6 +164,7 @@ def get_covers_ng(request):
     response_data = {}
 
     validation = init_validation(request)
+
     if 'error' in validation:
         return JsonResponse(validation['data'], status=validation['error'])
 
@@ -372,7 +373,7 @@ def get_covers_by_search_ng(request):
 
 def init_validation(request):
     #second_collection = request.POST.get('second_collection', False)
-    limit = '0'
+    limit = '15'
     search = ''
 
     # if second_collection == True or second_collection == "true":
