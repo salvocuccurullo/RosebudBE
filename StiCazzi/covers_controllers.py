@@ -373,8 +373,9 @@ def get_covers_by_search_ng(request):
 
 def init_validation(request):
     #second_collection = request.POST.get('second_collection', False)
-    limit = request.POST.get('limit', '15')
-    search = request.POST.get('search', '')
+    i_data = json.loads(request.body)
+    limit = i_data.get('limit', '15')
+    search = i_data.get('search', '')
 
     # if second_collection == True or second_collection == "true":
     #     mongo_final_url = MONGO_API_2ND_DB_URL
