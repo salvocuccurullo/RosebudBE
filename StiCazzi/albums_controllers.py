@@ -120,7 +120,7 @@ def get_random_album(request):
     db = client.rosebud_dev
     coll = db.cover
     album = list(coll.aggregate([{ "$sample": { "size": 1 } }]))[0]
-    response['album'] = {
+    response = {
           "name": album['name'],
           "author": album['author'],
           "location": album['location'],
