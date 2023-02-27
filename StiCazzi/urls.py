@@ -18,7 +18,7 @@
 #from django.conf.urls import url, include      # removed after 4.0 migration
 from django.urls import re_path as url          # added after 4.0 migration
 from django.contrib import admin
-from StiCazzi import views, controllers, movies_controllers, covers_controllers, misc_controllers
+from StiCazzi import views, controllers, movies_controllers, covers_controllers, misc_controllers, albums_controllers
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -43,7 +43,8 @@ urlpatterns = [
 
     url(r'^uploadcover$', covers_controllers.save_cover),
     url(r'^getcovers2$', covers_controllers.get_covers_ng),
-    url(r'^getrandomcover$', covers_controllers.get_random_cover),
+    #url(r'^getrandomcover$', covers_controllers.get_random_cover),
+    url(r'^getrandomcover$', albums_controllers.get_random_album),
     url(r'^getcoversstats$', covers_controllers.get_covers_stats),
     url(r'^spotify$', covers_controllers.spotify),
     url(r'^spotifysearch$', covers_controllers.spotify_search),
@@ -94,5 +95,9 @@ urlpatterns = [
 
     url(r'^api/version', controllers.version),
     url(r'^api/commit', controllers.get_last_commit),
+
+    url(r'^api/getAlbums', albums_controllers.get_albums),
+    url(r'^api/setRemarkable', albums_controllers.set_remarkable),
+    url(r'^api/getRandomAlbum', albums_controllers.get_random_album),
 
 ]
