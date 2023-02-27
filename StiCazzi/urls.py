@@ -77,7 +77,8 @@ urlpatterns = [
 
     url(r'^api/uploadcover$', covers_controllers.save_cover),
     url(r'^api/getcovers2$', covers_controllers.get_covers_ng),
-    url(r'^api/getrandomcover$', covers_controllers.get_random_cover),
+    #url(r'^api/getrandomcover$', covers_controllers.get_random_cover),
+    url(r'^api/getrandomcover$', albums_controllers.get_random_album),
     url(r'^api/getcoversstats$', covers_controllers.get_covers_stats),
     url(r'^api/spotify$', covers_controllers.spotify),
     url(r'^api/spotifysearch$', covers_controllers.spotify_search),

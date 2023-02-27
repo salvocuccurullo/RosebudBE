@@ -127,8 +127,8 @@ def authentication(fn):
             logger.debug("Authentication Failed [%s] [%s]" % (request.path, username))
             result['payload'] = {}
 
-        if result.get('payload', '').get('status_code', ''):
-            result['code'] = result['payload']['status_code']
+        # if result.get('payload', '').get('status_code', ''):
+        #     result['code'] = result['payload']['status_code']
         return JsonResponse(result, status=result['code'])
 
     return wrapper_fn
