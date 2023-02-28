@@ -60,6 +60,8 @@ def get_albums(request):
         "id": str(x['_id']),
         "title": x['name'], 
         "author": x['author'], 
+        "location": x['location'],
+        "spotifyAlbumUrl": x['spotifyAlbumUrl'],
         "release_date": x.get('release_date', ''), 
         "remarkable": x.get('remarkable', '')
         } for x in xyz]
