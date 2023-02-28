@@ -88,12 +88,12 @@ def set_remarkable(request):
         return response
     
     logger.debug("="*80)
-    if remarkable == "True" or remarkable == "true" or remarkable == "on" or remarkable == "1":
-      remarkable = True
-      logger.debug("Setting remarkable flag (%s) for doc %s" % (remarkable, doc_id))
+    if remarkable == "yes":
+        logger.debug("Setting remarkable flag (%s) for doc %s" % (remarkable, doc_id))
+        remarkable = True
     else:
-      remarkable = False
-      logger.debug("Removing remarkable flag (%s) for doc %s" % (remarkable, doc_id))
+        logger.debug("Removing remarkable flag (%s) for doc %s" % (remarkable, doc_id))
+        remarkable = False
     logger.debug("="*80)
 
     client = MongoClient()
