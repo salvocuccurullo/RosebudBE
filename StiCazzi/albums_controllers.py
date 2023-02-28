@@ -86,16 +86,15 @@ def set_remarkable(request):
         response['message'] = 'Bad input format'
         response['status_code'] = 400
         return response
-
-    logger.debug("="*80)
-    logger.debug(doc_id)
-    logger.debug(remarkable)
-    logger.debug("="*80)
     
+    logger.debug("="*80)
     if remarkable == "True" or remarkable == "true" or remarkable == "on" or remarkable == "1":
       remarkable = True
+      logger.debug("Setting remarkable flag (%s) for doc %s" % (remarkable, doc_id))
     else:
       remarkable = False
+      logger.debug("Removing remarkable flag (%s) for doc %s" % (remarkable, doc_id))
+    logger.debug("="*80)
 
     client = MongoClient()
     client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
