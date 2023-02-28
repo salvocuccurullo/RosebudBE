@@ -48,8 +48,8 @@ def get_albums(request):
     albums = coll.find( \
           { "$and": [
             { "$or": [
-              {"name": { "$regex": query}},
-              {"author": { "$regex": query}},
+              {"name": { "$regex": query, "$options" : "i"}},
+              {"author": { "$regex": query, "$options" : "i"}},
             ]},
             {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } }   #release date exists and its lenght > 7 (full date)
           ]}
