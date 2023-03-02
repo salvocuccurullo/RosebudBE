@@ -10,6 +10,7 @@ import urllib.parse
 import pprint
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from datetime import datetime
 
 from django.http import JsonResponse
 from StiCazzi.controllers import authentication
@@ -25,6 +26,7 @@ def get_albums(request):
     try:
         i_data = json.loads(request.body)
         query = i_data.get('query', '')
+        special = i_data.get('special', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -33,27 +35,52 @@ def get_albums(request):
 
     logger.debug("="*80)
     logger.debug(i_data.get('query', ''))
-    logger.debug("="*80)
 
-    if len(query) < 3:
+    if not special and len(query) < 3:
         response['result'] = 'failure'
         response['message'] = 'Min query size is 3'
         response['status_code'] = 400
         return response
 
+    now = datetime.now() # current date and time
+
+    year = now.strftime("%Y")
+    month = now.strftime("%m")
+    day = now.strftime("%d")
+    logger.debug("%s-%s-%s" % (year, month, day))
+    logger.debug("special: %s" % special)
+    logger.debug("="*80)
+
     client = MongoClient()
     client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
     db = client.rosebud_dev
     coll = db.cover
-    albums = coll.find( \
-          { "$and": [
-            { "$or": [
-              {"name": { "$regex": query, "$options" : "i"}},
-              {"author": { "$regex": query, "$options" : "i"}},
-            ]},
-            {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } }   #release date exists and its lenght > 7 (full date)
-          ]}
-          )
+
+    if query and not special:
+        mongo_stmt = { "$and": [
+                        {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },   #release date exists and its lenght > 7 (full date)
+                        { "$or": [
+                            {"name": { "$regex": query, "$options" : "i"}},
+                            {"author": { "$regex": query, "$options" : "i"}},
+                        ]}
+                    ]}
+    elif special and special == 'monthly':
+        mongo_stmt = { "$and": [
+                        {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
+                        {"release_date": { "$regex": ".*\-%s\-.*" % month}}
+                    ]}
+    elif special and special == 'today':
+        mongo_stmt = { "$and": [
+                        {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
+                        {"release_date": { "$regex": ".*\-%s\-%s" % (month, day)}}
+                    ]}
+    else:
+        response['result'] = 'failure'
+        response['message'] = 'Invalid data!'
+        response['status_code'] = 400
+        return response
+
+    albums = coll.find(mongo_stmt)
     xyz = list(albums)
     xyz = [ \
         {
