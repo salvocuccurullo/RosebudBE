@@ -10,7 +10,7 @@ import urllib.parse
 import pprint
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta, date
 
 from django.http import JsonResponse
 from StiCazzi.controllers import authentication
@@ -42,13 +42,18 @@ def get_albums(request):
         response['status_code'] = 400
         return response
 
-    now = datetime.now() # current date and time
+    today = date.today() # current date
+    if special and special == "yesterday":
+        today = today + timedelta(days=-1)
+    elif special and special == "tomorrow":
+        today = today + timedelta(days=+1)
 
-    year = now.strftime("%Y")
-    month = now.strftime("%m")
-    day = now.strftime("%d")
-    logger.debug("%s-%s-%s" % (year, month, day))
+    year = today.strftime("%Y")
+    month = today.strftime("%m")
+    day = today.strftime("%d")
+
     logger.debug("special: %s" % special)
+    logger.debug("%s-%s-%s" % (year, month, day))
     logger.debug("="*80)
 
     client = MongoClient()
@@ -69,7 +74,7 @@ def get_albums(request):
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
                         {"release_date": { "$regex": ".*\-%s\-.*" % month}}
                     ]}
-    elif special and special == 'today':
+    elif special and special in ('today', 'yesterday', 'tomorrow'):
         mongo_stmt = { "$and": [
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
                         {"release_date": { "$regex": ".*\-%s\-%s" % (month, day)}}
