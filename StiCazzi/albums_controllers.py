@@ -40,6 +40,7 @@ def get_albums(request):
         response['result'] = 'failure'
         response['message'] = 'Min query size is 3'
         response['status_code'] = 400
+        logger.debug("no special and query length < 3")
         return response
 
     today = date.today() # current date
@@ -93,6 +94,7 @@ def get_albums(request):
         "title": x['name'], 
         "author": x['author'], 
         "location": x['location'],
+        "thumbnail": x['thumbnail'],
         "spotifyAlbumUrl": x['spotifyAlbumUrl'],
         "release_date": x.get('release_date', ''), 
         "remarkable": x.get('remarkable', '')
