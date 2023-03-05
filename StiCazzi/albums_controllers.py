@@ -62,7 +62,12 @@ def get_albums(request):
     db = client.rosebud_dev
     coll = db.cover
 
-    if query and not special:
+    if query and special and special in ('all'):
+        mongo_stmt = { "$or": [
+                        {"name": { "$regex": query, "$options" : "i"}},
+                        {"author": { "$regex": query, "$options" : "i"}},
+                    ]}
+    elif query and not special:
         mongo_stmt = { "$and": [
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },   #release date exists and its lenght > 7 (full date)
                         { "$or": [
