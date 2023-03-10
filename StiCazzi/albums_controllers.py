@@ -8,7 +8,8 @@ import json
 import logging
 import urllib.parse
 import pprint
-from pymongo import MongoClient
+import pymongo
+from pymongo import MongoClient, version
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta, date
 
@@ -16,6 +17,69 @@ from django.http import JsonResponse
 from StiCazzi.controllers import authentication
 
 logger = logging.getLogger(__name__)
+
+@authentication
+def get_stats(request):
+    """ Get one album from Mongo """
+    logger.debug("get statistics pymnongo called")
+    response = {}
+
+    client = MongoClient()
+    client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+    db = client.rosebud_dev
+    out = db.command("collstats", "cover")
+    #logger.debug(pprint.pprint(out))
+    response['remote_covers'] = out['count']
+    response['py_mongo_version'] = pymongo.version
+
+    # out = db.version()
+    # logger.debug(pprint.pprint(out))
+    #response['mongo_db_version'] = out['count']
+
+    return response
+
+@authentication
+def get_one_album(request):
+    """ Get one album from Mongo """
+    logger.debug("get one album pymnongo called")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        doc_id = i_data.get('doc_id', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    client = MongoClient()
+    client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+
+    db = client.rosebud_dev
+    coll = db.cover
+
+    try:
+        res = coll.find_one({"_id": ObjectId(doc_id)})
+        if res:
+            response['album'] = \
+            {
+                "id": str(res['_id']),
+                "title": res['name'],
+                "author": res['author'],
+                "location": res['location'],
+                "thumbnail": res['thumbnail'],
+                "spotifyAlbumUrl": res['spotifyAlbumUrl'],
+                "release_date": res.get('release_date', ''),
+                "remarkable": res.get('remarkable', '')
+            }
+    except Exception as e:
+        response['result'] = 'failure'
+        response['message'] = str(e)
+        response['status_code'] = 400
+
+    return response
+
 
 @authentication
 def get_albums(request):
