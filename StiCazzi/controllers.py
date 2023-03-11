@@ -32,11 +32,14 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from django.conf import settings
 
+from pymongo import MongoClient, version
+import pymongo
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification, UserDevice
 from StiCazzi.models import ConfigurationSerializer
 from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 from . import utils
+
 
 SESSION_DBG = False
 logger = logging.getLogger(__name__)
@@ -643,6 +646,22 @@ def get_mongoapi_version():
     else:
         return {}
 
+def get_stats_internal():
+    """ Get one album from Mongo """
+    logger.debug("get statistics pymnongo called")
+    response = {}
+
+    client = MongoClient()
+    client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+    db = client.rosebud_dev
+    out = db.command("collstats", "cover")
+    response['remote_covers'] = out['count']
+    response['py_mongo_version'] = pymongo.version
+
+    out = db.command({'buildInfo':1})['version']
+    response['mongo_db_version'] = out
+
+    return response
 
 @authentication
 def version(request):
@@ -652,19 +671,21 @@ def version(request):
     logger.debug("get version called")
     response = {}
 
-    current_version = get_version()
-    mongoapi_version = get_mongoapi_version()
-    mongo_api_release = "N/A"
-    mongo_driver_version = "N/A"
+    mongo_info = get_stats_internal()
 
-    if mongoapi_version:
-        mongo_api_release = mongoapi_version['payload'].get('version','N/A')
-        mongo_driver_version =  mongoapi_version['payload'].get('mongo_db_driver','N/A')
+    current_version = get_version()
+    # mongoapi_version = 
+    # mongo_api_release = "N/A"
+    # mongo_driver_version = "N/A"
+
+    # if mongoapi_version:
+    #     mongo_api_release = mongoapi_version['payload'].get('version','N/A')
+    #     mongo_driver_version =  mongoapi_version['payload'].get('mongo_db_driver','N/A')
 
     response['backend_version'] = getattr(settings, "APP_VERSION", "N/A")
     response['django'] = current_version
-    response['mongo'] = mongo_api_release
-    response['mongo_driver'] = mongo_driver_version
+    response['mongo'] = mongo_info['mongo_db_version']
+    response['mongo_driver'] = mongo_info['py_mongo_version']
     return response
 
 

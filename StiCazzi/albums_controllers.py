@@ -18,6 +18,7 @@ from StiCazzi.controllers import authentication
 
 logger = logging.getLogger(__name__)
 
+
 @authentication
 def get_stats(request):
     """ Get one album from Mongo """
@@ -28,13 +29,8 @@ def get_stats(request):
     client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
     db = client.rosebud_dev
     out = db.command("collstats", "cover")
-    #logger.debug(pprint.pprint(out))
-    response['remote_covers'] = out['count']
-    response['py_mongo_version'] = pymongo.version
-
-    # out = db.version()
-    # logger.debug(pprint.pprint(out))
-    #response['mongo_db_version'] = out['count']
+    response['payload'] = {}
+    response['payload']['remote_covers'] = out['count']     # backward compatibility, it will be fixed later
 
     return response
 
