@@ -102,6 +102,7 @@ urlpatterns = [
     url(r'^api/setRemarkable', albums_controllers.set_remarkable),
     url(r'^api/getRandomAlbum', albums_controllers.get_random_album),
     url(r'^api/getOneAlbum', albums_controllers.get_one_album),
+    url(r'^api/setOneAlbum', albums_controllers.set_one_album),
     url(r'^api/getStats', albums_controllers.get_stats),
 
 ]

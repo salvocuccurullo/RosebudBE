@@ -76,6 +76,40 @@ def get_one_album(request):
 
     return response
 
+@authentication
+def set_one_album(request):
+    """ Set one album on Mongo """
+    logger.debug("set one album pymnongo called")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        doc_id = i_data.get('doc_id', '')
+        release_date = i_data.get('release_date', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    client = MongoClient()
+    client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+
+    db = client.rosebud_dev
+    coll = db.cover
+
+    try:
+        res = coll.update_one(
+                {"_id": ObjectId(doc_id)},
+                {"$set": {"release_date": release_date}}
+        )
+    except Exception as e:
+        response['result'] = 'failure'
+        response['message'] = str(e)
+        response['status_code'] = 400
+
+    return response
+
 
 @authentication
 def get_albums(request):
