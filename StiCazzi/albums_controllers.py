@@ -139,7 +139,7 @@ def get_spotify_albums_x_artist(request):
 
     albums = [
         { "title": x['name'],
-          "picture": x['images'][0]['url'],
+          "picture": (x['images'] or [{'url': './images/no-image-available.jpg'}])[0]['url'],
           "id":  x['id'],
           "uri":  x['uri'],
           "url": x['external_urls']['spotify'],
