@@ -14,3 +14,4 @@ django-storages[boto3]
 azure-storage-blob
 python-telegram-bot
 pymongo
+spotipy
