@@ -16,6 +16,9 @@ from datetime import datetime, timedelta, date
 from django.http import JsonResponse
 from StiCazzi.controllers import authentication
 
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
 logger = logging.getLogger(__name__)
 
 
@@ -110,6 +113,70 @@ def set_one_album(request):
 
     return response
 
+@authentication
+def get_spotify_albums_x_artist(request):
+    """ Get all the albums for an artist from SPOTIFY API """
+    logger.debug("get albums for artist pymnongo called")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        spotify_id = i_data.get('spotify_id', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    spoty_uri = 'spotify:artist:%s' % spotify_id
+    spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+    results = spotify.artist_albums(spoty_uri, album_type='album')
+
+    albums = results['items']
+    while results['next']:
+        results = spotify.next(results)
+        albums.extend(results['items'])
+
+    albums = [
+        { "title": x['name'],
+          "picture": x['images'][0]['url'],
+          "id":  x['id'],
+          "uri":  x['uri'],
+          "url": x['external_urls']['spotify'],
+          "release_date": x['release_date']
+        } for x in albums  ]
+    albums = sorted(albums, key=lambda d: d['release_date'])
+
+    return albums
+
+@authentication
+def get_spotify_artists(request):
+    """ Get artists from SPOTIFY API """
+    logger.debug("get albums pymnongo called")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        query = i_data.get('query', '')
+        special = i_data.get('special', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+    results = spotify.search(query, type='artist')
+
+    artists = [
+        { "title": x['name'],
+          "picture": x['images'][0]['url'],
+          "id":  x['id'],
+          "uri":  x['uri'],
+          "url": x['external_urls']['spotify']
+        } for x in results['artists']['items'] if len(x['images']) > 0 ]
+
+    return artists
 
 @authentication
 def get_albums(request):
