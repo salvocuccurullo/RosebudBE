@@ -179,6 +179,83 @@ def get_spotify_artists(request):
     return artists
 
 @authentication
+def add_album(request):
+    """
+        Add new album on MongoDB. Data is retrieved from Spotify
+        There is a precheck in place for avoiding to add an existent album
+    """
+    logger.debug("add album to MongoDB")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        spotify_id = i_data.get('spotify_id', '')
+        username = i_data.get('username', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    try:
+        client = MongoClient()
+        client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+        db = client.rosebud_dev
+        coll = db.cover
+
+        spotify_url = "https://open.spotify.com/album/%s" % spotify_id
+        mongo_stmt = {"spotifyAlbumUrl": spotify_url}
+        res = coll.find(mongo_stmt)
+        xyz = list(res)
+
+        if len(xyz):
+            response['found'] = True
+            response['spotifyAlbumUrl'] = spotify_url
+            response['mongodb_doc_id'] = str(xyz[0]['_id'])
+            response['message'] = 'This album already exists on Mongodb'
+            return response
+        else:
+            response['found'] = False
+
+        now = datetime.now()
+        now = now.replace(microsecond=0)
+        pretty_now = now.strftime("%Y/%m/%d %H:%M:%S")
+
+
+        spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+        album = spotify.album(spotify_id)
+
+        mongo_doc = {}
+        mongo_doc['name'] = album['name']
+        mongo_doc['author'] = album['artists'][0]['name']
+        mongo_doc['release_date'] = album['release_date']
+        mongo_doc['year'] = album['release_date'][0:4]
+        mongo_doc['location'] = album['release_date'][0:4]
+        mongo_doc['spotifyAlbumUrl'] = album['external_urls']['spotify']
+        mongo_doc['spotifyUrl'] = album['href']
+        mongo_doc['remarkable'] = False
+        mongo_doc['username'] = username
+        mongo_doc['location'] = (album['images'] or [{'url': './images/no-image-available.jpg'}])[0]['url']
+        mongo_doc['filename'] = (album['images'] or [{'url': './images/no-image-available.jpg'}])[0]['url']
+        mongo_doc['thumbnail'] = (album['images'] or [{'url': './images/no-image-available.jpg'}])[2]['url']
+        mongo_doc['create_ts'] = now
+        mongo_doc['update_ts'] = now
+        mongo_doc['created'] = pretty_now
+        mongo_doc['type'] = 'remote'
+
+        coll.insert_one(mongo_doc)
+
+        mongo_doc['_id'] = str(mongo_doc['_id'])
+        response['album'] = mongo_doc
+        response['message'] = 'Album \'%(name)s\' by \'%(author)s\' saved on Mongodb - Id: %(_id)s' % mongo_doc
+
+    except Exception as ee:
+        response['message'] = str(ee)
+        response['failure'] = True
+
+    return response
+
+@authentication
 def get_albums(request):
     """ Get a random cover from API """
     logger.debug("get albums pymnongo called")
