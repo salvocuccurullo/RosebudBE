@@ -48,9 +48,9 @@ def get_tvshows_list(request):
 
     out = [TvShowSerializer(instance=show).data for show in shows]
 
-    votes = [TvShowVote.objects.all().filter(tvshow_id=show.id_tv_show) for show in shows]
-    logger.debug(votes)
-    votes_out = [TvShowVoteSerializer(instance=vote).data for vote in votes]
+    #votes = [TvShowVote.objects.all().filter(tvshow_id=show.id_tv_show) for show in shows]
+    #logger.debug(votes)
+    #votes_out = [TvShowVoteSerializer(instance=vote).data for vote in votes]
 
     tvshow_stat = dict(\
                   TvShow.objects\
@@ -64,7 +64,7 @@ def get_tvshows_list(request):
     tvshow_stat = {'movie': tvshow_stat.get('movie', 0), 'serie': tvshow_stat.get('serie', 0)}
 
     response['payload'] = {}
-    response['payload']['tvshows'] = votes_out
+    response['payload']['tvshows'] = out
     response['payload']['stats'] = tvshow_stat
 
     return response
