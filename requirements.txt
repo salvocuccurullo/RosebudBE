@@ -1,4 +1,4 @@
-django>=4.0
+django==4.1.8
 djangorestframework
 mysqlclient
 django-cors-headers
