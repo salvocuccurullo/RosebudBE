@@ -212,6 +212,7 @@ def getShow(request):
     try:
         i_data = json.loads(request.body)
         show_id = i_data.get('show_id', '')
+        username = i_data.get('username', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -224,8 +225,12 @@ def getShow(request):
         show = TvShow.objects.all().filter(id_tv_show=show_id).first()
         show_serializer = TvShowSerializer(instance=show)
 
+        user = User.objects.all().filter(username=username).first()
+        me = TvShowVote.objects.all().filter(tvshow_id=show_id, user=user).first()
+        my_vote = TvShowVoteSerializer(instance=me)
+
         if show:
-            response['payload'] = {'show_id': show_id, 'show': show_serializer.data, 'votes': out}
+            response['payload'] = {'show_id': show_id, 'show': show_serializer.data, 'votes': out, "me": my_vote.data}
 
     return response
 
