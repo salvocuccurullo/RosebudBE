@@ -271,8 +271,8 @@ def get_albums(request):
         response['status_code'] = 400
         return response
 
-    logger.debug("="*80)
-    logger.debug(i_data.get('query', ''))
+    #logger.debug("="*80)
+    #logger.debug(i_data.get('query', ''))
 
     if not special and len(query) < 3:
         response['result'] = 'failure'
@@ -291,9 +291,9 @@ def get_albums(request):
     month = today.strftime("%m")
     day = today.strftime("%d")
 
-    logger.debug("special: %s" % special)
-    logger.debug("%s-%s-%s" % (year, month, day))
-    logger.debug("="*80)
+    #logger.debug("special: %s" % special)
+    #logger.debug("%s-%s-%s" % (year, month, day))
+    #logger.debug("="*80)
 
     client = MongoClient()
     client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
@@ -383,7 +383,7 @@ def set_remarkable(request):
             { "_id": ObjectId(doc_id) },
             { "$set": { "remarkable": remarkable } }
           )
-    logger.debug(pprint.pprint(res))
+    #logger.debug(pprint.pprint(res))
 
     return response
 
