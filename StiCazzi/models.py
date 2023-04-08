@@ -119,7 +119,7 @@ class TvShowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TvShow
-        fields = ['id_tv_show', 'title', 'media', 'tvshow_type', 'serie_season', 'miniseries', 'link', 'poster', 'user']
+        fields = ['id_tv_show', 'title', 'media', 'tvshow_type', 'serie_season', 'miniseries', 'link', 'poster', 'user', 'created', 'updated']
 
 
 class Minchiate(models.Model):
@@ -145,7 +145,7 @@ class TvShowVoteSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     class Meta:
         model = TvShowVote
-        fields = ['id_vote', 'vote', 'user', 'now_watching', 'season', 'episode', 'comment']
+        fields = ['id_vote', 'vote', 'user', 'now_watching', 'season', 'episode', 'comment', 'created', 'updated']
 
 
 class Like(models.Model):

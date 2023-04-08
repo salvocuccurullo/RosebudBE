@@ -44,7 +44,7 @@ def get_tvshows_list(request):
 
     shows = TvShow.objects.all().filter(
         Q(title__icontains=query) | Q(media__icontains=query)
-    ).order_by('-updated')[lower_bound:upper_bound]
+    ).order_by('-created')[lower_bound:upper_bound]
 
     out = [TvShowSerializer(instance=show).data for show in shows]
 
