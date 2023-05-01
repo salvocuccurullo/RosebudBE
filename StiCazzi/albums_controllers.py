@@ -179,6 +179,37 @@ def get_spotify_artists(request):
     return artists
 
 @authentication
+def get_spotify_tracks(request):
+    """ Get artists from SPOTIFY API """
+    logger.debug("get albums pymnongo called")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        query = i_data.get('query', '')
+        special = i_data.get('special', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+    results = spotify.search(query, type='track')
+    #logger.debug(pprint.pprint(results))
+
+    tracks = [
+        { "title": x['name'],
+          "picture": x['album']['images'][0]['url'],
+          "author": x['artists'][0]['name'],
+          "id":  x['id'],
+          "uri":  x['uri'],
+          "url": x['external_urls']['spotify']
+        } for x in results['tracks']['items'] if len(x['album']['images']) > 0 ]
+
+    return tracks
+
+@authentication
 def add_album(request):
     """
         Add new album on MongoDB. Data is retrieved from Spotify
@@ -248,6 +279,82 @@ def add_album(request):
         mongo_doc['_id'] = str(mongo_doc['_id'])
         response['album'] = mongo_doc
         response['message'] = 'Album \'%(name)s\' by \'%(author)s\' saved on Mongodb - Id: %(_id)s' % mongo_doc
+
+    except Exception as ee:
+        response['message'] = str(ee)
+        response['failure'] = True
+
+    return response
+
+@authentication
+def add_track(request):
+    """
+        Add new track on MongoDB. Data is retrieved from Spotify
+        There is a precheck in place for avoiding to add an existent track
+    """
+    logger.debug("add album to MongoDB")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        spotify_id = i_data.get('spotify_id', '')
+        username = i_data.get('username', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    try:
+        client = MongoClient()
+        client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+        db = client.rosebud_dev
+        coll = db.song
+
+        spotify_url = "https://open.spotify.com/album/%s" % spotify_id
+        mongo_stmt = {"spotifyAlbumUrl": spotify_url}
+        res = coll.find(mongo_stmt)
+        xyz = list(res)
+
+        if len(xyz):
+            response['found'] = True
+            response['spotifyAlbumUrl'] = spotify_url
+            response['mongodb_doc_id'] = str(xyz[0]['_id'])
+            response['message'] = 'This album already exists on Mongodb'
+            return response
+        else:
+            response['found'] = False
+
+        now = datetime.now()
+        now = now.replace(microsecond=0)
+        pretty_now = now.strftime("%Y/%m/%d %H:%M:%S")
+
+        spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+        track = spotify.track(spotify_id)
+        logger.debug(pprint.pprint(track))
+
+        mongo_doc = {}
+        mongo_doc['name'] = track['name']
+        mongo_doc['author'] = track['artists'][0]['name']
+        mongo_doc['release_date'] = track['album']['release_date']
+        mongo_doc['year'] = track['album']['release_date'][0:4]
+        mongo_doc['spotifyAlbumUrl'] = track['external_urls']['spotify']
+        mongo_doc['spotifyUrl'] = track['href']
+        mongo_doc['remarkable'] = False
+        mongo_doc['username'] = username
+        mongo_doc['location'] = (track['album']['images'] or [{'url': './images/no-image-available.jpg'}])[0]['url']
+        mongo_doc['filename'] = (track['album']['images'] or [{'url': './images/no-image-available.jpg'}])[0]['url']
+        mongo_doc['thumbnail'] = (track['album']['images'] or [{'url': './images/no-image-available.jpg'}])[2]['url']
+        mongo_doc['create_ts'] = now
+        mongo_doc['update_ts'] = now
+        mongo_doc['created'] = pretty_now
+        mongo_doc['type'] = 'remote'
+
+        coll.insert_one(mongo_doc)
+
+        mongo_doc['_id'] = str(mongo_doc['_id'])
+        response['track'] = mongo_doc
+        response['message'] = 'Track \'%(name)s\' by \'%(author)s\' saved on Mongodb - Id: %(_id)s' % mongo_doc
 
     except Exception as ee:
         response['message'] = str(ee)
