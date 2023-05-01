@@ -201,6 +201,7 @@ def get_spotify_tracks(request):
     tracks = [
         { "title": x['name'],
           "picture": x['album']['images'][0]['url'],
+          "release_date": x['album']['release_date'],
           "author": x['artists'][0]['name'],
           "id":  x['id'],
           "uri":  x['uri'],
