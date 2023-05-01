@@ -99,6 +99,7 @@ urlpatterns = [
     url(r'^api/commit', controllers.get_last_commit),
 
     url(r'^api/getAlbums', albums_controllers.get_albums),
+    url(r'^api/getTracks', albums_controllers.get_tracks),
     url(r'^api/getSpotifyAlbumsXArtist', albums_controllers.get_spotify_albums_x_artist),
     url(r'^api/getSpotifyArtists', albums_controllers.get_spotify_artists),
     url(r'^api/getSpotifyTracks', albums_controllers.get_spotify_tracks),

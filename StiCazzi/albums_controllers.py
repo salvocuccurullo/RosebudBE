@@ -365,7 +365,7 @@ def add_track(request):
 
 @authentication
 def get_albums(request):
-    """ Get a random cover from API """
+    """ Get albums from MongoDB """
     logger.debug("get albums pymnongo called")
     response = {}
 
@@ -453,6 +453,100 @@ def get_albums(request):
 
     response["query"] = query
     response["albums"] = xyz
+    response["size"] = len(xyz)
+
+    return response
+
+@authentication
+def get_tracks(request):
+    """ Get tracks from MongoDB """
+    logger.debug("get albums pymnongo called")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        query = i_data.get('query', '')
+        special = i_data.get('special', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    #logger.debug("="*80)
+    #logger.debug(i_data.get('query', ''))
+
+    if not special and len(query) < 3:
+        response['result'] = 'failure'
+        response['message'] = 'Min query size is 3'
+        response['status_code'] = 400
+        logger.debug("no special and query length < 3")
+        return response
+
+    today = date.today() # current date
+    if special and special == "yesterday":
+        today = today + timedelta(days=-1)
+    elif special and special == "tomorrow":
+        today = today + timedelta(days=+1)
+
+    year = today.strftime("%Y")
+    month = today.strftime("%m")
+    day = today.strftime("%d")
+
+    #logger.debug("special: %s" % special)
+    #logger.debug("%s-%s-%s" % (year, month, day))
+    #logger.debug("="*80)
+
+    client = MongoClient()
+    client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+    db = client.rosebud_dev
+    coll = db.song
+
+    if query and special and special in ('all'):
+        mongo_stmt = { "$or": [
+                        {"name": { "$regex": query, "$options" : "i"}},
+                        {"author": { "$regex": query, "$options" : "i"}},
+                    ]}
+    elif query and not special:
+        mongo_stmt = { "$and": [
+                        {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },   #release date exists and its lenght > 7 (full date)
+                        { "$or": [
+                            {"name": { "$regex": query, "$options" : "i"}},
+                            {"author": { "$regex": query, "$options" : "i"}},
+                        ]}
+                    ]}
+    elif special and special == 'monthly':
+        mongo_stmt = { "$and": [
+                        {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
+                        {"release_date": { "$regex": ".*\-%s\-.*" % month}}
+                    ]}
+    elif special and special in ('today', 'yesterday', 'tomorrow'):
+        mongo_stmt = { "$and": [
+                        {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
+                        {"release_date": { "$regex": ".*\-%s\-%s" % (month, day)}}
+                    ]}
+    else:
+        response['result'] = 'failure'
+        response['message'] = 'Invalid data!'
+        response['status_code'] = 400
+        return response
+
+    albums = coll.find(mongo_stmt)
+    xyz = list(albums)
+    xyz = [ \
+        {
+        "id": str(x['_id']),
+        "title": x['name'], 
+        "author": x['author'], 
+        "location": x['location'],
+        "thumbnail": x['thumbnail'],
+        "spotifyAlbumUrl": x['spotifyAlbumUrl'],
+        "release_date": x.get('release_date', ''), 
+        "remarkable": x.get('remarkable', '')
+        } for x in xyz]
+
+    response["query"] = query
+    response["tracks"] = xyz
     response["size"] = len(xyz)
 
     return response
