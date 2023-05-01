@@ -15,3 +15,7 @@ azure-storage-blob
 python-telegram-bot
 pymongo
 spotipy
+pyyaml
+ua-parser
+user-agents
+django-user-agents
