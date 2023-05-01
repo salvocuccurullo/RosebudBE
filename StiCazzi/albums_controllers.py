@@ -332,7 +332,7 @@ def add_track(request):
 
         spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
         track = spotify.track(spotify_id)
-        logger.debug(pprint.pprint(track))
+        #logger.debug(pprint.pprint(track))
 
         mongo_doc = {}
         mongo_doc['name'] = track['name']
@@ -460,7 +460,7 @@ def get_albums(request):
 @authentication
 def get_tracks(request):
     """ Get tracks from MongoDB """
-    logger.debug("get albums pymnongo called")
+    logger.debug("get tracks pymnongo called")
     response = {}
 
     try:
