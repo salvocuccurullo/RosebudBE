@@ -562,6 +562,7 @@ def set_remarkable(request):
         i_data = json.loads(request.body)
         doc_id = i_data.get('doc_id', '')
         remarkable = i_data.get('remarkable', '')
+        item_type = i_data.get('item_type', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -580,7 +581,10 @@ def set_remarkable(request):
     client = MongoClient()
     client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
     db = client.rosebud_dev
-    coll = db.cover
+    if item_type == "album":
+        coll = db.cover
+    elif item_type == "track":
+        coll = db.song
     res = coll.update_one( 
             { "_id": ObjectId(doc_id) },
             { "$set": { "remarkable": remarkable } }
