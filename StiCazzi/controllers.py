@@ -270,7 +270,8 @@ def login(request):
             # logger.debug("=======================================")
             # logger.debug(browser_device_id)
             # logger.debug("=======================================")
-            browser_device_id = base64.b64encode(browser_device_id)
+            browser_device_id = base64.b64encode(bytes(browser_device_id, 'utf-8'))
+            browser_device_id = browser_device_id.decode('utf-8')
 
         if users:
             pwd_ok = check_password(password, users.first().password)
