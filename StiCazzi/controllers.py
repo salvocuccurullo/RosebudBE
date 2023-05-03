@@ -258,9 +258,19 @@ def login(request):
             fcm_token = ""
 
         out = ""
+        browser_device_id = ""
         extra_info = {}
         rosebud_uid = uuid.uuid4()
         users = User.objects.filter(username=username)
+
+        if device_platform == "browser":
+            browser_device_id = request.user_agent.browser.family
+            browser_device_id += request.user_agent.os.family
+            browser_device_id += request.user_agent.device.family
+            # logger.debug("=======================================")
+            # logger.debug(browser_device_id)
+            # logger.debug("=======================================")
+            browser_device_id = base64.b64encode(browser_device_id)
 
         if users:
             pwd_ok = check_password(password, users.first().password)
@@ -270,7 +280,7 @@ def login(request):
                 current_user = users.first()
                 current_user.save()
 
-                user_device = UserDevice.objects.filter(user=current_user, device_id=device_id)
+                user_device = UserDevice.objects.filter(user=current_user, device_id=browser_device_id)
                 if user_device:
                     ud = user_device.first()
                     ud.rosebud_id = str(rosebud_uid)
@@ -282,7 +292,7 @@ def login(request):
                     ud.save()
                 else:
                     user_device = UserDevice(user=current_user,
-                        device_id=device_id,
+                        device_id=browser_device_id,
                         rosebud_id=str(rosebud_uid),
                         device_version=device_version,
                         device_platform=device_platform,
