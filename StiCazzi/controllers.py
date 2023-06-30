@@ -89,19 +89,7 @@ def authentication(fn):
 
         uid_ts = None
         rosebud_uid_stored = ''
-        reworked_device_id = device_id
-
-        if device_platform == "browser":
-            reworked_device_id = request.user_agent.browser.family
-            reworked_device_id += request.user_agent.os.family
-            reworked_device_id += request.user_agent.device.family
-            # logger.debug("=======================================")
-            # logger.debug(reworked_device_id)
-            # logger.debug("=======================================")
-            reworked_device_id = base64.b64encode(bytes(reworked_device_id, 'utf-8'))
-            reworked_device_id = reworked_device_id.decode('utf-8')
-
-        user_device=UserDevice.objects.filter(user=current_user, device_id=reworked_device_id)
+        user_device=UserDevice.objects.filter(user=current_user, device_id=device_id)
         if user_device:
             rosebud_uid_stored = user_device.first().rosebud_id
             uid_ts = user_device.first().updated
