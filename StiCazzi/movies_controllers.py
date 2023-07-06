@@ -365,6 +365,12 @@ def translator_little_helper(input):
 
 def create_update_vote(current_user, tvshow, vote_dict):
     """ Create Update vote """
+
+    media_dict = {}
+    media_catalog = Catalogue.objects.filters(cat_type="media_type")
+    for m in media_catalog:
+        media_dict[m.name] = m.label
+
     tvsv = TvShowVote.objects.filter(user=current_user, tvshow=tvshow[0])
     if not tvsv:
         tvsv = TvShowVote(vote=vote_dict['vote'], user=current_user, tvshow=tvshow[0], \
@@ -379,14 +385,14 @@ def create_update_vote(current_user, tvshow, vote_dict):
         if not vote_dict["nw"]:
             send_notification(
                 type="new_vote", \
-                title="%s voted for a %s..." % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                title="%s voted for a %s (%s)" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type), media_dict[tvshow[0].media]), \
                 message="%s - Vote: %s " % (tvshow[0].title, vote_dict["vote"]), \
                 platform="mobile", \
                 username=current_user.username)
 
             send_notification(
                 type="new_vote", \
-                title="<i>%s</i> voted for a %s" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type)), \
+                title="<i>%s</i> voted for a %s (%s)" % (current_user.username, translator_little_helper(tvshow[0].tvshow_type), media_dict[tvshow[0].media]), \
                 message="<b>%s</b> - Vote: <b>%s</b> " % (tvshow[0].title, vote_dict["vote"]), \
                 platform="telegram", \
                 username=current_user.username)
@@ -522,6 +528,11 @@ def savemovienew(request):
     # logger.debug (title)
     # logger.debug (media)
     # logger.debug (type)
+
+    media_dict = {}
+    media_catalog = Catalogue.objects.filters(cat_type="media_type")
+    for m in media_catalog:
+        media_dict[m.name] = m.label
 
     if uploaded_file:
         logger.debug("A file has been uploaded... %s", uploaded_file.name)
@@ -672,7 +683,7 @@ def savemovienew(request):
 
                 send_notification(
                     type="new_movie", \
-                    title="%s added a new %s" % (username, translator_little_helper(tvshow_type)), \
+                    title="%s added a new %s (%s)" % (username, translator_little_helper(tvshow_type), media_dict[media]), \
                     message="%s %s" % (title, season_desc), \
                     image_url=poster_name, \
                     platform="mobile", \
@@ -680,7 +691,7 @@ def savemovienew(request):
 
                 send_notification(
                     type="new_movie", \
-                    title="<i>%s</i> added a new %s" % (username, translator_little_helper(tvshow_type)), \
+                    title="<i>%s</i> added a new %s (%s)" % (username, translator_little_helper(tvshow_type), media_dict[media]), \
                     message="<b>%s</b> %s" % (title, season_desc), \
                     image_url=poster_name, \
                     platform="telegram", \
