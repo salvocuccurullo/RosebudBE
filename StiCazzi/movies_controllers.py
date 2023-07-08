@@ -367,7 +367,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
     """ Create Update vote """
 
     media_dict = {}
-    media_catalog = Catalogue.objects.filters(cat_type="media_type")
+    media_catalog = Catalogue.objects.filter(cat_type="media_type")
     for m in media_catalog:
         media_dict[m.name] = m.label
 
@@ -530,7 +530,7 @@ def savemovienew(request):
     # logger.debug (type)
 
     media_dict = {}
-    media_catalog = Catalogue.objects.filters(cat_type="media_type")
+    media_catalog = Catalogue.objects.filter(cat_type="media_type")
     for m in media_catalog:
         media_dict[m.name] = m.label
 
