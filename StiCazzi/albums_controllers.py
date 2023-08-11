@@ -31,9 +31,11 @@ def get_stats(request):
     client = MongoClient()
     client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
     db = client.rosebud_dev
-    out = db.command("collstats", "cover")
+    covers_c = db.command("collstats", "cover")
+    songs_c = db.command("collstats", "cover")
     response['payload'] = {}
-    response['payload']['remote_covers'] = out['count']     # backward compatibility, it will be fixed later
+    response['payload']['remote_covers'] = covers_c['count']     # backward compatibility, it will be fixed later
+    response['payload']['remote_songs'] = songs_c['count']     # backward compatibility, it will be fixed later
 
     return response
 
