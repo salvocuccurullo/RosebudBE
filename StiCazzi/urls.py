@@ -109,6 +109,7 @@ urlpatterns = [
     url(r'^api/addTrack', albums_controllers.add_track),
     url(r'^api/getOneAlbum', albums_controllers.get_one_album),
     url(r'^api/setOneAlbum', albums_controllers.set_one_album),
+    url(r'^api/deleteOneAlbum', albums_controllers.delete_one_album),
     url(r'^api/getStats', albums_controllers.get_stats),
 
 ]

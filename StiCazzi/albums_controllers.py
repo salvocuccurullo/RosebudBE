@@ -91,6 +91,8 @@ def set_one_album(request):
         i_data = json.loads(request.body)
         doc_id = i_data.get('doc_id', '')
         release_date = i_data.get('release_date', '')
+        author = i_data.get('author', '')
+        title = i_data.get('title', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -106,7 +108,44 @@ def set_one_album(request):
     try:
         res = coll.update_one(
                 {"_id": ObjectId(doc_id)},
-                {"$set": {"release_date": release_date}}
+                {"$set": {
+                    "release_date": release_date,
+                    "author": author,
+                    "title": title
+                    }
+                }
+        )
+    except Exception as e:
+        response['result'] = 'failure'
+        response['message'] = str(e)
+        response['status_code'] = 400
+
+    return response
+
+@authentication
+def delete_one_album(request):
+    """ Delete one album from Mongo """
+    logger.debug("delete one album pymnongo called")
+    response = {}
+
+    try:
+        i_data = json.loads(request.body)
+        doc_id = i_data.get('doc_id', '')
+    except (TypeError, ValueError):
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
+
+    client = MongoClient()
+    client = MongoClient(os.environ['MONGO_SERVER_URL_PYMONGO'])
+
+    db = client.rosebud_dev
+    coll = db.cover
+
+    try:
+        res = coll.update_one(
+            {"_id": ObjectId(doc_id)}
         )
     except Exception as e:
         response['result'] = 'failure'
@@ -295,7 +334,7 @@ def add_track(request):
         Add new track on MongoDB. Data is retrieved from Spotify
         There is a precheck in place for avoiding to add an existent track
     """
-    logger.debug("add album to MongoDB")
+    logger.debug("add track to MongoDB")
     response = {}
 
     try:
