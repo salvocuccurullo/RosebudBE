@@ -111,13 +111,14 @@ def set_one_album(request):
                 {"$set": {
                     "release_date": release_date,
                     "author": author,
-                    "title": title
+                    "name": title
                     }
                 }
         )
     except Exception as e:
         response['result'] = 'failure'
         response['message'] = str(e)
+        logger.error(str(e))
         response['status_code'] = 400
 
     return response
@@ -144,12 +145,13 @@ def delete_one_album(request):
     coll = db.cover
 
     try:
-        res = coll.update_one(
+        res = coll.delete_one(
             {"_id": ObjectId(doc_id)}
         )
     except Exception as e:
         response['result'] = 'failure'
         response['message'] = str(e)
+        logger.error(str(e))
         response['status_code'] = 400
 
     return response
