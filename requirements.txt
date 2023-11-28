@@ -9,7 +9,7 @@ geopy
 GitPython
 oauthlib
 google-auth
-django-dbbackup==4.0.0b0
+django-dbbackup==4.0.2
 django-storages[boto3]
 azure-storage-blob
 python-telegram-bot
