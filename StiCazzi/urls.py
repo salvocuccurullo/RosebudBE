@@ -115,4 +115,6 @@ urlpatterns = [
     url(r'^api/deleteOneAlbum', albums_controllers.delete_one_album),
     url(r'^api/getStats', albums_controllers.get_stats),
 
+    url('', include('django_prometheus.urls')),
+
 ]
