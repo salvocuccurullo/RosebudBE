@@ -16,7 +16,8 @@
 """
 
 #from django.conf.urls import url, include      # removed after 4.0 migration
-from django.urls import include, re_path as url          # added after 4.0 migration
+from django.urls import re_path as url          # added after 4.0 migration
+from django.urls import include
 from django.contrib import admin
 from StiCazzi import views, controllers, movies_controllers, covers_controllers, misc_controllers, albums_controllers
 
@@ -114,7 +115,4 @@ urlpatterns = [
     url(r'^api/setOneAlbum', albums_controllers.set_one_album),
     url(r'^api/deleteOneAlbum', albums_controllers.delete_one_album),
     url(r'^api/getStats', albums_controllers.get_stats),
-
-    url('', include('django_prometheus.urls')),
-
 ]

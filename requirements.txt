@@ -20,4 +20,3 @@ ua-parser
 user-agents
 django-user-agents
 wget
-django-exporter
