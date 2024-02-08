@@ -63,6 +63,21 @@ def get_tvshows_list(request):
                   )
     tvshow_stat = {'movie': tvshow_stat.get('movie', 0), 'serie': tvshow_stat.get('serie', 0)}
 
+    for show in out:
+        avg_vote = 0
+        now_watchers = 0
+        l = TvShowVote.objects.all().filter(tvshow_id=show['id_tv_show'])
+        for vote in l:
+            if vote.now_watching == True:
+                now_watchers += 1
+            else:
+                avg_vote += vote.vote
+        if l and len(l) > 0:
+            avg_vote = avg_vote / len(l)
+
+        show['avg_vote'] = avg_vote
+        show['now_watchers'] = now_watchers
+
     response['payload'] = {}
     response['payload']['tvshows'] = out
     response['payload']['stats'] = tvshow_stat
