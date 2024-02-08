@@ -75,7 +75,7 @@ def get_tvshows_list(request):
         if l and len(l) > 0:
             avg_vote = avg_vote / len(l)
 
-        show['avg_vote'] = avg_vote
+        show['avg_vote'] = round(avg_vote, 2)
         show['now_watchers'] = now_watchers
 
     response['payload'] = {}
