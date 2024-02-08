@@ -66,14 +66,16 @@ def get_tvshows_list(request):
     for show in out:
         avg_vote = 0
         now_watchers = 0
+        valid_votes = 0
         l = TvShowVote.objects.all().filter(tvshow_id=show['id_tv_show'])
         for vote in l:
             if vote.now_watching == True:
                 now_watchers += 1
             else:
                 avg_vote += vote.vote
-        if l and len(l) > 0:
-            avg_vote = avg_vote / len(l)
+                valid_votes += 1
+        if valid_votes > 0:
+            avg_vote = avg_vote / valid_votes
 
         show['avg_vote'] = round(avg_vote, 2)
         show['now_watchers'] = now_watchers
