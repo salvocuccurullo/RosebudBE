@@ -325,6 +325,25 @@ def login(request):
 
     return JsonResponse(response_data)
 
+@authentication
+def logout(request):
+    """
+    Controller: logout
+    """
+    logger.debug("get logout called")
+    response = {}
+
+    i_data = json.loads(request.body)
+    rosebud_uid = i_data.get('rosebud_uid', '')
+    ud = UserDevice.objects.filter(rosebud_id=rosebud_uid)
+    if ud:
+        user_device = ud.first()
+        try:
+            user_device.delete()
+            response['result'] = "Users %s logged properly logged out from %s %s." % (user_device.user.username, user_device.device_platform, user_device.device_version)
+        except:
+            response['result'] = "Error during user %s logout with %s %s." % (user_device.user.username, user_device.device_platform, user_device.device_version)
+    return response
 
 @authentication
 def geolocation(request):

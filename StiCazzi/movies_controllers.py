@@ -86,139 +86,139 @@ def get_tvshows_list(request):
 
     return response
 
-@authentication
-def get_tvshows_new_opt(request):
-    """ Get Tvshow New """
-    logger.debug("Get Tvshows new opt called")
-    response = {'result': 'success'}
+# @authentication
+# def get_tvshows_new_opt(request):
+#     """ Get Tvshow New """
+#     logger.debug("Get Tvshows new opt called")
+#     response = {'result': 'success'}
 
-    try:
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        query = i_data.get('query', '')
-        limit = i_data.get('limit', 40)
-        current_page = i_data.get('current_page', 1)
-        lazy_load = i_data.get('lazy_load', True)
-    except (TypeError, ValueError):
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        return JsonResponse(response, status=400)
+#     try:
+#         i_data = json.loads(request.body)
+#         username = i_data.get('username', '')
+#         query = i_data.get('query', '')
+#         limit = i_data.get('limit', 40)
+#         current_page = i_data.get('current_page', 1)
+#         lazy_load = i_data.get('lazy_load', True)
+#     except (TypeError, ValueError):
+#         response['result'] = 'failure'
+#         response['message'] = 'Bad input format'
+#         return JsonResponse(response, status=400)
 
-    #logger.debug("Current page: %s", current_page)
+#     #logger.debug("Current page: %s", current_page)
 
-    if query and len(query) < 4:
-        if int(current_page) == 1:
-            logger.debug("Query too short: %s", query)
-            response['result'] = 'failure'
-            response['message'] = 'Query String too short'
-            return JsonResponse(response, status=404)
-        else:
-            query = ''
+#     if query and len(query) < 4:
+#         if int(current_page) == 1:
+#             logger.debug("Query too short: %s", query)
+#             response['result'] = 'failure'
+#             response['message'] = 'Query String too short'
+#             return JsonResponse(response, status=404)
+#         else:
+#             query = ''
 
-    out_list = []
-    movie_list = TvShow.objects.filter(
-        Q(title__icontains=query) | Q(media__icontains=query)
-    ).order_by('-updated')
+#     out_list = []
+#     movie_list = TvShow.objects.filter(
+#         Q(title__icontains=query) | Q(media__icontains=query)
+#     ).order_by('-updated')
 
-    lower_bound = limit * (current_page - 1)
-    upper_bound = current_page * limit
+#     lower_bound = limit * (current_page - 1)
+#     upper_bound = current_page * limit
 
-    if lazy_load:
-        bounded = movie_list[lower_bound: upper_bound]
-    else:
-        bounded = movie_list
+#     if lazy_load:
+#         bounded = movie_list[lower_bound: upper_bound]
+#     else:
+#         bounded = movie_list
 
-    # Adding all NW
-    if not query and current_page == 1:
-        nwtv = TvShowVote.objects.filter(now_watching=True)
-        nwtv_list = [show.tvshow for show in nwtv if show.tvshow not in bounded]
-        nwtv_list = list(set(nwtv_list))
-        bounded = list(bounded) + nwtv_list
-    # End Adding all NW
+#     # Adding all NW
+#     if not query and current_page == 1:
+#         nwtv = TvShowVote.objects.filter(now_watching=True)
+#         nwtv_list = [show.tvshow for show in nwtv if show.tvshow not in bounded]
+#         nwtv_list = list(set(nwtv_list))
+#         bounded = list(bounded) + nwtv_list
+#     # End Adding all NW
 
-    for tvs in bounded:
-        # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
-        movie_created = tvs.created.strftime("%d %B %Y ")
-        dtsec = time.mktime(tvs.created.timetuple())
+#     for tvs in bounded:
+#         # dt = tvs.created.strftime("%A, %d. %B %Y %I:%M%p")
+#         movie_created = tvs.created.strftime("%d %B %Y ")
+#         dtsec = time.mktime(tvs.created.timetuple())
 
-        tvshow_votes = TvShowVote.objects.filter(tvshow=tvs)
-        avg_vote = tvshow_votes.filter(now_watching=0).aggregate(avg_vote=Avg("vote"))['avg_vote']
-        if avg_vote:
-            avg_vote_str = "%.2f" % avg_vote
-        else:
-            avg_vote_str = "0.0"
+#         tvshow_votes = TvShowVote.objects.filter(tvshow=tvs)
+#         avg_vote = tvshow_votes.filter(now_watching=0).aggregate(avg_vote=Avg("vote"))['avg_vote']
+#         if avg_vote:
+#             avg_vote_str = "%.2f" % avg_vote
+#         else:
+#             avg_vote_str = "0.0"
 
-        dragon = tvshow_votes.values('id_vote','episode', 'season', 'comment', 'now_watching')\
-                             .annotate(us_id_vote=F('id_vote'))\
-                             .annotate(us_username=F('user__username'))\
-                             .annotate(us_name=F('user__name'))\
-                             .annotate(us_vote=Cast('vote', CharField()))\
-                             .annotate(us_date=Cast('created', CharField()))\
-                             .annotate(us_update=Cast('updated', CharField()))
+#         dragon = tvshow_votes.values('id_vote','episode', 'season', 'comment', 'now_watching')\
+#                              .annotate(us_id_vote=F('id_vote'))\
+#                              .annotate(us_username=F('user__username'))\
+#                              .annotate(us_name=F('user__name'))\
+#                              .annotate(us_vote=Cast('vote', CharField()))\
+#                              .annotate(us_date=Cast('created', CharField()))\
+#                              .annotate(us_update=Cast('updated', CharField()))
 
-        u_v_dict = {}
-        for rec in list(dragon):
-            u_v_dict[rec['us_username']] = rec
+#         u_v_dict = {}
+#         for rec in list(dragon):
+#             u_v_dict[rec['us_username']] = rec
 
-        tvshow_dict = {'title': tvs.title,
-                       'media': tvs.media,
-                       # 'vote': str_vote1,
-                       'username': tvs.user.username,
-                       'name': tvs.user.name,
-                       'poster': tvs.poster,
-                       'datetime_sec': dtsec,
-                       'u_v_dict': u_v_dict,
-                       'type': tvs.type,
-                       'tvshow_type': tvs.tvshow_type,
-                       'director': tvs.director,
-                       'year': tvs.year,
-                       'id': tvs.id_tv_show,
-                       'link': tvs.link,
-                       'datetime': movie_created,
-                       'avg_vote': avg_vote_str,
-                       'serie_season': tvs.serie_season,
-                       'miniseries': tvs.miniseries
-                      }
-        out_list.append(tvshow_dict)
+#         tvshow_dict = {'title': tvs.title,
+#                        'media': tvs.media,
+#                        # 'vote': str_vote1,
+#                        'username': tvs.user.username,
+#                        'name': tvs.user.name,
+#                        'poster': tvs.poster,
+#                        'datetime_sec': dtsec,
+#                        'u_v_dict': u_v_dict,
+#                        'type': tvs.type,
+#                        'tvshow_type': tvs.tvshow_type,
+#                        'director': tvs.director,
+#                        'year': tvs.year,
+#                        'id': tvs.id_tv_show,
+#                        'link': tvs.link,
+#                        'datetime': movie_created,
+#                        'avg_vote': avg_vote_str,
+#                        'serie_season': tvs.serie_season,
+#                        'miniseries': tvs.miniseries
+#                       }
+#         out_list.append(tvshow_dict)
 
-    has_more = True
-    if len(movie_list) <= upper_bound:
-        has_more = False
-    if not lazy_load:
-        has_more = False
+#     has_more = True
+#     if len(movie_list) <= upper_bound:
+#         has_more = False
+#     if not lazy_load:
+#         has_more = False
 
-    #logger.debug("List size: %s", str(len(bounded)))
-    #logger.debug("Has more: %s", str(has_more))
-    #logger.debug("Query: %s", query)
-    #logger.debug("Lower bound: %s", str(lower_bound))
-    #logger.debug("Upper bound: %s", str(upper_bound))
+#     #logger.debug("List size: %s", str(len(bounded)))
+#     #logger.debug("Has more: %s", str(has_more))
+#     #logger.debug("Query: %s", query)
+#     #logger.debug("Lower bound: %s", str(lower_bound))
+#     #logger.debug("Upper bound: %s", str(upper_bound))
 
-    tvshow_stat = dict(\
-                  TvShow.objects\
-                      .filter(
-                          Q(title__icontains=query) | Q(media__icontains=query)
-                      )\
-                      .values("tvshow_type")\
-                      .annotate(count=Count('tvshow_type'))\
-                      .values_list("tvshow_type", "count")
-                  )
-    tvshow_stat = {'movie': tvshow_stat.get('movie', 0), 'serie': tvshow_stat.get('serie', 0)}
+#     tvshow_stat = dict(\
+#                   TvShow.objects\
+#                       .filter(
+#                           Q(title__icontains=query) | Q(media__icontains=query)
+#                       )\
+#                       .values("tvshow_type")\
+#                       .annotate(count=Count('tvshow_type'))\
+#                       .values_list("tvshow_type", "count")
+#                   )
+#     tvshow_stat = {'movie': tvshow_stat.get('movie', 0), 'serie': tvshow_stat.get('serie', 0)}
 
-    votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
-                 .values("name")\
-                 .annotate(count=Count('user'))\
-                 .order_by('-count')
-    votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
+#     votes_user = TvShowVote.objects.annotate(name=F('user__username'))\
+#                  .values("name")\
+#                  .annotate(count=Count('user'))\
+#                  .order_by('-count')
+#     votes_user = [{"name": rec['name'], "count": rec['count']} for rec in list(votes_user)]
 
-    response['payload'] = {'stat': tvshow_stat,
-                           'tvshows': out_list,
-                           'query': query,
-                           'has_more': has_more,
-                           'votes_user': votes_user,
-                           'total_show': movie_list.count()
-                          }
+#     response['payload'] = {'stat': tvshow_stat,
+#                            'tvshows': out_list,
+#                            'query': query,
+#                            'has_more': has_more,
+#                            'votes_user': votes_user,
+#                            'total_show': movie_list.count()
+#                           }
 
-    return response
+#     return response
 
 @authentication
 def getShow(request):
@@ -484,7 +484,7 @@ def create_update_vote(current_user, tvshow, vote_dict):
                 send_notification(
                     type="new_comment", \
                     title="<i>%s</i> commented a %s" % (current_user.username,  translator_little_helper(tvshow[0].tvshow_type)), \
-                    message='<b>%s</b> \n <tg-spoiler>%s</tg-spoiler>' % (tvshow[0].title, vote_dict["comment"]), \
+                    message='<b>%s</b>\n<tg-spoiler>%s</tg-spoiler>' % (tvshow[0].title, vote_dict["comment"]), \
                     platform="telegram", \
                     username=current_user.username)
 

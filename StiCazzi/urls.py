@@ -36,7 +36,6 @@ urlpatterns = [
     url(r'^getByMonth/$', misc_controllers.get_sum_by_month),
     url(r'^getconfigs2$', controllers.get_configs_new),
 
-    url(r'^getTvShows3$', movies_controllers.get_tvshows_new_opt),
     #url(r'^deletemovie$', movies_controllers.deletemovie),
     url(r'^savemovienew$', movies_controllers.savemovienew),
     url(r'^moviesct/$', movies_controllers.get_movies_ct, name='movie'),
@@ -56,6 +55,7 @@ urlpatterns = [
     url(r'^getcatalogue$', movies_controllers.get_catalogue),
 
     url(r'^login$', controllers.login),
+    url(r'^logout$', controllers.logout),
     url(r'^setFBToken2$', controllers.set_fb_token2),
     url(r'^refreshtoken$', controllers.refresh_token),
 
@@ -67,7 +67,6 @@ urlpatterns = [
     url(r'^api/randomSong$', controllers.get_random_song, name='index'),
     url(r'^api/getconfigs2$', controllers.get_configs_new),
 
-    url(r'^api/getTvShows3$', movies_controllers.get_tvshows_new_opt),
     url(r'^api/getTvShowsList$', movies_controllers.get_tvshows_list),
     url(r'^api/getShow$', movies_controllers.getShow),
     #url(r'^api/deletemovie$', movies_controllers.deletemovie),
@@ -92,6 +91,7 @@ urlpatterns = [
     url(r'^api/getmediastats$', movies_controllers.getMediaStats),
 
     url(r'^api/login$', controllers.login),
+    url(r'^api/logout$', controllers.logout),
     url(r'^api/fblogin$', controllers.fblogin),
     url(r'^api/setFBToken2$', controllers.set_fb_token2),
     url(r'^api/refreshtoken$', controllers.refresh_token),
