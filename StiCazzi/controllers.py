@@ -300,7 +300,7 @@ def login(request):
         notification = Notification(
             type="login", \
             title="%s" % username, \
-            message="Device: %s - Version: %s - App Version: %s - Succeded: %s" % (device_platform, device_version, app_version, logged), \
+            message="- Device: %s\n- Version: %s\n- App Version: %s\n- Succeeded: %s" % (device_platform, device_version, app_version, logged), \
             username=username)
         notification.save()
 
