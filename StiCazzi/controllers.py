@@ -583,16 +583,18 @@ def set_fb_token2(request):
         fcm_token = i_data.get('fcm_token', '')
 
         if rosebud_uid and fcm_token:
-            ud = UserDevice.objects.filter(rosebud_uid=rosebud_uid).first()
-            ud.fcm_token = fcm_token
-            ud.save()
-            message = 'FCM token successfully set for %s %s' % (ud.device_platform, ud.device_version)
-            response['message'] = message
-            logger.debug(response['message'])
-    except:
+            ud = UserDevice.objects.filter(rosebud_id=rosebud_uid).first()
+            if ud:
+                ud.fcm_token = fcm_token
+                ud.save()
+                message = 'FCM token successfully set for %s %s' % (ud.device_platform, ud.device_version)
+                response['message'] = message
+                logger.debug(message)
+    except Exception as ee:
         response['result'] = 'failure'
-        response['message'] = 'Bad input format'
+        response['message'] = 'Bad input format: ' + str(ee)
         response['status_code'] = 400
+        logger.debug("Error: " + str(ee))
         return response
 
     return response
