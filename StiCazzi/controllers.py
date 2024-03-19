@@ -582,7 +582,7 @@ def set_fb_token2(request):
         rosebud_uid = i_data.get('rosebud_uid', '')
         fcm_token = i_data.get('fcm_token', '')
 
-        if rosebud_uid:
+        if rosebud_uid and fcm_token:
             ud = UserDevice.objects.filter(rosebud_uid=rosebud_uid).first()
             ud.fcm_token = fcm_token
             ud.save()
