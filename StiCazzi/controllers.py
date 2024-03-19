@@ -574,12 +574,26 @@ def set_fb_token2(request):
     """
     Controller:
     """
-    from types import SimpleNamespace
-    logger.debug("Set FB Token 2 called")
+    logger.debug("Set FCN Token called")
     response = {}
 
-    i_data = json.loads(request.body)
-    n = SimpleNamespace(**i_data)
+    try:
+        i_data = json.loads(request.body)
+        rosebud_uid = i_data.get('rosebud_uid', '')
+        fcm_token = i_data.get('fcm_token', '')
+
+        if rosebud_uid:
+            ud = UserDevice.objects.filter(rosebud_uid=rosebud_uid).first()
+            ud.fcm_token = fcm_token
+            ud.save()
+            message = 'FCM token successfully set for %s %s' % (ud.device_platform, ud.device_version)
+            response['message'] = message
+            logger.debug(response['message'])
+    except:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format'
+        response['status_code'] = 400
+        return response
 
     return response
 
