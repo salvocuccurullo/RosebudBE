@@ -747,10 +747,26 @@ def get_configs_new(request):
 @authentication
 def setFourHotel(request):
     logger.debug("set Four Hotel called")
-
     response = {"message": "Four Hotel Json has been saved."}
-    return JsonResponse(response)
-    #return response
+
+    try:
+        i_data = json.loads(request.body)
+        fourhoteldata = i_data.get('fourhoteldata', '')
+        device_uuid = i_data.get('device_uuid', '')
+        fhj = FourHotelJson.objects.filter(id=1)
+        if fhj and fourhoteldata:
+            fhj = fhj.first()
+            fhj.device_id = device_uuid
+            fhj.content = fourhoteldata
+            fhj.save()
+    except Exception as ee:
+        response['result'] = 'failure'
+        response['message'] = 'Bad input format: ' + str(ee)
+        response['status_code'] = 400
+        logger.debug("Error: " + str(ee))
+        return response
+
+    return response
 
 @authentication
 def getFourHotel(request):
