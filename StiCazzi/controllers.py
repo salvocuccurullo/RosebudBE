@@ -84,6 +84,16 @@ def authentication(fn):
 
         users = User.objects.filter(username=username)
         current_user = users.first()
+
+        # below block allow authentication without username
+        # rosebud_uid (access token) is enough
+        if not users:
+            #logger.debug("Trying to login with access_token")
+            user_device=UserDevice.objects.filter(rosebud_id=rosebud_uid)
+            user=user_device.first()
+            if user:
+                current_user=user.user
+
         if not current_user:
             result['code'] = 401
             return JsonResponse(result, status=result['code'])
@@ -100,7 +110,7 @@ def authentication(fn):
         #logger.debug("="*30)
 
         if rosebud_uid and rosebud_uid_stored and rosebud_uid == rosebud_uid_stored:
-            logger.debug("Authentication Successful [%s] [%s]" % (request.path, username))
+            logger.debug("Authentication Successful [%s] [%s]" % (request.path, current_user.username))
             result['success'] = True
 
             #Check if token is expired
@@ -734,22 +744,23 @@ def get_configs_new(request):
     serializer = ConfigurationSerializer(configs, many=True)
     return serializer.data
 
+@authentication
 def setFourHotel(request):
     logger.debug("set Four Hotel called")
 
-    response = {"messsage": "Four Hotel Json has been saved."}
+    response = {"message": "Four Hotel Json has been saved."}
     return JsonResponse(response)
     #return response
 
+@authentication
 def getFourHotel(request):
     logger.debug("get Four Hotel called")
 
     four_hotel_json = FourHotelJson.objects.filter(id=1)
     if four_hotel_json:
-        four_hotel_json = json.dumps(four_hotel_json.first().content)
+        four_hotel_json = four_hotel_json.first().content
     else:
         four_hotel_json = {}
 
-    response = {"messsage": "Four Hotel Json has been retrieved.", "payload": four_hotel_json}
-    return JsonResponse(response)
-    #return response
+    response = {"message": "Four Hotel Json has been retrieved.", "payload": four_hotel_json}
+    return response
