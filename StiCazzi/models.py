@@ -232,3 +232,9 @@ class ConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Configuration
         fields = ('config_type','name','value')
+
+
+class FourHotelJson(models.Model):
+    id = models.AutoField(primary_key=True)
+    device_id = models.CharField(max_length=200, null=True, default="")
+    content = models.TextField()

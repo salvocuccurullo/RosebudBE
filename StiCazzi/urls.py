@@ -115,4 +115,7 @@ urlpatterns = [
     url(r'^api/setOneAlbum', albums_controllers.set_one_album),
     url(r'^api/deleteOneAlbum', albums_controllers.delete_one_album),
     url(r'^api/getStats', albums_controllers.get_stats),
+
+    url(r'^api/getFourHotel', controllers.getFourHotel),
+    url(r'^api/setFourHotel', controllers.setFourHotel),
 ]

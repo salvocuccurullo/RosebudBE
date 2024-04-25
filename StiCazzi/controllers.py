@@ -36,6 +36,7 @@ from pymongo import MongoClient, version
 import pymongo
 
 from StiCazzi.models import Pesata, Soggetto, Song, Lyric, Movie, User, Session, Location, Configuration, Notification, UserDevice
+from StiCazzi.models import FourHotelJson
 from StiCazzi.models import ConfigurationSerializer
 from StiCazzi.env import MONGO_API_URL, MONGO_API_2ND_DB_URL, MONGO_API_USER, MONGO_API_PWD, MONGO_SERVER_CERTIFICATE, MAX_FILE_SIZE
 from . import utils
@@ -732,3 +733,23 @@ def get_configs_new(request):
     configs = Configuration.objects.all()
     serializer = ConfigurationSerializer(configs, many=True)
     return serializer.data
+
+def setFourHotel(request):
+    logger.debug("set Four Hotel called")
+
+    response = {"messsage": "Four Hotel Json has been saved."}
+    return JsonResponse(response)
+    #return response
+
+def getFourHotel(request):
+    logger.debug("get Four Hotel called")
+
+    four_hotel_json = FourHotelJson.objects.filter(id=1)
+    if four_hotel_json:
+        four_hotel_json.first().content
+    else:
+        four_hotel_json = {}
+
+    response = {"messsage": "Four Hotel Json has been retrieved.", "payload": four_hotel_json}
+    return JsonResponse(response)
+    #return response
