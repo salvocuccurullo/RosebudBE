@@ -746,7 +746,7 @@ def getFourHotel(request):
 
     four_hotel_json = FourHotelJson.objects.filter(id=1)
     if four_hotel_json:
-        four_hotel_json.first().content
+        four_hotel_json = json.dumps(four_hotel_json.first().content)
     else:
         four_hotel_json = {}
 
