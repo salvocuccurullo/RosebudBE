@@ -382,7 +382,7 @@ def add_album(request):
     try:
         i_data = json.loads(request.body)
         spotify_id = i_data.get('spotify_id', '')
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -459,7 +459,7 @@ def add_track(request):
     try:
         i_data = json.loads(request.body)
         spotify_id = i_data.get('spotify_id', '')
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'

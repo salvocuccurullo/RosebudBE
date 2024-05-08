@@ -92,7 +92,7 @@ urlpatterns = [
 
     url(r'^api/login$', controllers.login),
     url(r'^api/logout$', controllers.logout),
-    url(r'^api/fblogin$', controllers.fblogin),
+    #url(r'^api/fblogin$', controllers.fblogin),
     url(r'^api/setFBToken2$', controllers.set_fb_token2),
     url(r'^api/refreshtoken$', controllers.refresh_token),
 

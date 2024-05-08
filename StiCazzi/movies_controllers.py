@@ -29,7 +29,7 @@ def get_tvshows_list(request):
 
     try:
         i_data = json.loads(request.body)
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
         query = i_data.get('query', '')
         limit = i_data.get('limit', 40)
         current_page = i_data.get('current_page', 1)
@@ -94,7 +94,7 @@ def get_tvshows_list(request):
 
 #     try:
 #         i_data = json.loads(request.body)
-#         username = i_data.get('username', '')
+#         username = request.POST.get('username', '')
 #         query = i_data.get('query', '')
 #         limit = i_data.get('limit', 40)
 #         current_page = i_data.get('current_page', 1)
@@ -229,7 +229,7 @@ def getShow(request):
     try:
         i_data = json.loads(request.body)
         show_id = i_data.get('show_id', '')
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -284,7 +284,7 @@ def setlike(request):
     response_data['result'] = 'success'
     try:
         i_data = json.loads(request.body)
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
         id_vote = i_data.get('id_vote', '')
         reaction = i_data.get('reaction', '')
         action = i_data.get('action','fetch')
@@ -339,7 +339,7 @@ def setlike(request):
 
 #     try:
 #         i_data = json.loads(request.body)
-#         username = i_data.get('username', '')
+#         username = request.POST.get('username', '')
 #         movie_id = i_data.get('id', '')
 #     except (TypeError, ValueError):
 #         response_data['result'] = 'failure'
@@ -805,7 +805,7 @@ def get_catalogue(request):
 
     try:
         i_data = json.loads(request.body)
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
         cat_type = i_data.get('cat_type', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
@@ -832,7 +832,7 @@ def get_user_stats(request):
         print("*"*80)
         print(i_data)
         print("*"*80)
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
     except (TypeError, ValueError):
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'

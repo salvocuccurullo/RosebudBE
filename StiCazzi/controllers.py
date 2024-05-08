@@ -90,10 +90,14 @@ def authentication(fn):
         if not users:
             #logger.debug("Trying to login with access_token")
             user_device=UserDevice.objects.filter(rosebud_id=rosebud_uid)
-            user=user_device.first()
-            if user:
-                current_user=user.user
-                result['username'] = user.username
+            user_d=user_device.first()
+            if user_d:
+                current_user=user_d.user
+
+        request.POST._mutable = True
+        request.POST['username'] = current_user.username
+        request.POST._mutable = False
+        # end new block
 
         if not current_user:
             result['code'] = 401
@@ -175,7 +179,7 @@ def get_random_song(request):
 
     try:
         i_data = json.loads(request.body)
-        username = i_data.get('username', '')
+        username = request.POST.get('username', '')
     except ValueError:
         response_data['result'] = 'failure'
         response_data['message'] = 'Bad input format'
@@ -196,46 +200,46 @@ def get_random_song(request):
     return response_data
 
 
-def fblogin(request):
+# def fblogin(request):
 
-    response_data = {}
-    response_data['result'] = 'success'
+#     response_data = {}
+#     response_data['result'] = 'success'
 
-    try:
+#     try:
 
-        try:
-            i_data = json.loads(request.body)
-            username = i_data.get('username', '')
-            name = i_data.get('fbname', '')
-            email = i_data.get('fbemail', '')
-            device_id = i_data.get('device_uuid', '')
-            device_version = i_data.get('device_version', '')
-            device_platform = i_data.get('device_platform', '')
-            app_version = i_data.get('app_version', '')
-            fcm_token = i_data.get('fcm_token', '')
-            #logger.debug("New login have been used")
-        except ValueError:
-            response_data['message'] = 'Invalid data'
+#         try:
+#             i_data = json.loads(request.body)
+#             username = i_data.get('username', '')
+#             name = i_data.get('fbname', '')
+#             email = i_data.get('fbemail', '')
+#             device_id = i_data.get('device_uuid', '')
+#             device_version = i_data.get('device_version', '')
+#             device_platform = i_data.get('device_platform', '')
+#             app_version = i_data.get('app_version', '')
+#             fcm_token = i_data.get('fcm_token', '')
+#             #logger.debug("New login have been used")
+#         except ValueError:
+#             response_data['message'] = 'Invalid data'
 
-        notification = Notification(
-            type="login", \
-            title="FB -> %s" % name, \
-            message="%s" % email, \
-            username=username)
-        notification.save()
+#         notification = Notification(
+#             type="login", \
+#             title="FB -> %s" % name, \
+#             message="%s" % email, \
+#             username=username)
+#         notification.save()
 
-    except Exception as eee:
-        response_data['result'] = 'failure'
-        response_data['payload'] = {}
-        logger.debug(eee)
-        notification = Notification(
-            type="login", \
-            title="Failure login %s" % name, \
-            message="%s" % str(eee), \
-            username=username)
-        notification.save()
+#     except Exception as eee:
+#         response_data['result'] = 'failure'
+#         response_data['payload'] = {}
+#         logger.debug(eee)
+#         notification = Notification(
+#             type="login", \
+#             title="Failure login %s" % name, \
+#             message="%s" % str(eee), \
+#             username=username)
+#         notification.save()
 
-    return JsonResponse(response_data)
+#     return JsonResponse(response_data)
 
 
 def login(request):
@@ -376,7 +380,7 @@ def logout(request):
 #     try:
 #         logger.debug("New post method used")
 #         i_data = json.loads(request.body)
-#         username = i_data.get('username', '')
+#         username = request.POST.get('username', '')
 #         longitude = i_data.get('longitude', '')
 #         latitude = i_data.get('latitude', '')
 #         photo = i_data.get('photo', '')
@@ -530,7 +534,7 @@ def logout(request):
 
 #     try:
 #         i_data = json.loads(request.body)
-#         username = i_data.get('username', '')
+#         username = request.POST.get('username', '')
 #         action = i_data.get('action', '')
 #         longitude = i_data.get('longitude', '')
 #         latitude = i_data.get('latitude', '')
@@ -657,7 +661,7 @@ def set_fb_token2(request):
 #     try:
 #         i_data = json.loads(request.body)
 #         #logger.debug("Valid JSON data received.")
-#         username = i_data.get('username', '')
+#         username = request.POST.get('username', '')
 #         firebase_id_token = i_data.get('firebase_id_token', '')
 #         kanazzi = i_data.get('kanazzi', '')
 #     except ValueError:
