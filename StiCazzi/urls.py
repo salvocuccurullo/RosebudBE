@@ -50,8 +50,8 @@ urlpatterns = [
     url(r'^spotifysearch$', covers_controllers.spotify_search),
     url(r'^localsearch2$', covers_controllers.get_covers_by_search_ng),
 
-    url(r'^geolocation$', controllers.geolocation),
-    url(r'^geolocation2$', controllers.geolocation2),
+    # url(r'^geolocation$', controllers.geolocation),
+    # url(r'^geolocation2$', controllers.geolocation2),
     url(r'^getcatalogue$', movies_controllers.get_catalogue),
 
     url(r'^login$', controllers.login),
