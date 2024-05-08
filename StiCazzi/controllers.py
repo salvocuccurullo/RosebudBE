@@ -93,6 +93,7 @@ def authentication(fn):
             user=user_device.first()
             if user:
                 current_user=user.user
+                result['username'] = user.username
 
         if not current_user:
             result['code'] = 401
@@ -356,228 +357,228 @@ def logout(request):
             response['result'] = "Error during user %s logout with %s %s." % (user_device.user.username, user_device.device_platform, user_device.device_version)
     return response
 
-@authentication
-def geolocation(request):
-    """
-    Controller:
-    """
+# @authentication
+# def geolocation(request):
+#     """
+#     Controller:
+#     """
 
-    logger.debug("GeoLocation called")
+#     logger.debug("GeoLocation called")
 
-    response = {
-            'result':'success',
-            'distance': 0,
-            'distance_home': 0,
-            'location_string': ''
-    }
-    ret_status = 200
+#     response = {
+#             'result':'success',
+#             'distance': 0,
+#             'distance_home': 0,
+#             'location_string': ''
+#     }
+#     ret_status = 200
 
-    try:
-        logger.debug("New post method used")
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        longitude = i_data.get('longitude', '')
-        latitude = i_data.get('latitude', '')
-        photo = i_data.get('photo', '')
-        action = i_data.get('action', '')
-        notification_on = i_data.get('notification_on', False)
-        is_home = i_data.get('is_home', False)
-    except ValueError as e:
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        response['status_code'] = 400
-        logger.error(e)
-        return response
+#     try:
+#         logger.debug("New post method used")
+#         i_data = json.loads(request.body)
+#         username = i_data.get('username', '')
+#         longitude = i_data.get('longitude', '')
+#         latitude = i_data.get('latitude', '')
+#         photo = i_data.get('photo', '')
+#         action = i_data.get('action', '')
+#         notification_on = i_data.get('notification_on', False)
+#         is_home = i_data.get('is_home', False)
+#     except ValueError as e:
+#         response['result'] = 'failure'
+#         response['message'] = 'Bad input format'
+#         response['status_code'] = 400
+#         logger.error(e)
+#         return response
 
-    logger.debug("Action: %s" % action)
-    logger.debug("Notification On: %s" % notification_on)
+#     logger.debug("Action: %s" % action)
+#     logger.debug("Notification On: %s" % notification_on)
 
-    if notification_on == "true":
-        notification_on = True
-    else:
-        notification_on = False
+#     if notification_on == "true":
+#         notification_on = True
+#     else:
+#         notification_on = False
 
-    if is_home == "true":
-        is_home = True
-    else:
-        is_home = False
+#     if is_home == "true":
+#         is_home = True
+#     else:
+#         is_home = False
 
-    users = User.objects.filter(username=username)
-    loc = Location.objects.filter(user=users[0])
+#     users = User.objects.filter(username=username)
+#     loc = Location.objects.filter(user=users[0])
 
-    if action == 'DELETE':
-        #DELETE
-        logger.debug("DELETE")
-        if loc:
-            loc[0].delete()
-            response['message'] = 'GPS coordinates have been delete from the system for user %s' % username
-        else:
-            response['message'] = 'GPS coordinates not available for user %s, deletion not needed.' % username
-    elif action == 'GET':
-        locations = Location.objects.all()
-        out = []
-        for location in locations:
-            out.append({
-                'name':location.user.username,
-                'latitude':str(location.latitude),
-                'longitude':str(location.longitude),
-                'photo':location.photo,
-                'last_locate':str(location.updated)
-            })
-        response['body'] = out
-        response['message'] = 'Retrieved GPS coordinates for %s user(s)' % len(locations)
-    else:
-        if latitude and longitude:            #SET COORD
-            distance = 0
-            distance_home = 0
-            location_string = ''
-            if loc:
+#     if action == 'DELETE':
+#         #DELETE
+#         logger.debug("DELETE")
+#         if loc:
+#             loc[0].delete()
+#             response['message'] = 'GPS coordinates have been delete from the system for user %s' % username
+#         else:
+#             response['message'] = 'GPS coordinates not available for user %s, deletion not needed.' % username
+#     elif action == 'GET':
+#         locations = Location.objects.all()
+#         out = []
+#         for location in locations:
+#             out.append({
+#                 'name':location.user.username,
+#                 'latitude':str(location.latitude),
+#                 'longitude':str(location.longitude),
+#                 'photo':location.photo,
+#                 'last_locate':str(location.updated)
+#             })
+#         response['body'] = out
+#         response['message'] = 'Retrieved GPS coordinates for %s user(s)' % len(locations)
+#     else:
+#         if latitude and longitude:            #SET COORD
+#             distance = 0
+#             distance_home = 0
+#             location_string = ''
+#             if loc:
 
-                old_loc = (loc[0].latitude, loc[0].longitude)
-                home_loc = (loc[0].home_latitude, loc[0].home_longitude)
-                new_loc = (latitude, longitude)
-                distance = geodesic(old_loc, new_loc).kilometers
-                if loc[0].home_latitude == 0 and loc[0].home_longitude == 0:
-                    distance_home = 0
-                else:
-                    distance_home = geodesic(home_loc, new_loc).kilometers
+#                 old_loc = (loc[0].latitude, loc[0].longitude)
+#                 home_loc = (loc[0].home_latitude, loc[0].home_longitude)
+#                 new_loc = (latitude, longitude)
+#                 distance = geodesic(old_loc, new_loc).kilometers
+#                 if loc[0].home_latitude == 0 and loc[0].home_longitude == 0:
+#                     distance_home = 0
+#                 else:
+#                     distance_home = geodesic(home_loc, new_loc).kilometers
 
-                ### GeoLocation Info
-                geolocator = Nominatim(user_agent="rosebud-application")
-                location_info = ''
+#                 ### GeoLocation Info
+#                 geolocator = Nominatim(user_agent="rosebud-application")
+#                 location_info = ''
 
-                try:
-                    location_info = geolocator.reverse([latitude, longitude])
-                except Exception as e:
-                    logger.error("Error during location name retrieval: " + str(e))
+#                 try:
+#                     location_info = geolocator.reverse([latitude, longitude])
+#                 except Exception as e:
+#                     logger.error("Error during location name retrieval: " + str(e))
 
-                city = 'Ghost Town'
-                country = 'Nowhere land'
-                county = ''
-                if location_info:
-                    try:
-                        #logger.debug(location_info.raw)
-                        city = location_info.raw['address'].get('city','')
-                        if not city:
-                            city = location_info.raw['address'].get('town','')
-                        if not city:
-                            city = location_info.raw['address'].get('village','Ghost Town')
-                        country = location_info.raw['address'].get('country','')
-                        county = location_info.raw['address'].get('county','')
-                        location_string = "%s %s (%s)" % (city, county, country)
-                        #logger.debug("%s %s %s" % (city, county, country))
-                        if county != city:
-                            county = "-%s-" % county
-                        else:
-                            county =''
-                    except Exception as e:
-                      logger.error(e)
-                ### End GeoLocation Info
+#                 city = 'Ghost Town'
+#                 country = 'Nowhere land'
+#                 county = ''
+#                 if location_info:
+#                     try:
+#                         #logger.debug(location_info.raw)
+#                         city = location_info.raw['address'].get('city','')
+#                         if not city:
+#                             city = location_info.raw['address'].get('town','')
+#                         if not city:
+#                             city = location_info.raw['address'].get('village','Ghost Town')
+#                         country = location_info.raw['address'].get('country','')
+#                         county = location_info.raw['address'].get('county','')
+#                         location_string = "%s %s (%s)" % (city, county, country)
+#                         #logger.debug("%s %s %s" % (city, county, country))
+#                         if county != city:
+#                             county = "-%s-" % county
+#                         else:
+#                             county =''
+#                     except Exception as e:
+#                       logger.error(e)
+#                 ### End GeoLocation Info
 
-                logger.debug("Distance %s km." % "{0:.2f}".format(float(distance)))
-                logger.debug("Distance from home %s km." % "{0:.2f}".format(float(distance_home)))
+#                 logger.debug("Distance %s km." % "{0:.2f}".format(float(distance)))
+#                 logger.debug("Distance from home %s km." % "{0:.2f}".format(float(distance_home)))
 
-                loc[0].latitude = latitude
-                loc[0].longitude = longitude
-                if is_home:
-                    loc[0].home_latitude = latitude
-                    loc[0].home_longitude = longitude
-                if photo:
-                    loc[0].photo = photo
-                loc[0].save()
+#                 loc[0].latitude = latitude
+#                 loc[0].longitude = longitude
+#                 if is_home:
+#                     loc[0].home_latitude = latitude
+#                     loc[0].home_longitude = longitude
+#                 if photo:
+#                     loc[0].photo = photo
+#                 loc[0].save()
 
-                notif_title = ''
-                message = ''
-                if notification_on:
-                    notif_title = "%s shared his/her current location!" % users[0].username
-                    message="%s %s (%s)" % (city, county, country)
-                elif float(distance) > 20:
-                    notif_title = "%s moved to %s %s (%s)" % (users[0].username, city, county, country)
-                    message="As the crow flies: %s km" % "{0:.2f}".format(float(distance))
+#                 notif_title = ''
+#                 message = ''
+#                 if notification_on:
+#                     notif_title = "%s shared his/her current location!" % users[0].username
+#                     message="%s %s (%s)" % (city, county, country)
+#                 elif float(distance) > 20:
+#                     notif_title = "%s moved to %s %s (%s)" % (users[0].username, city, county, country)
+#                     message="As the crow flies: %s km" % "{0:.2f}".format(float(distance))
 
-                #logger.debug(notif_title)
+#                 #logger.debug(notif_title)
 
-                # if notification_on or float(distance) > 20:
-                #     notification = Notification(
-                #         type="new_location", \
-                #         title=notif_title, \
-                #         message=message, \
-                #         username=users[0].username)
-                #     notification.save()
+#                 # if notification_on or float(distance) > 20:
+#                 #     notification = Notification(
+#                 #         type="new_location", \
+#                 #         title=notif_title, \
+#                 #         message=message, \
+#                 #         username=users[0].username)
+#                 #     notification.save()
 
-            else:
-                location = Location(user=users[0], latitude=latitude, longitude=longitude, home_latitude=latitude, home_longitude=longitude, photo=photo)
-                location.save()
-            response['message'] = 'GPS coordinates have been created/updated for user %s' % username
-            response['distance'] = "{0:.2f}".format(float(distance))
-            response['distance_home'] = "{0:.2f}".format(float(distance_home))
-            response['location_string'] = location_string
-        else:
-            response['result'] = 'failure'
-            ret_status = 400
+#             else:
+#                 location = Location(user=users[0], latitude=latitude, longitude=longitude, home_latitude=latitude, home_longitude=longitude, photo=photo)
+#                 location.save()
+#             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
+#             response['distance'] = "{0:.2f}".format(float(distance))
+#             response['distance_home'] = "{0:.2f}".format(float(distance_home))
+#             response['location_string'] = location_string
+#         else:
+#             response['result'] = 'failure'
+#             ret_status = 400
 
-    return response
+#     return response
 
 
-@authentication
-def geolocation2(request):
-    """
-    Controller:
-    """
+# @authentication
+# def geolocation2(request):
+#     """
+#     Controller:
+#     """
 
-    response = {'result':'success'}
+#     response = {'result':'success'}
 
-    try:
-        i_data = json.loads(request.body)
-        username = i_data.get('username', '')
-        action = i_data.get('action', '')
-        longitude = i_data.get('longitude', '')
-        latitude = i_data.get('latitude', '')
-        photo = i_data.get('photo', '')
-    except ValueError:
-        response['result'] = 'failure'
-        response['message'] = 'Bad input format'
-        response['status_code'] = 400
-        return response
+#     try:
+#         i_data = json.loads(request.body)
+#         username = i_data.get('username', '')
+#         action = i_data.get('action', '')
+#         longitude = i_data.get('longitude', '')
+#         latitude = i_data.get('latitude', '')
+#         photo = i_data.get('photo', '')
+#     except ValueError:
+#         response['result'] = 'failure'
+#         response['message'] = 'Bad input format'
+#         response['status_code'] = 400
+#         return response
 
-    users = User.objects.filter(username=username)
-    loc = Location.objects.filter(user=users[0])
-    response['status_code'] = 200
+#     users = User.objects.filter(username=username)
+#     loc = Location.objects.filter(user=users[0])
+#     response['status_code'] = 200
 
-    if action == 'DELETE':
-        response['message'] = 'GPS coordinates not available for user %s, deletion not needed.' % username
-        if loc:
-            loc[0].delete()
-            response['message'] = 'GPS coordinates have been delete from the system for user %s' % username
+#     if action == 'DELETE':
+#         response['message'] = 'GPS coordinates not available for user %s, deletion not needed.' % username
+#         if loc:
+#             loc[0].delete()
+#             response['message'] = 'GPS coordinates have been delete from the system for user %s' % username
 
-    elif action == 'GET':
-        locations = Location.objects.all()
-        out = []
-        for location in locations:
-            out.append({
-                'name':location.user.username,
-                'latitude':str(location.latitude),
-                'longitude':str(location.longitude),
-                'photo':location.photo,
-                'last_locate':str(location.updated)
-                })
-        response['body'] = out
-        response['message'] = 'Retrieved GPS coordinates for %s user(s)' % len(locations)
+#     elif action == 'GET':
+#         locations = Location.objects.all()
+#         out = []
+#         for location in locations:
+#             out.append({
+#                 'name':location.user.username,
+#                 'latitude':str(location.latitude),
+#                 'longitude':str(location.longitude),
+#                 'photo':location.photo,
+#                 'last_locate':str(location.updated)
+#                 })
+#         response['body'] = out
+#         response['message'] = 'Retrieved GPS coordinates for %s user(s)' % len(locations)
 
-    else:
-        if latitude and longitude:            #SET COORD
-            if loc:
-                loc[0].latitude = latitude
-                loc[0].longitude = longitude
-                loc[0].save()
-            else:
-                location = Location(user=users[0], latitude=latitude, longitude=longitude)
-                location.save()
-            response['message'] = 'GPS coordinates have been created/updated for user %s' % username
-        else:
-            response['status_code'] = 400
+#     else:
+#         if latitude and longitude:            #SET COORD
+#             if loc:
+#                 loc[0].latitude = latitude
+#                 loc[0].longitude = longitude
+#                 loc[0].save()
+#             else:
+#                 location = Location(user=users[0], latitude=latitude, longitude=longitude)
+#                 location.save()
+#             response['message'] = 'GPS coordinates have been created/updated for user %s' % username
+#         else:
+#             response['status_code'] = 400
 
-    return response
+#     return response
 
 
 @authentication

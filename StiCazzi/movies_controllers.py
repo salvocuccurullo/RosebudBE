@@ -829,6 +829,9 @@ def get_user_stats(request):
     response_data['result'] = 'success'
     try:
         i_data = json.loads(request.body)
+        print("*"*80)
+        print(i_data)
+        print("*"*80)
         username = i_data.get('username', '')
     except (TypeError, ValueError):
         response_data['result'] = 'failure'
