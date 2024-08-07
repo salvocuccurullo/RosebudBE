@@ -533,6 +533,7 @@ def get_albums(request):
         i_data = json.loads(request.body)
         query = i_data.get('query', '')
         special = i_data.get('special', '')
+        to_date = i_data.get('to_date', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -554,6 +555,9 @@ def get_albums(request):
         today = today + timedelta(days=-1)
     elif special and special == "tomorrow":
         today = today + timedelta(days=+1)
+    elif special and special == "to_date":
+        # to_date format YYYY-DD-MM
+        today = date(int(to_date[0:4]),int(to_date[5:7]),int(to_date[8:10]))
 
     year = today.strftime("%Y")
     month = today.strftime("%m")
@@ -586,7 +590,7 @@ def get_albums(request):
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
                         {"release_date": { "$regex": ".*\-%s\-.*" % month}}
                     ]}
-    elif special and special in ('today', 'yesterday', 'tomorrow'):
+    elif special and special in ('today', 'yesterday', 'tomorrow', 'to_date'):
         mongo_stmt = { "$and": [
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
                         {"release_date": { "$regex": ".*\-%s\-%s" % (month, day)}}
@@ -627,6 +631,7 @@ def get_tracks(request):
         i_data = json.loads(request.body)
         query = i_data.get('query', '')
         special = i_data.get('special', '')
+        to_date = i_data.get('to_date', '')
     except (TypeError, ValueError):
         response['result'] = 'failure'
         response['message'] = 'Bad input format'
@@ -648,6 +653,9 @@ def get_tracks(request):
         today = today + timedelta(days=-1)
     elif special and special == "tomorrow":
         today = today + timedelta(days=+1)
+    elif special and special == "to_date":
+        # to_date format YYYY-DD-MM
+        today = date(int(to_date[0:4]),int(to_date[5:7]),int(to_date[8:10]))
 
     year = today.strftime("%Y")
     month = today.strftime("%m")
