@@ -551,13 +551,20 @@ def get_albums(request):
         return response
 
     today = date.today() # current date
-    if special and special == "yesterday":
-        today = today + timedelta(days=-1)
-    elif special and special == "tomorrow":
-        today = today + timedelta(days=+1)
-    elif special and special == "to_date":
-        # to_date format YYYY-DD-MM
-        today = date(int(to_date[0:4]),int(to_date[5:7]),int(to_date[8:10]))
+    if special:
+        if special == "yesterday":
+            today = today + timedelta(days=-1)
+        elif special == "tomorrow":
+            today = today + timedelta(days=+1)
+        elif special == "to_date" and to_date:
+            # to_date format YYYY-DD-MM
+            try:
+                today = date(int(to_date[0:4]),int(to_date[5:7]),int(to_date[8:10]))
+            except:
+                special = "to_date_fucked"
+
+    if special == "to_date" and not to_date:
+        special = "to_date_fucked"
 
     year = today.strftime("%Y")
     month = today.strftime("%m")
@@ -688,7 +695,7 @@ def get_tracks(request):
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
                         {"release_date": { "$regex": ".*\-%s\-.*" % month}}
                     ]}
-    elif special and special in ('today', 'yesterday', 'tomorrow'):
+    elif special and special in ('today', 'yesterday', 'tomorrow', 'to_date'):
         mongo_stmt = { "$and": [
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
                         {"release_date": { "$regex": ".*\-%s\-%s" % (month, day)}}
