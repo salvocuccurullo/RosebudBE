@@ -595,12 +595,12 @@ def get_albums(request):
     elif special and special == 'monthly':
         mongo_stmt = { "$and": [
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
-                        {"release_date": { "$regex": ".*\-%s\-.*" % month}}
+                        {"release_date": { "$regex": r".*\-%s\-.*" % month}}
                     ]}
     elif special and special in ('today', 'yesterday', 'tomorrow', 'to_date'):
         mongo_stmt = { "$and": [
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
-                        {"release_date": { "$regex": ".*\-%s\-%s" % (month, day)}}
+                        {"release_date": { "$regex": r".*\-%s\-%s" % (month, day)}}
                     ]}
     else:
         response['result'] = 'failure'
@@ -693,7 +693,7 @@ def get_tracks(request):
     elif special and special == 'monthly':
         mongo_stmt = { "$and": [
                         {"release_date": { "$exists": True }, "$expr": { "$gt": [{ "$strLenCP": '$release_date' }, 7] } },#release date exists and its lenght > 7 (full date)
-                        {"release_date": { "$regex": ".*\-%s\-.*" % month}}
+                        {"release_date": { "$regex": r".*\-%s\-.*" % month}}
                     ]}
     elif special and special in ('today', 'yesterday', 'tomorrow', 'to_date'):
         mongo_stmt = { "$and": [
